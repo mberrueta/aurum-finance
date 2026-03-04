@@ -177,6 +177,24 @@ mix phx.server
 
 Open: [http://localhost:4040](http://localhost:4040)
 
+### Environment setup (`direnv`)
+
+```bash
+direnv allow
+cp .envrc.custom.example .envrc.custom
+```
+
+Use `.envrc.custom` (or `.envrc_custom`) for machine-local overrides.
+
+`tmux_proj.sh` uses `DIR` from your environment when set. If `DIR` is not set, it falls back to the script directory automatically.
+
+Default open-source ports in `.envrc`:
+- `MIX_PORT=4000`
+- `TIDEWAVE_PORT=4001`
+- `LIVE_DEBUGGER_PORT=4002`
+
+Your local `.envrc_custom` can override them (for example `4040/4041/4042`).
+
 ### Docker
 
 ```bash
