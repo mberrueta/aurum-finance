@@ -1,5 +1,10 @@
 This is a web application written using the Phoenix web framework.
 
+## LLM governance baseline
+
+- `llms/constitution.md` is the baseline for all LLM agents used in this repository (Codex, Claude, Gemini, etc).
+- Agent/task-specific instructions may add detail but must remain consistent with `llms/constitution.md`.
+
 ## Project guidelines
 
 - Use `mix precommit` alias when you are done with all changes and fix any pending issues

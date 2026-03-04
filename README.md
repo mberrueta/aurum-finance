@@ -230,6 +230,7 @@ Automated checks on every push, keeping `main` always releasable:
 /docs
   /adr               # Architecture Decision Records
   architecture.md
+  deployment.md
   domain-model.md
   research.md
   roadmap.md
