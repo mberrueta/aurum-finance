@@ -183,6 +183,8 @@ Open: [http://localhost:4040](http://localhost:4040)
 docker compose up --build
 ```
 
+Open: [http://localhost:4040](http://localhost:4040)
+
 ---
 
 ## CI / quality gates
