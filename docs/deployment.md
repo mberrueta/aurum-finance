@@ -31,7 +31,7 @@ Required in production:
 Recommended in production:
 
 - `PORT`
-  - Defaults to `4040` if not set.
+  - Defaults to `4000` if not set.
 - `POOL_SIZE`
   - Defaults to `10` if not set.
 - `ECTO_IPV6`
@@ -56,9 +56,9 @@ docker build --build-arg MIX_ENV=prod -t aurum_finance:prod .
 Run production image directly:
 
 ```bash
-docker run --rm -p 4040:4040 \
+docker run --rm -p 4000:4000 \
   -e PHX_SERVER=true \
-  -e PORT=4040 \
+  -e PORT=4000 \
   -e PHX_HOST=localhost \
   -e DATABASE_URL='ecto://postgres:postgres@host.docker.internal/aurum_finance_dev' \
   -e SECRET_KEY_BASE='replace_me' \

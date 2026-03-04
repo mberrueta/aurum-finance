@@ -7,6 +7,9 @@
 ![Status](https://img.shields.io/badge/status-early--stage-orange)
 ![Elixir](https://img.shields.io/badge/elixir-1.19%2B-blueviolet)
 ![License](https://img.shields.io/badge/license-Apache--2.0-blue)
+![CI](https://github.com/mberrueta/aurum-finance/actions/workflows/elixir.yml/badge.svg)
+![Open Issues](https://img.shields.io/github/issues/mberrueta/aurum-finance)
+![Open PRs](https://img.shields.io/github/issues-pr/mberrueta/aurum-finance)
 
 **AurumFinance** is an open-source, self-hosted personal finance operating system for people with complex financial lives.
 
@@ -175,7 +178,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-Open: [http://localhost:4040](http://localhost:4040)
+Open: [http://localhost:4000](http://localhost:4000)
 
 ### Environment setup (`direnv`)
 
@@ -193,7 +196,7 @@ Default open-source ports in `.envrc`:
 - `TIDEWAVE_PORT=4001`
 - `LIVE_DEBUGGER_PORT=4002`
 
-Your local `.envrc_custom` can override them (for example `4040/4041/4042`).
+Your local `.envrc_custom` can override them with machine-specific values.
 
 ### Docker
 
@@ -201,7 +204,7 @@ Your local `.envrc_custom` can override them (for example `4040/4041/4042`).
 docker compose up --build
 ```
 
-Open: [http://localhost:4040](http://localhost:4040)
+Open: [http://localhost:4000](http://localhost:4000)
 
 ---
 

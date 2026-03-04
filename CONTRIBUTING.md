@@ -99,7 +99,7 @@ mix ecto.setup
 mix phx.server
 ```
 
-Open: [http://localhost:4040](http://localhost:4040)
+Open: [http://localhost:4000](http://localhost:4000)
 
 ### Docker
 
@@ -107,7 +107,7 @@ Open: [http://localhost:4040](http://localhost:4040)
 docker compose up --build
 ```
 
-Open: [http://localhost:4040](http://localhost:4040)
+Open: [http://localhost:4000](http://localhost:4000)
 
 ---
 
