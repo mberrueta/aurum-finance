@@ -25,9 +25,12 @@
 
 * **Double-entry ledger** with auditable, traceable financial events
 * **Multi-entity support** (individuals, couples/families, companies/LLCs, trusts)
-* **Multi-currency** with explicit FX handling (no hidden conversions)
+* **Multi-currency with named FX rate series** — e.g., PTAX, oficial, MEP, CCL — per jurisdiction, not a single hidden conversion
+* **Fiscal residency aware** — tax-relevant rates and reporting rules follow your country of residence, not where your accounts are
 * **Import-first ingestion** (CSV / OFX/QFX / broker statements) + deduplication
-* **Rules-first categorization** (deterministic baseline), **AI-assisted** as an optional enhancement
+* **Immutable facts, correctable classification** — imported data is never modified; categorization is always editable
+* **Grouped rules engine** — independent rule groups (expense type, account origin, investment type, etc.) each apply their own priority-ordered logic; multiple groups can match the same transaction simultaneously
+* **Retrospective analysis + automatic projection** — learn patterns from actuals; detect recurring income and expenses automatically; project next month without asking the user to pre-assign anything
 * **Local-first AI** (Ollama planned), external OpenAI-compatible APIs optional
 * **Explainable insights** — every number ties back to postings and source evidence
 * **Privacy by design** — self-hosted, explicit PII boundaries, scoped access
@@ -46,18 +49,45 @@ That breaks down if you:
 * invest across brokers, assets, and currencies
 * require data ownership, privacy, and auditability
 
-AurumFinance exists to solve that gap.
+### The problem is especially acute in LATAM
+
+A common real-world scenario that no existing tool handles well:
+
+> *Living in Brazil, with bank accounts in Argentina and the US, investments
+> across brokers in all three countries, and tax obligations to Receita Federal
+> (Brazil), AFIP/ARCA (Argentina), and the IRS (US).*
+
+Each jurisdiction has its own rules, currencies, and exchange rate conventions:
+
+| Country | Tax authority | FX reference rate | Complexity |
+|---|---|---|---|
+| 🇧🇷 Brazil | Receita Federal | PTAX (Banco Central do Brasil) | IOF, GCAP, carnê-leão |
+| 🇦🇷 Argentina | AFIP / ARCA | Tipo de cambio oficial | Multiple parallel rates (MEP, CCL, blue) |
+| 🇺🇸 USA | IRS | N/A (USD base) | FBAR, FATCA for foreign accounts |
+
+AurumFinance is built first for this complexity — and designed so that
+**any user can extend it to their own country and jurisdictional needs**.
+
+The system lets each user configure:
+* their **country of fiscal residency** (drives tax-relevant rate defaults and reporting)
+* which **exchange rate series** to use per jurisdiction (e.g., PTAX for Brazil, oficial for Argentina)
+* accounts and brokers in any country, held in any currency
+
+AurumFinance exists to solve that gap — starting from the hardest cases, not the easiest.
 
 ---
 
 ## Design principles
 
 1. **The ledger is the source of truth**
-2. **Multi-currency is first-class**
+2. **Multi-currency is first-class** — N named rate series per pair, not a single conversion
 3. **Every financial event is traceable to source evidence**
-4. **Automation first; manual correction always possible**
-5. **Privacy and least-privilege by default**
-6. **Insights must be explainable and reproducible**
+4. **Imported facts are immutable; classification is always correctable**
+5. **Automation first; manual correction always possible**
+6. **Privacy and least-privilege by default**
+7. **Insights come from actuals, not from spending intentions**
+8. **Fiscal residency is explicit** — tax-relevant rates and reporting rules are jurisdiction-aware
+9. **Extensible by design** — country rules, rate sources, and tax models are configurable, not hardcoded
 
 ---
 
@@ -78,7 +108,8 @@ AurumFinance is **not**:
 * a trading platform
 * a bank aggregation SaaS
 * a multi-tenant hosted product
-* a tax filing service (it may track tax-relevant events)
+* a tax filing service (it may track tax-relevant events and estimates)
+* an envelope/zero-sum budgeting tool — AurumFinance learns from your actuals, not from spending intentions
 
 ---
 
@@ -113,28 +144,45 @@ Planned core components:
 * Minimal Docker Compose for Postgres + app
 * Repo hygiene: license, code of conduct, contributing, security policy
 
-### Phase 1 — Core Finance Tracker (MVP)
+### Phase 1 — Research & Landscape Analysis
+
+* Comparative analysis: Firefly III, GnuCash, Actual Budget
+* Rules-engine and ledger-model validation for AurumFinance direction
+* Multi-jurisdiction + FX model research and constraints capture
+* Design lessons and architecture implications documentation
+
+### Phase 2 — Import Automation (first implementation feature)
+
+* CSV import
+* OFX / QFX import
+* Duplicate detection
+* Grouped rule-based categorization (triggers → conditions → actions, per group)
+
+### Phase 3 — Core Finance Tracker (MVP)
 
 * Owners/entities (individuals + legal entities)
 * Accounts (bank, broker, crypto, cash, credit cards, loans)
 * Transactions, postings, categories
 * Monthly cash flow report
 * Net worth calculation
+* Recurring income/expense detection (automatic, from actuals)
+* Next-month projection based on historical patterns
 
-### Phase 2 — Import Automation
-
-* CSV import
-* OFX / QFX import
-* Duplicate detection
-* Rule-based categorization
-
-### Phase 3 — Investment Tracking
+### Phase 4 — Investment Tracking
 
 * Positions and price history
 * Portfolio value and allocation
 * Realized / unrealized P&L
 
-### Phase 4 — AI-Assisted Workflows (optional)
+### Phase 5 — Multi-Jurisdiction Tax Awareness
+
+* User-configurable fiscal residency (Brazil / Argentina / USA / extensible)
+* Named FX rate series per jurisdiction (PTAX, oficial AFIP/ARCA, MEP, CCL, IRS rates)
+* Tax event tracking (dividends, interest, asset sales, capital gains, FX gains)
+* Tax-relevant rate snapshots at event time (immutable)
+* Yearly summaries and estimates per jurisdiction
+
+### Phase 6 — AI-Assisted Workflows (optional, late-stage)
 
 * AI-assisted transaction categorization
 * Anomaly detection
@@ -144,16 +192,11 @@ Planned core components:
   * correlation signals over time (with guardrails: correlation ≠ causation)
   * explainable summaries with citations back to ingested sources
 
-### Phase 5 — MCP / AI Data Access Layer (optional)
+### Phase 7 — MCP / AI Data Access Layer (last feature, optional)
 
 * Controlled AI access via MCP
 * Permission scopes + PII redaction rules
 * Local models (Ollama) and optional external providers
-
-### Phase 6 — Tax Awareness
-
-* Tax event tracking (dividends, interest, asset sales, capital gains)
-* Yearly summaries and estimates
 
 ---
 
@@ -250,6 +293,23 @@ Automated checks on every push, keeping `main` always releasable:
 * [Actual Budget](https://github.com/actualbudget/actual) — local-first budgeting
 
 AurumFinance borrows lessons, not UI or product direction.
+
+### Key differences
+
+| Capability | Firefly III | GnuCash | Actual Budget | AurumFinance |
+|---|---|---|---|---|
+| Primary orientation | Self-hosted personal finance manager | Desktop accounting system | Local-first budgeting app | ✅ Personal finance OS for complex multi-country setups |
+| Ledger model | Double-entry under the hood | Explicit double-entry | ❌ | ✅ Internal double-entry with simpler user-facing flows |
+| Rules/classification | Rules engine | Limited automation | Limited automation | ✅ Grouped rules; multiple groups can classify one transaction |
+| Import posture | Importer ecosystem available | Strong file import support | Import supported | ✅ Import-first pipeline (CSV/OFX/QFX/broker statements) |
+| Facts vs classification | Mixed in app workflows | Accounting records are authoritative | Budget-category centered | ✅ Explicit split: immutable facts + mutable classification |
+| Manual override safety | Depends on workflow | Manual accounting edits | Manual category edits | ✅ User overrides protected from rule re-run overwrite |
+| Budgeting philosophy | Personal finance + budgets | Accounting-centric | Envelope / zero-sum | ✅ Retrospective + projection (no pre-assignment required) |
+| Multi-currency | Supported | Strong support | ❌ | ✅ First-class with named FX series per pair |
+| Multi-jurisdiction tax posture | ❌ | ❌ | ❌ | ✅ Fiscal-residency aware defaults and tax behavior |
+| Tax FX snapshots | ❌ | ❌ | ❌ | ✅ Immutable tax-rate snapshot at event time |
+| Multi-entity support | Limited | Separate books | Limited | ✅ Planned first-class entities (person/family/company/trust) |
+| AI/MCP direction | ❌ | ❌ | ❌ | ✅ Optional final phase with scoped, privacy-safe access |
 
 ---
 

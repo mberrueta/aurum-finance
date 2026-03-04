@@ -16,6 +16,23 @@ AurumFinance is a self-hosted personal finance operating system focused on:
 - ledger correctness
 - reconciliation workflows
 - privacy-first data ownership
+- import-first ingestion from real statements
+- retrospective analysis with automatic projection (not envelope budgeting)
+
+## Product invariants (planning baseline)
+- Rules engine is grouped, not flat:
+  - independent rule groups can match the same transaction simultaneously
+  - first matching rule wins within each group
+  - explainability is mandatory: group, rule, and field-level changes
+- Imported data is split into:
+  - immutable facts (amount, date, original description, account, institution identifiers)
+  - mutable classification (category, tags, investment type, notes, splits)
+- Manual user edits are protected from automation re-runs via classification override flags.
+- Multi-jurisdiction support is first-class and extensible without schema redesign.
+- FX model supports N named rate series per currency pair, scoped by jurisdiction/purpose.
+- Fiscal residency determines default tax-relevant FX rates.
+- Tax event FX snapshots are immutable once recorded.
+- Ledger stores original amounts/currencies; conversions are derived on read.
 
 ## Engineering conventions
 - Follow `AGENTS.md` as the primary instruction source.
