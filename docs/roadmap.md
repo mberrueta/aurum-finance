@@ -1,24 +1,44 @@
 # Roadmap
 
-Detailed implementation roadmap by phase.
+Implementation roadmap by milestone. Each milestone maps to a GitHub milestone with implementation issues.
 
 ## Status
 
-Draft with planning anchors.
+Phase 1 (research) complete. Phase 2/3 (architecture + product definition) in progress.
+Implementation backlog (M1–M7) defined in GitHub issues.
 
-## Phase framing
+## Milestones
 
-- Phase 0: bootstrap and repository foundations.
-- Phase 1: research and landscape analysis.
-- Phase 2: import and categorization pipeline (first implementation feature).
-- Phase 3+: incremental implementation of ledger, reporting, and advanced domains.
-- Final phase: AI and MCP capabilities.
+### M1 — Core Ledger
+Double-entry engine, multi-entity support, accounts, currencies, basic ledger UI.
+Includes single-user auth (root password guard — self-hosted, no anonymous access).
 
-## Cross-phase non-negotiables
+### M2 — Import Pipeline
+CSV import with column mapping, deduplication, reconciliation, import file tracking.
 
-- Preserve ledger correctness and traceability.
-- Keep imports as immutable facts and classification as mutable overlays.
-- Maintain grouped rules execution with explainable outcomes.
-- Keep product posture retrospective/projection-based, not envelope budgeting.
-- Treat multi-jurisdiction and multi-rate FX as first-class from early design.
-- Keep AI/MCP features as the last implementation wave, after core finance workflows.
+### M3 — Rules Engine
+Transaction categorization rules (grouped, prioritized, explainable).
+Classification layer is mutable; ledger facts are immutable.
+
+### M4 — Reporting
+Net worth, monthly cashflow, drilldown to postings, projection v1 (recurring detection).
+
+### M5 — Investments
+Instruments, holdings, position snapshots, portfolio allocation, P&L realized/unrealized.
+
+### M6 — Tax Awareness
+Fiscal residency config, FX rate history (immutable snapshots), tax event tracking.
+
+### M7 — AI + MCP (last, optional)
+AI categorization, insight generation, MCP data access layer.
+**Not before M5/M6 are complete.**
+
+## Cross-milestone non-negotiables
+
+- Preserve ledger correctness and traceability at all times.
+- Imports are immutable facts; classification is a mutable overlay — never conflate them.
+- Rules are grouped and prioritized; outcomes must be explainable per transaction.
+- Product posture is retrospective/projection-based, not envelope budgeting.
+- Multi-jurisdiction and multi-rate FX are first-class from early design.
+- All historical calculations use stored FX rates — never live rates for past dates.
+- AI/MCP is the last implementation wave, after core finance workflows exist.
