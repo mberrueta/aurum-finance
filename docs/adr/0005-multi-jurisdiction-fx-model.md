@@ -9,9 +9,11 @@
 ## Context
 
 AurumFinance is designed for users with financial accounts and obligations spanning
-multiple countries and currencies. A common target case is a user living in Brazil
-with accounts in Argentina and the United States — each jurisdiction has its own
-official exchange rate conventions and tax reporting authorities.
+multiple countries and currencies. Users may hold accounts in different countries
+while being fiscally resident in another — each jurisdiction has its own official
+exchange rate conventions and tax reporting authorities.
+
+e.g. a person paying taxes in Chile who has investment accounts in Peru.
 
 Existing tools handle this inadequately:
 - Actual Budget has no multi-currency support at all.
@@ -21,13 +23,14 @@ Existing tools handle this inadequately:
 
 ## Decision Drivers
 
-1. A single currency pair (e.g., ARS/USD) has multiple simultaneous, legally distinct
-   rates (official AFIP rate, MEP, CCL, blue) — the system must support all of them.
+1. A single currency pair can have multiple simultaneous, legally distinct rates
+   (e.g., an official tax authority rate, a market rate, a parallel market rate)
+   — the system must support all of them.
 2. Tax-relevant conversions must use the legally mandated rate for the user's fiscal residency.
 3. Tax-relevant rate snapshots must be immutable once recorded — retroactive rate updates
    must not modify historical tax events.
 4. Fiscal residency determines tax rate defaults and is independent of where accounts are held.
-5. The model must be extensible to new jurisdictions and rate types without schema changes.
+5. The model must be extensible to any jurisdiction and rate type without schema changes.
 
 ## Decision
 
@@ -41,15 +44,15 @@ the source of truth.
 
 A currency pair supports **N named rate types**, each scoped to a jurisdiction and purpose:
 
-| Rate type | Jurisdiction | Purpose | Source |
+| Rate type (illustrative) | Jurisdiction | Purpose | Source |
 |---|---|---|---|
-| `ptax` | 🇧🇷 Brazil | Tax reporting — Receita Federal reference rate | Banco Central do Brasil |
-| `official_afip` | 🇦🇷 Argentina | Tax reporting — AFIP/ARCA legal rate | AFIP/ARCA published rates |
-| `mep` | 🇦🇷 Argentina | Market rate via AL30/GD30 bond arbitrage | Exchange / broker data |
-| `ccl` | 🇦🇷 Argentina | Contado con liquidación — offshore rate | Exchange / broker data |
-| `blue` | 🇦🇷 Argentina | Informal parallel market (reference only) | Informal trackers |
-| `irs_yearly` | 🇺🇸 USA | IRS yearly average rate for FBAR/FATCA | IRS published tables |
-| `crypto` | any | USDT/fiat rate on exchanges (reference only) | Exchange APIs |
+| `official_tax` | any | Official tax authority rate for reporting | Central bank / tax authority |
+| `market` | any | Market or interbank rate | Exchange / broker data |
+| `parallel` | any | Parallel or informal market rate (reference only) | Informal trackers |
+| `crypto` | any | Crypto/stablecoin rate on exchanges (reference only) | Exchange APIs |
+
+e.g. for a user paying taxes in Chile: `sii_official` (CLP/USD, Servicio de Impuestos Internos reference).
+e.g. for a user paying taxes in Peru: `sunat_official` (PEN/USD, SUNAT reference rate).
 
 This list is **illustrative**. The data model must support arbitrary named rate types
 per currency pair per jurisdiction — not a hardcoded enum. New jurisdictions and rate
@@ -62,15 +65,18 @@ is used by default for tax-relevant event snapshots:
 
 | Fiscal residency | Default tax rate type | Authority |
 |---|---|---|
-| 🇧🇷 Brazil | `ptax` | Receita Federal |
-| 🇦🇷 Argentina | `official_afip` | AFIP / ARCA |
-| 🇺🇸 USA | `irs_yearly` | IRS |
-| other | user-configurable | — |
+| any country | user-configured `official_tax` rate for that jurisdiction | Local tax authority |
 
-**Fiscal residency ≠ where accounts are held.** A user living in Brazil with accounts
-in Argentina and the US has fiscal residency in Brazil. All tax snapshots default to
-PTAX regardless of which country the account is in. This is non-negotiable for
-correct multi-jurisdiction tax tracking.
+e.g. a user paying taxes in Chile configures `sii_official` as their default tax rate type.
+e.g. a user paying taxes in Peru configures `sunat_official` as their default tax rate type.
+
+The mapping from fiscal residency to default rate type is **user-configurable** — there
+is no hardcoded list of countries or rate types.
+
+**Fiscal residency ≠ where accounts are held.** A user paying taxes in Chile with
+investment accounts in Peru has fiscal residency in Chile. All tax snapshots default
+to the Chilean official rate regardless of which country the account is in. This is
+non-negotiable for correct multi-jurisdiction tax tracking.
 
 ### Immutable tax snapshots
 
@@ -84,16 +90,16 @@ For any tax-relevant event (asset sale, dividend, income, FX gain):
 Every cross-currency transaction records:
 - Source amount + source currency (immutable)
 - Target amount + target currency (immutable)
-- Rate type used (e.g., `official_afip`, `mep`, `ptax`)
+- Rate type used (e.g., `official_tax`, `market`, or any user-defined rate type name)
 - Rate value at time of transaction
 - Rate source and timestamp
 
 ### Reporting views
 
 Users choose which rate type to use as the display base for any report or portfolio view:
-- *"Show my net worth in USD MEP"*
-- *"Show my tax liability in USD AFIP"*
-- *"Show monthly expenses in ARS"*
+- *"Show my net worth in USD at market rate"*
+- *"Show my tax liability in local currency at official tax rate"*
+- *"Show monthly expenses in my home currency"*
 
 The system converts on read using the selected rate type and date. The ledger stores originals only.
 
@@ -105,13 +111,13 @@ jurisdiction-aware named rate series and fiscal-residency-driven tax defaults �
 that GnuCash does not address.
 
 The real-world cases that must work without hacks:
-- BRL ↔ USD at PTAX rate (Receita Federal tax events for a Brazil resident)
-- ARS ↔ USD at official AFIP rate (tax events for Argentina resident)
-- ARS ↔ USD at MEP or CCL rate (investment transactions)
-- USD positions in a US broker, viewed from a Brazil fiscal residency (PTAX conversion)
-- Multi-broker positions across BR/AR/US in different currencies
+- CLP ↔ USD at official tax rate (tax events for a Chile-resident user)
+- PEN ↔ USD at market rate (investment transactions for a Peru account)
+- Positions in a foreign broker, viewed from the user's fiscal residency rate
+- Multi-broker positions across different countries in different currencies
 - Portfolio valuation in any named rate type at any historical date
-- A single user with accounts in 3 countries and fiscal residency in a 4th
+- A single user with accounts in multiple countries and fiscal residency in another
+  (e.g. pays taxes in Chile, has investments in Peru and accounts in a third country)
 
 ## Consequences
 
@@ -135,4 +141,4 @@ The real-world cases that must work without hacks:
 - `fx_rate_series` table: `(currency_from, currency_to, rate_type, jurisdiction, date, value, source, fetched_at)`.
 - `rate_type` is a string key — no enum constraint in schema.
 - Tax snapshot columns on tax-relevant events: `tax_rate_type`, `tax_rate_value`, `tax_rate_date`, `tax_rate_source` — write-once.
-- User profile carries `fiscal_residency` (country code) and `default_tax_rate_type` (derived or overridden).
+- **Superseded by ADR-0009:** Fiscal residency (`fiscal_residency_country_code`) and default tax rate type (`default_tax_rate_type`) are columns on the `Entity` table, not on a user profile. There is no user profile in AurumFinance — authentication is a root password guard at the edge.

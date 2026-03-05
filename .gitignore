@@ -39,3 +39,5 @@ npm-debug.log
 /.envrc.custom
 /.envrc_custom
 /.claude/
+/.codex/
+
