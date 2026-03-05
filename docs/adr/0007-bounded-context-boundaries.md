@@ -1,4 +1,4 @@
-# adr 0007: bounded context Boundaries and Elixir Context Structure
+# ADR 0007: Bounded Context Boundaries and Elixir Context Structure
 
 - Status: Accepted
 - Date: 2026-03-04
@@ -250,7 +250,7 @@ management. Owns the concept of named rate series per currency pair per
 jurisdiction. Provides rate lookup for a given pair, rate type, and date.
 Manages immutable tax event FX snapshots.
 
-**Owns:** RateSeries, RateRecord, TaxRateSnapshot, Currency
+**Owns:** RateSeries, RateRecord, TaxRateSnapshot, Currency, FxIngestionBatch
 
 **Multi-entity scope:** Mixed.
 - Currencies and rate series definitions are global (shared across entities).
@@ -298,9 +298,11 @@ provenance (classified_by, manually_overridden) and audit trail.
 **Owns:** RuleGroup, Rule, Condition, Action, ClassificationRecord,
 ClassificationAuditLog
 
-**Multi-entity scope:** Entity-scoped. Rule groups and rules belong to a
-specific entity. Classification records are attached to entity-scoped
-transactions.
+**Multi-entity scope:** Mixed. Rule groups and rules are **global** (no
+`entity_id` column) — entity-specific matching is achieved through condition
+fields (`entity_name`, `entity_slug`, `entity_type`, `entity_country_code`).
+Classification records and audit logs are entity-scoped (they are attached to
+entity-scoped transactions).
 
 **Milestone:** M3
 
@@ -463,7 +465,7 @@ list_anomalies(entity, opts) -> [AnomalyAlert]
 | Entities | N/A (this IS the boundary) | Defines the entity concept itself |
 | Ledger | Entity-scoped | Accounts and transactions belong to one entity |
 | ExchangeRates | Mixed | Rate series/records are global; tax snapshots are entity-scoped |
-| Classification | Entity-scoped | Rules and classifications belong to one entity |
+| Classification | Mixed | Rule groups and rules are global; classification records and audit logs are entity-scoped |
 | Ingestion | Entity-scoped | Imports target a specific entity and account |
 | Reconciliation | Entity-scoped | Operates on entity-scoped postings |
 | Reporting | Entity-scoped (+ cross-entity) | Per-entity by default; cross-entity aggregation optional |
@@ -483,7 +485,7 @@ list_anomalies(entity, opts) -> [AnomalyAlert]
 
 ## Rationale
 
-### Why no Accounts context?
+### Why no User/Auth context?
 
 Authentication for a self-hosted single-operator tool does not require a user
 model. A root password configured via environment variable — checked at the
@@ -543,7 +545,7 @@ core domain contexts.
 
 ### Negative / Trade-offs
 
-- Eight contexts means eight public API surfaces to maintain.
+- Seven contexts means seven public API surfaces to maintain.
 - Cross-context queries (e.g., Reporting joining Ledger + Classification +
   ExchangeRates) require explicit API composition rather than direct schema joins.
 - The multi-entity scoping decision (entity_id column vs schema separation) is

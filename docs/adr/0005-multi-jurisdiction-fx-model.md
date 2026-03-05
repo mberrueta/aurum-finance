@@ -141,4 +141,4 @@ The real-world cases that must work without hacks:
 - `fx_rate_series` table: `(currency_from, currency_to, rate_type, jurisdiction, date, value, source, fetched_at)`.
 - `rate_type` is a string key — no enum constraint in schema.
 - Tax snapshot columns on tax-relevant events: `tax_rate_type`, `tax_rate_value`, `tax_rate_date`, `tax_rate_source` — write-once.
-- User profile carries `fiscal_residency` (country code) and `default_tax_rate_type` (derived or overridden).
+- **Superseded by ADR-0009:** Fiscal residency (`fiscal_residency_country_code`) and default tax rate type (`default_tax_rate_type`) are columns on the `Entity` table, not on a user profile. There is no user profile in AurumFinance — authentication is a root password guard at the edge.

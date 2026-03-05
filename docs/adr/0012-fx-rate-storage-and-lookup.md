@@ -49,6 +49,27 @@ connects those decisions into a complete model.
 
 ## Decision
 
+### 0. Currency Entity
+
+`AurumFinance.ExchangeRates` owns the canonical currency registry. Currencies
+are global data — shared across all entities on the instance.
+
+#### Currency Entity
+
+| Field | Description | Mutability |
+|-------|-------------|------------|
+| code | ISO 4217 currency code (e.g., `"USD"`, `"BRL"`, `"ARS"`) — primary key | Immutable |
+| name | Full currency name (e.g., `"US Dollar"`) | Mutable |
+| symbol | Currency symbol (e.g., `"$"`, `"R$"`) | Mutable |
+| decimal_places | Number of minor-unit decimal places (e.g., 2 for USD, 0 for JPY) | Mutable |
+| is_active | Whether this currency is available for account and rate selection | Mutable |
+| inserted_at | Creation timestamp | Immutable |
+
+Currency `code` is the natural primary key and the foreign-key value used
+throughout the system (`currency_code` columns on Account, Posting,
+RateSeries, etc.). No UUID primary key is used for Currency — the ISO code is
+stable and sufficient.
+
 ### 1. Rate Series Identity
 
 Rate series are identified by a composite natural key:
@@ -239,6 +260,75 @@ entity-scoped fiscal residency defaults (ADR-0009).
 - Monitoring can detect coverage gaps by pair/type/jurisdiction/date ranges.
 - Retention/compression can target raw ingestion payloads, not rate facts.
 
+## Entity Relationship Diagram
+
+```mermaid
+erDiagram
+    Currency ||--o{ RateSeries : "base_currency"
+    Currency ||--o{ RateSeries : "quote_currency"
+    RateSeries ||--o{ RateRecord : "time_series"
+    FxIngestionBatch ||--o{ RateRecord : "loads"
+    Entity ||--o{ TaxRateSnapshot : "owns"
+
+    Currency {
+        string code PK "ISO 4217"
+        string name
+        string symbol
+        integer decimal_places
+        boolean is_active
+    }
+
+    RateSeries {
+        uuid id PK
+        string base_currency_code FK
+        string quote_currency_code FK
+        string rate_type
+        string jurisdiction_code
+        string display_name
+        string source_system
+        boolean is_active
+    }
+
+    RateRecord {
+        uuid id PK
+        uuid rate_series_id FK
+        timestamp effective_at
+        decimal rate_value
+        string source_reference
+        timestamp fetched_at
+        uuid ingestion_batch_id FK
+        string quality_flag
+    }
+
+    TaxRateSnapshot {
+        uuid id PK
+        uuid entity_id FK
+        string tax_event_type
+        string tax_event_reference
+        string base_currency_code
+        string quote_currency_code
+        string rate_type
+        string jurisdiction_code
+        decimal rate_value
+        timestamp effective_at
+        string source_reference
+        timestamp snapped_at
+    }
+
+    FxIngestionBatch {
+        uuid id PK
+        string source_system
+        string source_payload_hash
+        string status
+        timestamp started_at
+        timestamp completed_at
+        integer total_records
+        integer inserted_records
+        integer skipped_records
+        integer error_records
+    }
+```
+
 ## Implementation Notes
 
 - `rate_type` and `jurisdiction_code` are strings, not enums.
@@ -246,3 +336,5 @@ entity-scoped fiscal residency defaults (ADR-0009).
   de-duplication keys.
 - Preserve provider metadata (`source_reference`, `fetched_at`) on every record.
 - Tax snapshots are write-once columns/records with no update API.
+- Currency `code` is the primary key (ISO 4217 string). All other tables
+  reference it as a `currency_code` string column, not a UUID foreign key.

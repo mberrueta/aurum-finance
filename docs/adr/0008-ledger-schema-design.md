@@ -114,9 +114,12 @@ Expenses (root, type: Expense)
   parent. This is enforced at creation time, not via a database constraint
   (since it requires reading the parent).
 - **Every account has a primary currency.** This is the currency in which the
-  account's balance is naturally denominated. Postings to an account can be in
-  any currency, but the account balance is always reported in its primary
-  currency (with cross-currency postings converted on read).
+  account's balance is naturally denominated. In the trading-account model,
+  postings to a standard account are normally in the account's primary currency
+  — cross-currency flows are routed through trading accounts (see section 3)
+  so each standard account's postings remain in a single currency. The Ledger
+  derives balances as native per-currency amounts; conversion to a display
+  currency is a caller responsibility via `ExchangeRates` (ADR-0005, ADR-0014).
 - **Accounts are entity-scoped** — every account belongs to exactly one entity
   (ADR-0007).
 
@@ -130,7 +133,7 @@ Expenses (root, type: Expense)
 | account_type | Asset, Liability, Equity, Income, Expense | Immutable |
 | name | Display name | Mutable |
 | currency_code | Primary currency (e.g., "USD", "CLP") | Immutable |
-| institution_name | Name of the bank or broker holding this account (e.g., "Bank X"). Required for accounts that receive imports. Used to cross-check institution metadata extracted from OFX/PDF files. | Mutable |
+| institution_name | Name of the bank or broker holding this account (e.g., "Bank X"). Optional; strongly recommended for accounts that receive imports. Used to cross-check institution metadata extracted from OFX/PDF files. | Mutable |
 | institution_account_number | Account identifier at the institution (optional free string — last 4 digits, IBAN, account code, etc.). Aids institution cross-checking and deduplication disambiguation. | Mutable |
 | is_placeholder | If true, cannot receive postings (organizational node only) | Mutable |
 | is_active | Soft-active flag; inactive accounts are hidden but preserved | Mutable |
@@ -264,20 +267,29 @@ The zero-sum invariant is enforced at **two levels**:
 
 ### 4. Balance Derivation Strategy
 
-**Primary strategy: Computed on read.**
+**Primary strategy: Computed on read, per currency.**
 
-Account balances are derived by summing all postings for the account:
+Account balances are derived by summing postings for the account, grouped by
+currency. A balance is a map of `{currency_code => amount}`, not a single
+scalar:
 
 ```
-Balance(account, as_of_date) = SUM(posting.amount)
-  WHERE posting.account_id = account.id
-    AND transaction.date <= as_of_date
-    AND transaction.status = 'posted'
+Balance(account, as_of_date) =
+  GROUP BY currency_code:
+    SUM(posting.amount)
+    WHERE posting.account_id = account.id
+      AND transaction.date <= as_of_date
 ```
 
-This approach guarantees that balances are always consistent with the posting
+This approach guarantees balances are always consistent with the posting
 history. There is no stale cache, no invalidation logic, and no risk of
 balance drift.
+
+**The Ledger context does not convert currencies.** Conversion to a display
+currency (e.g., "show my USD account balance in BRL") is the responsibility
+of callers — the Reporting context uses `ExchangeRates` with an explicit rate
+type and date. The Ledger only returns native per-currency amounts (ADR-0014,
+ADR-0005).
 
 **Performance mitigation: Cached balance snapshots.**
 
@@ -300,7 +312,9 @@ authoritative table that caches the balance at a point in time.
 - Balance queries use the snapshot as a starting point and add postings after
   the snapshot date:
   ```
-  Balance(account, date) = snapshot.balance + SUM(postings after snapshot.as_of_date up to date)
+  Balance(account, currency, date) =
+    snapshot.balance[currency] + SUM(posting.amount WHERE currency_code = currency
+      AND date > snapshot.as_of_date AND date <= target_date)
   ```
 - Snapshots are refreshed periodically (e.g., end-of-day, end-of-month) or
   on demand.
@@ -429,8 +443,10 @@ Reversing Transaction (status: posted, source_type: system)
 **Void rules:**
 - The original transaction's status is set to `voided`. This is the only
   mutation permitted on a transaction.
-- A voided transaction is excluded from balance calculations (its postings are
-  effectively cancelled by the reversing transaction).
+- A voided transaction's postings **remain in balance calculations**. The
+  reversing transaction's equal-and-opposite postings net the combined effect
+  to zero. The `voided` status is a UI/audit flag — it does not filter postings
+  from the balance derivation query.
 - The reversing transaction carries a reference to the original for audit trail.
 - Both the original and the reversal remain in the ledger permanently.
 

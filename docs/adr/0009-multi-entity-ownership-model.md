@@ -351,7 +351,6 @@ Tax event in Entity B ("My LLC", country: IE, fiscal_residency_country_code: "PE
 erDiagram
     Entity ||--o{ Account : "owns"
     Entity ||--o{ Transaction : "owns"
-    Entity ||--o{ RuleGroup : "owns"
     Entity ||--o{ ImportBatch : "owns"
     Entity ||--o{ ReconciliationSession : "owns"
     Entity ||--o{ TaxRateSnapshot : "owns"

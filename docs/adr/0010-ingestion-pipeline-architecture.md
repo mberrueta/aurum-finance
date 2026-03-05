@@ -225,18 +225,19 @@ Every import operation is tracked through two entities:
 
 ```
 :uploading --> :parsing --> :parsed --> :previewing --> :committed
-                  |            |                           |
-                  v            v                           v
-              :parse_failed  :validation_failed       :commit_failed
-                                                          |
-                                                          v
-                                                      :partially_committed
+                  |            |             |               |
+                  v            v             v               v
+              :parse_failed  :validation_  :abandoned    :commit_failed
+                              failed                          |
+                                                              v
+                                                     :partially_committed
 ```
 
 - `:uploading` — file received, not yet parsed.
 - `:parsing` — format adapter is processing the file.
 - `:parsed` — all rows parsed; some may have errors.
 - `:previewing` — user is reviewing the preview.
+- `:abandoned` — user discarded the batch before committing; terminal state.
 - `:committed` — all approved rows written to the ledger.
 - `:commit_failed` — commit was attempted but failed entirely (rolled back).
 - `:partially_committed` — reserved for future partial-commit support; not
@@ -596,6 +597,28 @@ the same fingerprint, which is the core requirement for idempotency.
 - The preview UI should default to "accept all ready rows" to minimize
   friction for clean imports.
 
+### DeduplicationRecord Entity
+
+A `DeduplicationRecord` persists the deduplication fingerprint of every
+committed row so that future imports can detect duplicates efficiently.
+
+| Field | Description | Mutability |
+|-------|-------------|------------|
+| id | Primary key (UUID) | Immutable |
+| entity_id | Owning entity | Immutable |
+| account_id | Target account (deduplication is per-account) | Immutable |
+| dedup_fingerprint | SHA-256 fingerprint computed from the row (see section 4) | Immutable |
+| import_row_id | The ImportRow that produced this record | Immutable |
+| committed_transaction_id | The Transaction created for this row | Immutable |
+| inserted_at | Creation timestamp | Immutable |
+
+**Rules:**
+- One record is created per committed ImportRow.
+- Force-imported rows (user overrode duplicate flag) receive a counter-suffixed
+  fingerprint to avoid re-flagging on subsequent imports.
+- DeduplicationRecords are never deleted — they form a permanent deduplication
+  index for the account.
+
 ## Implementation Notes
 
 - All ingestion entities live under `AurumFinance.Ingestion` (ADR-0007).
@@ -609,6 +632,15 @@ the same fingerprint, which is the core requirement for idempotency.
   runs Stages 1-4 synchronously and returns an `ImportPreview`.
 - The commit function (e.g., `Ingestion.commit_import/2`) runs Stage 6 inside
   an `Ecto.Multi` or a database transaction.
+- **Milestone note — Classification dependency:** The Ingestion pipeline
+  depends on `Classification` (Tier 2) for preview and commit classification
+  (ADR-0007). Classification is fully built in M3, but the pipeline is built
+  in M2. In M2, `Classification.preview_classification/1` and
+  `Classification.classify_transaction/1` are implemented as **no-ops** (they
+  return empty results without error). The integration points and calling
+  conventions are wired from the start so that M3 activates classification
+  without pipeline changes — only the Classification context's internals are
+  filled in.
 - Deduplication fingerprints are stored in a `DeduplicationRecord` table
   (or as a column on ImportRow with an index) for efficient lookup.
 - Custom CSV column mappings should be stored as a separate entity

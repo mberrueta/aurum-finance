@@ -325,8 +325,9 @@ Existing tax snapshots are immutable regardless of fiscal residency changes.
 1. **Every instance has at least one entity.** Created during initial setup.
 2. **Entity names are unique** within the instance.
 3. **Entities cannot be deleted** — only deactivated via `is_active` flag.
-4. **One fiscal residency per entity** — enforced by a unique constraint on
-   `entity_id`.
+4. **One fiscal residency per entity** — fiscal residency fields
+   (`fiscal_residency_country_code`, `default_tax_rate_type`) are columns
+   directly on the Entity table; there is no separate fiscal residency record.
 5. **No user-entity relationship exists.** The operator owns all entities.
 
 ### Ingestion and Normalization

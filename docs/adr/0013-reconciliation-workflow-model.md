@@ -179,6 +179,26 @@ Reconciliation occurs within explicit sessions, usually statement-period scoped.
 | status | `open`, `balanced`, `closed`, `closed_with_exceptions` | Mutable |
 | notes | Optional operator notes | Mutable |
 
+#### ReconciliationAuditLog Entity
+
+Every reconciliation state transition and session event is recorded in an
+append-only audit log.
+
+| Field | Description | Mutability |
+|-------|-------------|------------|
+| id | Primary key (UUID) | Immutable |
+| entity_id | Owning entity (denormalized for query performance) | Immutable |
+| reconciliation_session_id | Parent session | Immutable |
+| posting_id | The posting whose state changed (null for session-level events) | Immutable |
+| from_state | Prior reconciliation state (`unreconciled`, `cleared`, `reconciled`, or null for session events) | Immutable |
+| to_state | New reconciliation state or session status | Immutable |
+| reason | Human-readable reason for the transition (e.g., `"correction_pending_review"`) | Immutable |
+| actor | Who triggered the transition: `"auto"` or `"user"` | Immutable |
+| occurred_at | Timestamp of the transition | Immutable |
+| inserted_at | Persistence timestamp | Immutable |
+
+The audit log is append-only. Entries are never modified or deleted.
+
 Session close rules:
 
 - `balanced`: computed and expected balances match and no critical discrepancies.
@@ -223,10 +243,17 @@ postings; it overlays workflow state and audit events.
 
 ## Implementation Notes
 
-- Reconciliation state should be stored on postings (or a posting-state table)
-  and rolled up to transactions for UI.
+- All reconciliation entities live under `AurumFinance.Reconciliation`
+  (ADR-0007).
+- The Reconciliation context owns: ReconciliationSession, MatchResult,
+  Discrepancy, ReconciliationAuditLog.
+- Reconciliation state must be stored in a **separate overlay table**
+  (e.g., `posting_reconciliation_states`) keyed by `posting_id`, never as a
+  column on the `postings` table. This preserves ADR-0014's prohibition on
+  workflow attributes on fact tables. The state is rolled up to transactions
+  for UI display.
 - Enforce accepted-match uniqueness constraints in the persistence model.
-- Record all transition events in append-only reconciliation audit logs.
+- Record all transition events in the append-only `ReconciliationAuditLog`.
 - Keep ingestion deduplication and reconciliation matching separate concerns:
   dedup prevents duplicate imports; reconciliation confirms ledger correctness
   against statements.
