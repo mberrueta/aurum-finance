@@ -4,6 +4,7 @@ This is a web application written using the Phoenix web framework.
 
 - `llms/constitution.md` is the baseline for all LLM agents used in this repository (Codex, Claude, Gemini, etc).
 - Agent/task-specific instructions may add detail but must remain consistent with `llms/constitution.md`.
+- Never run git write actions (add/commit/reset/checkout/restore/push/pull/merge/rebase/stash/tag).
 
 ## Project guidelines
 

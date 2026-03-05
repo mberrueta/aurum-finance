@@ -206,8 +206,8 @@ Group 2 — Account Origin
   Rule 2.3: account = "Broker A"        → tag = brokerage
 
 Group 3 — Investment Type
-  Rule 3.1: description matches /CEDEARs?/i → investment_type = CEDEAR
-  Rule 3.2: description matches /ON\s/i      → investment_type = Corporate Bond
+  Rule 3.1: description matches /ETF/i           → investment_type = ETF
+  Rule 3.2: description matches /Corporate Bond/i → investment_type = Corporate Bond
 ```
 
 A single transaction (e.g., "UBER EATS" charged to VISA Santander) would
@@ -297,40 +297,42 @@ Every posting must carry its **original currency and original amount** — immut
 
 #### FX rate types — multiple named series
 
-A single currency pair (e.g., ARS/USD or BRL/USD) has **N named rate types**, each with a distinct purpose. AurumFinance must support multiple simultaneous rate series per pair, scoped to a jurisdiction:
+A single currency pair has **N named rate types**, each with a distinct purpose.
+AurumFinance must support multiple simultaneous rate series per pair, scoped to a jurisdiction.
 
-| Rate type | Jurisdiction | Purpose | Source |
+e.g. a user paying taxes in Chile with investments in Peru:
+
+| Rate type (illustrative) | Jurisdiction | Purpose | Source |
 |---|---|---|---|
-| `ptax` | 🇧🇷 Brazil | Tax reporting — Receita Federal reference rate | Banco Central do Brasil |
-| `official_afip` | 🇦🇷 Argentina | Tax reporting — AFIP/ARCA legal rate | AFIP/ARCA published rates |
-| `mep` | 🇦🇷 Argentina | Market rate via AL30/GD30 bond arbitrage | Exchange / broker data |
-| `ccl` | 🇦🇷 Argentina | Contado con liquidación — offshore rate | Exchange / broker data |
-| `blue` | 🇦🇷 Argentina | Informal parallel market (reference only) | Informal trackers |
-| `irs_yearly` | 🇺🇸 USA | IRS yearly average rate for FBAR/FATCA reporting | IRS published tables |
-| `crypto` | any | USDT/fiat rate on exchanges (reference only) | Exchange APIs |
+| `official_tax` | any | Official tax authority rate for reporting | Central bank / tax authority |
+| `market` | any | Interbank or market rate | Exchange / broker data |
+| `parallel` | any | Parallel or informal market rate (reference only) | Informal trackers |
+| `crypto` | any | Crypto/stablecoin rate on exchanges (reference only) | Exchange APIs |
+
+e.g. `sii_official` (CLP/USD, Servicio de Impuestos Internos, Chile).
+e.g. `sunat_official` (PEN/USD, SUNAT, Peru).
 
 This list is illustrative — the data model must support **arbitrary named rate types per currency pair per jurisdiction**, not a hardcoded enum. New jurisdictions and rate types must be addable without schema changes.
 
 #### Tax-first rate — per fiscal residency
 
 Each user configures a **country of fiscal residency**. This drives which rate type
-is used as the default for tax-relevant event snapshots:
+is used as the default for tax-relevant event snapshots.
 
-| Fiscal residency | Default tax rate type | Authority |
-|---|---|---|
-| 🇧🇷 Brazil | `ptax` | Receita Federal |
-| 🇦🇷 Argentina | `official_afip` | AFIP / ARCA |
-| 🇺🇸 USA | `irs_yearly` | IRS |
-| other | user-configurable | — |
+The mapping from fiscal residency to default rate type is **user-configurable** —
+there is no hardcoded list of countries or rate types.
+
+e.g. a user paying taxes in Chile configures `sii_official` as their default tax rate type.
+e.g. a user paying taxes in Peru configures `sunat_official` as their default tax rate type.
 
 For any tax-relevant event (asset sale, dividend, income, FX gain), the system must:
 - Record the fiscal-residency rate at the time of the event.
 - Flag the event as tax-relevant with the rate snapshot used.
 - Never retroactively modify this snapshot even if the rate series is updated.
 
-**Fiscal residency ≠ where your accounts are.** A user living in Brazil with accounts
-in Argentina and the US has fiscal residency in Brazil — all tax snapshots default
-to PTAX, regardless of which country the account is in.
+**Fiscal residency ≠ where your accounts are.** A user paying taxes in Chile with
+investment accounts in Peru has fiscal residency in Chile — all tax snapshots default
+to the Chilean official rate, regardless of which country the account is in.
 
 This is non-negotiable for correct multi-jurisdiction tax tracking.
 
@@ -338,9 +340,9 @@ This is non-negotiable for correct multi-jurisdiction tax tracking.
 
 Users can choose which rate type to use as the **display currency base** for any report or portfolio view:
 
-- *"Show my net worth in USD MEP"*
-- *"Show my tax liability in USD AFIP"*
-- *"Show monthly expenses in ARS"*
+- *"Show my net worth at market rate"*
+- *"Show my tax liability at official tax rate"*
+- *"Show monthly expenses in my home currency"*
 
 The system converts on read using the selected rate type and date. The ledger stores originals only.
 
@@ -349,20 +351,20 @@ The system converts on read using the selected rate type and date. The ledger st
 Every cross-currency transaction must record:
 - Source amount + source currency (immutable)
 - Target amount + target currency (immutable)
-- Rate type used (`official_afip`, `mep`, `ccl`, etc.)
+- Rate type used (any user-defined rate type name, e.g. `official_tax`, `market`)
 - Rate value at time of transaction
 - Rate source and timestamp
 
 #### Real-world cases that must work without hacks
 
-- BRL ↔ USD at PTAX rate (Receita Federal tax events for a Brazil resident)
-- ARS ↔ USD at official AFIP rate (tax events for Argentina resident)
-- ARS ↔ USD at MEP or CCL rate (investment transactions)
-- USD positions in a US broker, viewed from a Brazil fiscal residency (PTAX conversion)
-- Multi-broker positions across BR/AR/US denominated in different currencies
+- CLP ↔ USD at official tax rate (tax events for a Chile-resident user)
+- PEN ↔ USD at market rate (investment transactions for a Peru account)
+- Positions in a foreign broker, viewed from the user's fiscal residency rate
+- Multi-broker positions across different countries in different currencies
 - Transfers between accounts in different countries and currencies
 - Portfolio valuation in any named rate type at any historical date
-- A single user with accounts in 3 countries and fiscal residency in a 4th
+- A single user with accounts in multiple countries and fiscal residency in another
+  (e.g. pays taxes in Chile, has investments in Peru and accounts in a third country)
 
 #### Reference
 
@@ -409,7 +411,7 @@ Based on historical averages and known commitments:
 
 **Tax awareness**
 - Track tax-relevant events (asset sales, dividends, interest, FX gains)
-- Estimate tax exposure using the fiscally-relevant rate (`official_afip`)
+- Estimate tax exposure using the user's configured fiscally-relevant rate type
 - Surface what to reserve for upcoming tax obligations
 
 **Anomaly alerts**

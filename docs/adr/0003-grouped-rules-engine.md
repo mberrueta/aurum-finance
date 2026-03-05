@@ -52,8 +52,8 @@ Group 2 — Account Origin
   Rule 2.3: account = "Broker A"        → tag = brokerage
 
 Group 3 — Investment Type
-  Rule 3.1: description matches /CEDEARs?/i → investment_type = CEDEAR
-  Rule 3.2: description matches /ON\s/i      → investment_type = Corporate Bond
+  Rule 3.1: description matches /ETF/i           → investment_type = ETF
+  Rule 3.2: description matches /Corporate Bond/i → investment_type = Corporate Bond
 ```
 
 A transaction "UBER EATS" charged to VISA Santander simultaneously matches
