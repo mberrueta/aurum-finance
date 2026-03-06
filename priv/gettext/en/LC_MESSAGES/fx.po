@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/fx_live.ex:11
+#: lib/aurum_finance_web/live/fx_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "FX Rates"

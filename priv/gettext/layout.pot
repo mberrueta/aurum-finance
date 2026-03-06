@@ -1,0 +1,123 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:43
+#, elixir-autogen, elixir-format
+msgid "app_name"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:46
+#, elixir-autogen, elixir-format
+msgid "app_tagline"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:80
+#, elixir-autogen, elixir-format
+msgid "breadcrumb_app"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:130
+#, elixir-autogen, elixir-format
+msgid "nav_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:83
+#: lib/aurum_finance_web/components/layouts.ex:129
+#, elixir-autogen, elixir-format
+msgid "nav_dashboard"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:138
+#, elixir-autogen, elixir-format
+msgid "nav_fx"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:134
+#, elixir-autogen, elixir-format
+msgid "nav_import"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:136
+#, elixir-autogen, elixir-format
+msgid "nav_reconciliation"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:139
+#, elixir-autogen, elixir-format
+msgid "nav_reports"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:135
+#, elixir-autogen, elixir-format
+msgid "nav_rules"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:140
+#, elixir-autogen, elixir-format
+msgid "nav_settings"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:132
+#, elixir-autogen, elixir-format
+msgid "nav_transactions"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:66
+#, elixir-autogen, elixir-format
+msgid "sidebar_snapshot_label"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:70
+#, elixir-autogen, elixir-format
+msgid "sidebar_snapshot_placeholder"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:94
+#, elixir-autogen, elixir-format
+msgid "topbar_currency_label"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:96
+#, elixir-autogen, elixir-format
+msgid "topbar_currency_placeholder"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:88
+#, elixir-autogen, elixir-format
+msgid "topbar_entity_label"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:90
+#, elixir-autogen, elixir-format
+msgid "topbar_entity_placeholder"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:100
+#, elixir-autogen, elixir-format
+msgid "topbar_rate_label"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:102
+#, elixir-autogen, elixir-format
+msgid "topbar_rate_placeholder"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:111
+#, elixir-autogen, elixir-format
+msgid "topbar_search_aria"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:110
+#, elixir-autogen, elixir-format
+msgid "topbar_search_placeholder"
+msgstr ""

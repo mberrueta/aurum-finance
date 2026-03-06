@@ -12,15 +12,11 @@ defmodule AurumFinanceWeb.Layouts do
   embed_templates "layouts/*"
 
   @doc """
-  Renders your app layout.
-
-  This function is typically invoked from every template,
-  and it often contains your application menu, sidebar,
-  or similar.
+  Renders the AurumFinance app shell: sidebar nav + topbar + content area.
 
   ## Examples
 
-      <Layouts.app flash={@flash}>
+      <Layouts.app flash={@flash} active_nav={:dashboard}>
         <h1>Content</h1>
       </Layouts.app>
 
@@ -31,45 +27,118 @@ defmodule AurumFinanceWeb.Layouts do
     default: nil,
     doc: "the current [scope](https://hexdocs.pm/phoenix/scopes.html)"
 
-  slot :inner_block, required: true
+  attr :active_nav, :atom, default: nil, doc: "active nav item id, e.g. :dashboard"
+  attr :page_title, :string, default: nil, doc: "current page title shown in the topbar"
 
   def app(assigns) do
     ~H"""
-    <header class="navbar px-4 sm:px-6 lg:px-8">
-      <div class="flex-1">
-        <a href="/" class="flex-1 flex w-fit items-center gap-2">
-          <img src={~p"/images/logo.png"} width="36" />
-          <span class="text-sm font-semibold">v{Application.spec(:phoenix, :vsn)}</span>
-        </a>
-      </div>
-      <div class="flex-none">
-        <ul class="flex flex-column px-1 space-x-4 items-center">
-          <li>
-            <a href="https://phoenixframework.org/" class="btn btn-ghost">Website</a>
-          </li>
-          <li>
-            <a href="https://github.com/phoenixframework/phoenix" class="btn btn-ghost">GitHub</a>
-          </li>
-          <li>
-            <.theme_toggle />
-          </li>
-          <li>
-            <a href="https://hexdocs.pm/phoenix/overview.html" class="btn btn-primary">
-              Get Started <span aria-hidden="true">&rarr;</span>
-            </a>
-          </li>
-        </ul>
-      </div>
-    </header>
+    <div class="au-app au-app-bg">
+      <%!-- Sidebar --%>
+      <aside class="au-sidebar">
+        <%!-- Brand --%>
+        <div class="flex items-center gap-[10px] px-[10px] pb-5 mb-1">
+          <div class="au-logo" aria-hidden="true"></div>
+          <div>
+            <div class="text-[15px] font-semibold tracking-[0.2px] text-white/90">
+              {dgettext("layout", "app_name")}
+            </div>
+            <div class="text-[12px] text-white/50 mt-[2px]">
+              {dgettext("layout", "app_tagline")}
+            </div>
+          </div>
+        </div>
 
-    <main class="px-4 py-20 sm:px-6 lg:px-8">
-      <div class="mx-auto max-w-2xl space-y-4">
-        {render_slot(@inner_block)}
-      </div>
-    </main>
+        <%!-- Nav --%>
+        <nav class="flex flex-col gap-[6px]">
+          <%= for {id, label, icon, path} <- nav_items() do %>
+            <.link
+              navigate={path}
+              class={["au-nav-item", @active_nav == id && "active"]}
+            >
+              <.icon name={icon} class="w-[18px] h-[18px] shrink-0 opacity-90" />
+              <span>{label}</span>
+            </.link>
+          <% end %>
+        </nav>
 
-    <.flash_group flash={@flash} />
+        <%!-- Snapshot section --%>
+        <div class="au-section-label mt-auto pt-4">
+          {dgettext("layout", "sidebar_snapshot_label")}
+        </div>
+        <div class="au-sidecard">
+          <div class="text-[12px] text-white/50 leading-relaxed">
+            {dgettext("layout", "sidebar_snapshot_placeholder")}
+          </div>
+        </div>
+      </aside>
+
+      <%!-- Main --%>
+      <div class="au-main">
+        <%!-- Topbar --%>
+        <header class="au-topbar">
+          <div class="flex items-center gap-2 min-w-0 text-[13px]">
+            <span class="text-white/50 shrink-0">{dgettext("layout", "breadcrumb_app")}</span>
+            <span class="text-white/30 shrink-0">/</span>
+            <span class="text-white/88 truncate font-medium">
+              {@page_title || dgettext("layout", "nav_dashboard")}
+            </span>
+          </div>
+          <div class="flex items-center gap-[10px]">
+            <div class="au-control">
+              <span>{dgettext("layout", "topbar_entity_label")}</span>
+              <span class="text-white/88 text-[13px]">
+                {dgettext("layout", "topbar_entity_placeholder")}
+              </span>
+            </div>
+            <div class="au-control">
+              <span>{dgettext("layout", "topbar_currency_label")}</span>
+              <span class="text-white/88 text-[13px] au-mono">
+                {dgettext("layout", "topbar_currency_placeholder")}
+              </span>
+            </div>
+            <div class="au-control">
+              <span>{dgettext("layout", "topbar_rate_label")}</span>
+              <span class="text-white/88 text-[13px] au-mono">
+                {dgettext("layout", "topbar_rate_placeholder")}
+              </span>
+            </div>
+            <label class="au-search">
+              <.icon name="hero-magnifying-glass-mini" class="w-4 h-4 text-white/50 shrink-0" />
+              <input
+                id="app-shell-search"
+                type="search"
+                placeholder={dgettext("layout", "topbar_search_placeholder")}
+                aria-label={dgettext("layout", "topbar_search_aria")}
+              />
+            </label>
+          </div>
+        </header>
+
+        <%!-- Content --%>
+        <main class="au-content">
+          <.flash_group flash={@flash} />
+          {@inner_content}
+        </main>
+      </div>
+    </div>
     """
+  end
+
+  defp nav_items do
+    [
+      {:dashboard, dgettext("layout", "nav_dashboard"), "hero-home-mini", ~p"/dashboard"},
+      {:accounts, dgettext("layout", "nav_accounts"), "hero-building-library-mini",
+       ~p"/accounts"},
+      {:transactions, dgettext("layout", "nav_transactions"), "hero-list-bullet-mini",
+       ~p"/transactions"},
+      {:import, dgettext("layout", "nav_import"), "hero-arrow-up-tray-mini", ~p"/import"},
+      {:rules, dgettext("layout", "nav_rules"), "hero-bolt-mini", ~p"/rules"},
+      {:reconciliation, dgettext("layout", "nav_reconciliation"), "hero-check-circle-mini",
+       ~p"/reconciliation"},
+      {:fx, dgettext("layout", "nav_fx"), "hero-globe-alt-mini", ~p"/fx"},
+      {:reports, dgettext("layout", "nav_reports"), "hero-chart-bar-mini", ~p"/reports"},
+      {:settings, dgettext("layout", "nav_settings"), "hero-cog-6-tooth-mini", ~p"/settings"}
+    ]
   end
 
   @doc """

@@ -1,0 +1,118 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:36
+#, elixir-autogen, elixir-format
+msgid "badge_in_progress"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:30
+#, elixir-autogen, elixir-format
+msgid "btn_new_session"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:77
+#, elixir-autogen, elixir-format
+msgid "col_amount"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:75
+#, elixir-autogen, elixir-format
+msgid "col_date"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "col_description"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "col_match"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "col_state"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:62
+#, elixir-autogen, elixir-format
+msgid "label_account"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:95
+#, elixir-autogen, elixir-format
+msgid "label_discrepancies"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:72
+#, elixir-autogen, elixir-format
+msgid "label_match_none"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:100
+#, elixir-autogen, elixir-format
+msgid "label_no_discrepancies"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "label_statement_lines"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:33
+#, elixir-autogen, elixir-format
+msgid "label_status"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:118
+#, elixir-autogen, elixir-format
+msgid "label_type"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:27
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:13
+#: lib/aurum_finance_web/live/reconciliation_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "section_detail"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reconciliation_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "section_sessions"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:91
+#, elixir-autogen, elixir-format
+msgid "status_cleared"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:90
+#, elixir-autogen, elixir-format
+msgid "status_reconciled"
+msgstr ""
+
+#: lib/aurum_finance_web/components/reconciliation_components.ex:92
+#, elixir-autogen, elixir-format
+msgid "status_unreconciled"
+msgstr ""

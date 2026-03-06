@@ -1,0 +1,9 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/reports_live.ex:11
+#: lib/aurum_finance_web/live/reports_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "Reports"

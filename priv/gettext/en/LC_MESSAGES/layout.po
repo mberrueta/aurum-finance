@@ -1,0 +1,114 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/components/layouts.ex:43
+#, elixir-autogen, elixir-format
+msgid "app_name"
+msgstr "AurumFinance"
+
+#: lib/aurum_finance_web/components/layouts.ex:46
+#, elixir-autogen, elixir-format
+msgid "app_tagline"
+msgstr "Ledger-first · Multi-entity · Multi-currency"
+
+#: lib/aurum_finance_web/components/layouts.ex:80
+#, elixir-autogen, elixir-format
+msgid "breadcrumb_app"
+msgstr "App"
+
+#: lib/aurum_finance_web/components/layouts.ex:130
+#, elixir-autogen, elixir-format
+msgid "nav_accounts"
+msgstr "Accounts"
+
+#: lib/aurum_finance_web/components/layouts.ex:83
+#: lib/aurum_finance_web/components/layouts.ex:129
+#, elixir-autogen, elixir-format
+msgid "nav_dashboard"
+msgstr "Dashboard"
+
+#: lib/aurum_finance_web/components/layouts.ex:138
+#, elixir-autogen, elixir-format
+msgid "nav_fx"
+msgstr "FX Rates"
+
+#: lib/aurum_finance_web/components/layouts.ex:134
+#, elixir-autogen, elixir-format
+msgid "nav_import"
+msgstr "Import"
+
+#: lib/aurum_finance_web/components/layouts.ex:136
+#, elixir-autogen, elixir-format
+msgid "nav_reconciliation"
+msgstr "Reconciliation"
+
+#: lib/aurum_finance_web/components/layouts.ex:139
+#, elixir-autogen, elixir-format
+msgid "nav_reports"
+msgstr "Reports"
+
+#: lib/aurum_finance_web/components/layouts.ex:135
+#, elixir-autogen, elixir-format
+msgid "nav_rules"
+msgstr "Rules"
+
+#: lib/aurum_finance_web/components/layouts.ex:140
+#, elixir-autogen, elixir-format
+msgid "nav_settings"
+msgstr "Settings"
+
+#: lib/aurum_finance_web/components/layouts.ex:132
+#, elixir-autogen, elixir-format
+msgid "nav_transactions"
+msgstr "Transactions"
+
+#: lib/aurum_finance_web/components/layouts.ex:66
+#, elixir-autogen, elixir-format
+msgid "sidebar_snapshot_label"
+msgstr "Snapshot"
+
+#: lib/aurum_finance_web/components/layouts.ex:70
+#, elixir-autogen, elixir-format
+msgid "sidebar_snapshot_placeholder"
+msgstr "Available after first import"
+
+#: lib/aurum_finance_web/components/layouts.ex:94
+#, elixir-autogen, elixir-format
+msgid "topbar_currency_label"
+msgstr "Currency"
+
+#: lib/aurum_finance_web/components/layouts.ex:96
+#, elixir-autogen, elixir-format
+msgid "topbar_currency_placeholder"
+msgstr "USD"
+
+#: lib/aurum_finance_web/components/layouts.ex:88
+#, elixir-autogen, elixir-format
+msgid "topbar_entity_label"
+msgstr "Entity"
+
+#: lib/aurum_finance_web/components/layouts.ex:90
+#, elixir-autogen, elixir-format
+msgid "topbar_entity_placeholder"
+msgstr "—"
+
+#: lib/aurum_finance_web/components/layouts.ex:100
+#, elixir-autogen, elixir-format
+msgid "topbar_rate_label"
+msgstr "Rate"
+
+#: lib/aurum_finance_web/components/layouts.ex:102
+#, elixir-autogen, elixir-format
+msgid "topbar_rate_placeholder"
+msgstr "market"
+
+#: lib/aurum_finance_web/components/layouts.ex:111
+#, elixir-autogen, elixir-format
+msgid "topbar_search_aria"
+msgstr "Search"
+
+#: lib/aurum_finance_web/components/layouts.ex:110
+#, elixir-autogen, elixir-format
+msgid "topbar_search_placeholder"
+msgstr "Search accounts, transactions, rules..."

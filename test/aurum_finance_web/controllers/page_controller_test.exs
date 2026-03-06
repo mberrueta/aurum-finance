@@ -1,8 +1,9 @@
-defmodule AurumFinanceWeb.PageControllerTest do
+defmodule AurumFinanceWeb.DashboardRouteTest do
   use AurumFinanceWeb.ConnCase
+  import Phoenix.LiveViewTest
 
-  test "GET /", %{conn: conn} do
-    conn = get(conn, ~p"/")
-    assert html_response(conn, 200) =~ "Peace of mind from prototype to production"
+  test "GET / serves dashboard", %{conn: conn} do
+    {:ok, _view, html} = live(conn, ~p"/")
+    assert html =~ "Dashboard"
   end
 end

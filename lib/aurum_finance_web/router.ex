@@ -17,7 +17,18 @@ defmodule AurumFinanceWeb.Router do
   scope "/", AurumFinanceWeb do
     pipe_through :browser
 
-    get "/", PageController, :home
+    live_session :app, layout: {AurumFinanceWeb.Layouts, :app} do
+      live "/", DashboardLive, :index
+      live "/dashboard", DashboardLive, :index
+      live "/accounts", AccountsLive, :index
+      live "/transactions", TransactionsLive, :index
+      live "/import", ImportLive, :index
+      live "/rules", RulesLive, :index
+      live "/reconciliation", ReconciliationLive, :index
+      live "/fx", FxLive, :index
+      live "/reports", ReportsLive, :index
+      live "/settings", SettingsLive, :index
+    end
   end
 
   # Other scopes may use custom stacks.

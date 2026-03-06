@@ -1,0 +1,39 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/components/accounts_components.ex:34
+#, elixir-autogen, elixir-format
+msgid "label_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:54
+#, elixir-autogen, elixir-format
+msgid "label_balance_note"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "label_currencies"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "label_recent_activity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr "Assets, liabilities, income, and expense accounts"
+
+#: lib/aurum_finance_web/live/accounts_live.ex:12
+#: lib/aurum_finance_web/live/accounts_live.ex:19
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "Accounts"
+
+#: lib/aurum_finance_web/live/accounts_live.ex:27
+#, elixir-autogen, elixir-format
+msgid "section_accounts"
+msgstr ""
