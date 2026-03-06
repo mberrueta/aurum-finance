@@ -267,13 +267,13 @@ entities on the instance.
 
 | Domain Object | Description | Key Fields |
 |---------------|-------------|------------|
-| **Entity** | A legal/fiscal ownership unit; the tenant boundary for all financial data. | `name`, `slug`, `type` (personal/company/trust/other), `country_code`, `tax_id`, `default_currency_code`, `fiscal_residency_country_code` (optional, defaults to `country_code`), `default_tax_rate_type` (optional), `metadata` (JSON), `is_active` |
+| **Entity** | A legal/fiscal ownership unit; the tenant boundary for all financial data. | `name`, `type` (individual/legal_entity/trust/other), `country_code`, `tax_identifier` (optional), `fiscal_residency_country_code` (write-default from `country_code` when omitted), `default_tax_rate_type` (optional), `notes` (optional), `archived_at` (soft archive) |
 
 #### Relationships
 
 - Entity 1--* Account (entity-scoped, via Ledger)
 - Entity 1--* Transaction (entity-scoped, via Ledger)
-- Entity attributes (entity_name, entity_slug, entity_type, entity_country_code) are referenceable as Condition fields in Classification (no foreign key; resolved at evaluation time)
+- Entity attributes (entity_name, entity_type, entity_country_code) are referenceable as Condition fields in Classification (no foreign key; resolved at evaluation time)
 - Entity 1--* ImportBatch (entity-scoped, via Ingestion)
 - Entity 1--* ReconciliationSession (entity-scoped, via Reconciliation)
 - Entity 1--* TaxRateSnapshot (entity-scoped, via ExchangeRates)
@@ -324,11 +324,14 @@ Existing tax snapshots are immutable regardless of fiscal residency changes.
 
 1. **Every instance has at least one entity.** Created during initial setup.
 2. **Entity names are unique** within the instance.
-3. **Entities cannot be deleted** — only deactivated via `is_active` flag.
+3. **Entities cannot be deleted** — only archived via `archived_at`.
 4. **One fiscal residency per entity** — fiscal residency fields
    (`fiscal_residency_country_code`, `default_tax_rate_type`) are columns
    directly on the Entity table; there is no separate fiscal residency record.
 5. **No user-entity relationship exists.** The operator owns all entities.
+6. **Entity lifecycle changes are audited** via generic `audit_events` entries
+   with `entity_type`, `entity_id`, `action`, `actor` (string),
+   `channel`, `before`, `after`, and `occurred_at`.
 
 ### Ingestion and Normalization
 

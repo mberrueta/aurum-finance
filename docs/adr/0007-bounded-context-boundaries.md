@@ -170,7 +170,7 @@ mechanics — it operates on transactions regardless of how they were created.
 #### `AurumFinance.Entities` (Tier 0)
 
 **Responsibility:** Multi-entity ownership model. An entity represents a
-legal/fiscal ownership unit (person, company, trust, household). Entities are
+legal/fiscal ownership unit (individual, legal entity, trust, other). Entities are
 the tenant boundary for all financial data.
 
 There is no user concept — authentication is a root password check at the edge
@@ -192,7 +192,8 @@ create_entity(attrs) -> {:ok, Entity} | {:error, changeset}
 list_entities() -> [Entity]
 get_entity!(id) -> Entity
 update_entity(entity, attrs) -> {:ok, Entity} | {:error, changeset}
-deactivate_entity(entity) -> {:ok, Entity}
+archive_entity(entity) -> {:ok, Entity}
+unarchive_entity(entity) -> {:ok, Entity}
 effective_fiscal_residency_country(entity) -> country_code  # fiscal_residency_country_code ?? country_code
 ```
 

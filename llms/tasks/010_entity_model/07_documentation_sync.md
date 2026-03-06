@@ -1,7 +1,7 @@
 # Task 07: Documentation and ADR/README Sync
 
 ## Status
-- **Status**: ⏳ PENDING
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 06
 - **Blocks**: None
@@ -16,27 +16,27 @@ Use `llms/agents/docs_feature_documentation_author.md` (`name: docs-feature-docu
 Update all relevant docs and ADR references so terminology, model semantics, and behavior remain in sync with the delivered implementation.
 
 ## Inputs Required
-- [ ] `llms/tasks/010_entity_model/plan.md`
-- [ ] Tasks 01-06 outputs
-- [ ] `README.md`
-- [ ] `docs/domain-model.md`
-- [ ] `docs/architecture.md`
-- [ ] Applicable ADRs (including `docs/adr/0009-multi-entity-ownership-model.md`)
+- [x] `llms/tasks/010_entity_model/plan.md`
+- [x] Tasks 01-06 outputs
+- [x] `README.md`
+- [x] `docs/domain-model.md`
+- [x] `docs/architecture.md`
+- [x] Applicable ADRs (including `docs/adr/0009-multi-entity-ownership-model.md`)
 
 ## Expected Outputs
-- [ ] Documentation updates reflecting canonical terms:
+- [x] Documentation updates reflecting canonical terms:
   - `:individual`, `:legal_entity`, `:trust`, `:other`
   - `tax_identifier`
   - `archived_at` archive semantics
   - generic `audit_events` model with `actor` as string (single-user rationale documented)
-- [ ] Removal/replacement of stale terms (`person/company`, `tax_id`, `is_active` archive language where obsolete)
-- [ ] Sync note in task output confirming updated files
+- [x] Removal/replacement of stale terms (`person/company`, `tax_id`, `is_active` archive language where obsolete)
+- [x] Sync note in task output confirming updated files
 
 ## Acceptance Criteria
-- [ ] README/docs/ADRs are consistent with actual implementation and plan decisions
-- [ ] Ownership boundary is explicitly documented (entity-scoped accounts/holdings)
-- [ ] Archive and audit semantics are consistent everywhere
-- [ ] No contradictory terminology remains in touched docs
+- [x] README/docs/ADRs are consistent with actual implementation and plan decisions
+- [x] Ownership boundary is explicitly documented (entity-scoped accounts/holdings)
+- [x] Archive and audit semantics are consistent everywhere
+- [x] No contradictory terminology remains in touched docs
 
 ## Technical Notes
 ### Relevant Code Locations
@@ -68,34 +68,42 @@ Update all relevant docs and ADR references so terminology, model semantics, and
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Documentation synchronized with Issue #10 implementation and plan decisions.
 
 ### Work Performed
-- 
+- Updated Entity terminology to canonical enum values (`individual`, `legal_entity`, `trust`, `other`).
+- Replaced `tax_id` references with `tax_identifier` in touched documentation.
+- Replaced entity deactivation/`is_active` archive language with `archived_at` soft-archive semantics.
+- Added/confirmed generic `audit_events` language with string `actor` and canonical event shape.
+- Updated Entities API naming in ADR-0007 (`archive_entity` / `unarchive_entity`).
 
 ### Outputs Created
-- 
+- `README.md`
+- `docs/domain-model.md`
+- `docs/adr/0007-bounded-context-boundaries.md`
+- `docs/adr/0009-multi-entity-ownership-model.md`
+- `docs/adr/0011-rules-engine-data-model.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Keep documentation edits scoped to Issue #10 concepts | Avoid unrelated scope expansion while ensuring consistency for implemented model |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Keep `actor` documented as string in audit model | Structured actor map | Single-user architecture does not benefit from actor-id complexity now |
 
 ### Blockers Encountered
-- 
+- None.
 
 ### Questions for Human
-1. 
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

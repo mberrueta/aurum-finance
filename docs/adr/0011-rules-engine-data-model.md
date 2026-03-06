@@ -173,7 +173,7 @@ Conditions can reference these transaction and posting fields:
 | `account_type` | Account | string | Type of the posting's target account |
 | `entity_name` | Entity | string | Name of the owning entity |
 | `entity_slug` | Entity | string | Slug of the owning entity |
-| `entity_type` | Entity | string | Type of the owning entity (personal/company/trust/other) |
+| `entity_type` | Entity | string | Type of the owning entity (individual/legal_entity/trust/other) |
 | `entity_country_code` | Entity | string | Country code of the owning entity |
 | `institution_name` | Account | string | Institution name of the posting's target account |
 

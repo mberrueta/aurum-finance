@@ -5,7 +5,7 @@
 - **Created**: 2026-03-06
 - **Updated**: 2026-03-06
 - **Status**: PLANNED
-- **Current Task**: 07 (documentation sync)
+- **Current Task**: Completed
 
 ## Overview
 Issue #10 establishes the multi-entity ownership foundation for M1. In AurumFinance, **Entity is the tenant/ownership boundary** for financial data. This plan delivers the entity model, LiveView CRUD (including archive), and a **generic audit_events** foundation so every entity change is traceable (who, when, old/new values) from day one.
@@ -202,7 +202,7 @@ Actor format decision (single-user rationale):
 | 05 | Test Coverage | ✅ COMPLETED | [ ] | Tasks 02, 03 |
 | 06 | Security/Architecture Review + Handoff | ✅ COMPLETED | [ ] | Task 05 |
 | 06.b | Audit Masking for tax_identifier | ✅ COMPLETED | [ ] | Task 06 |
-| 07 | Documentation and ADR/README Sync | ⏳ PENDING | [ ] | Task 06.b |
+| 07 | Documentation and ADR/README Sync | ✅ COMPLETED | [ ] | Task 06.b |
 
 ## Schema and Audit Assumptions
 1. `entities.id` remains UUID aligned with project conventions.
