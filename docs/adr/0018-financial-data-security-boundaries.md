@@ -87,10 +87,12 @@ AI/MCP access is constrained by policy:
 ### 5. Audit and Evidence Requirements
 
 Sensitive access paths should produce audit records including:
-- actor/channel (`web`, `mcp`, `ai_assistant`),
+- actor (string label, e.g. `"system"`, `"person"`, `"scheduler"`) and channel (`web`, `mcp`, `ai_assistant`),
 - requested scope (entity/date/data class),
 - purpose/action type,
 - timestamp and outcome.
+
+Current single-user rationale: actor is stored as a simple string instead of a structured actor-id map.
 
 Audit records are metadata; they do not alter financial facts.
 

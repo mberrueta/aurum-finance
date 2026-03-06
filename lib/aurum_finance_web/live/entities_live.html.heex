@@ -1,0 +1,245 @@
+<div id="entities-page">
+  <.page_header title={dgettext("entities", "page_title")}>
+    <:subtitle>
+      {dgettext("entities", "page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <button id="new-entity-btn" type="button" class="au-btn" phx-click="new_entity">
+        {dgettext("entities", "btn_new_entity")}
+      </button>
+      <button
+        id="toggle-archived-btn"
+        type="button"
+        class={["au-btn", @show_archived && "au-btn-primary"]}
+        phx-click="toggle_archived"
+      >
+        {if(
+          @show_archived,
+          do: dgettext("entities", "btn_hide_archived"),
+          else: dgettext("entities", "btn_show_archived")
+        )}
+      </button>
+    </:actions>
+  </.page_header>
+
+  <div id="entities-ownership-boundary" class="mb-[14px]">
+    <.info_callout title={dgettext("entities", "callout_what_is_title")} tone={:info}>
+      <p>{dgettext("entities", "callout_what_is_body")}</p>
+      <ul class="list-disc pl-5 space-y-1 mt-2">
+        <li>{dgettext("entities", "callout_what_is_item_1")}</li>
+        <li>{dgettext("entities", "callout_what_is_item_2")}</li>
+        <li>{dgettext("entities", "callout_what_is_item_3")}</li>
+      </ul>
+    </.info_callout>
+  </div>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-[14px]">
+    <.au_card>
+      <:header>
+        <span>{dgettext("entities", "section_entities")}</span>
+        <.badge variant={:purple}>{length(@entities)}</.badge>
+      </:header>
+
+      <div id="entities-list" class="au-list">
+        <div :if={@entities == []} class="au-empty" id="entities-empty-state">
+          {dgettext("entities", "empty_state")}
+        </div>
+
+        <div :for={entity <- @entities} id={"entity-#{entity.id}"} class="au-item">
+          <div>
+            <div class="flex items-center gap-[8px]">
+              <div class="text-[13px] text-white/92">{entity.name}</div>
+              <.entity_type_badge type={entity.type} />
+              <.badge :if={entity.archived_at} variant={:warn}>
+                {dgettext("entities", "badge_archived")}
+              </.badge>
+            </div>
+            <div class="text-[12px] text-white/68 mt-[2px]">
+              {entity.country_code}
+              <span :if={entity.fiscal_residency_country_code}>
+                &nbsp;•&nbsp;{dgettext("entities", "label_fiscal")}: {entity.fiscal_residency_country_code}
+              </span>
+              <span :if={entity.default_tax_rate_type}>
+                &nbsp;•&nbsp;{entity.default_tax_rate_type}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-[8px]">
+            <button
+              id={"edit-entity-#{entity.id}"}
+              type="button"
+              class="au-btn"
+              phx-click="edit_entity"
+              phx-value-id={entity.id}
+            >
+              {dgettext("entities", "btn_edit")}
+            </button>
+            <button
+              :if={is_nil(entity.archived_at)}
+              id={"archive-entity-#{entity.id}"}
+              type="button"
+              class="au-btn"
+              phx-click="archive_entity"
+              phx-value-id={entity.id}
+            >
+              {dgettext("entities", "btn_archive")}
+            </button>
+            <button
+              :if={not is_nil(entity.archived_at)}
+              id={"unarchive-entity-#{entity.id}"}
+              type="button"
+              class="au-btn"
+              phx-click="unarchive_entity"
+              phx-value-id={entity.id}
+            >
+              {dgettext("entities", "btn_unarchive")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </.au_card>
+
+    <.au_card>
+      <:header>
+        <span>
+          {if(
+            @editing_entity,
+            do: dgettext("entities", "form_title_edit"),
+            else: dgettext("entities", "form_title_create")
+          )}
+        </span>
+      </:header>
+
+      <.form
+        id="entity-form"
+        for={@form}
+        phx-change="validate"
+        phx-submit="save"
+        class="space-y-[10px]"
+      >
+        <.input
+          field={@form[:name]}
+          type="text"
+          label={dgettext("entities", "field_name")}
+          required
+        />
+
+        <.info_label
+          for={@form[:type].id}
+          text={dgettext("entities", "field_type")}
+          tooltip={dgettext("entities", "tooltip_field_type")}
+        />
+        <.input
+          field={@form[:type]}
+          type="select"
+          options={Entity.type_options()}
+          required
+        />
+
+        <.info_label
+          for={@form[:tax_identifier].id}
+          text={dgettext("entities", "field_tax_identifier")}
+          tooltip={dgettext("entities", "tooltip_field_tax_identifier")}
+        />
+        <.input
+          field={@form[:tax_identifier]}
+          type="text"
+        />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
+          <div>
+            <.info_label
+              for={@form[:country_code].id}
+              text={dgettext("entities", "field_country_code")}
+              tooltip={dgettext("entities", "tooltip_field_country_code")}
+            />
+            <.input
+              field={@form[:country_code]}
+              type="select"
+              options={Entity.country_options()}
+              prompt=""
+              required
+            />
+          </div>
+          <div>
+            <.info_label
+              for={@form[:fiscal_residency_country_code].id}
+              text={dgettext("entities", "field_fiscal_residency_country_code")}
+              tooltip={dgettext("entities", "tooltip_field_fiscal_residency_country_code")}
+            />
+            <.input
+              field={@form[:fiscal_residency_country_code]}
+              type="select"
+              options={Entity.country_options()}
+              prompt=""
+            />
+          </div>
+        </div>
+
+        <.info_label
+          for={@form[:default_tax_rate_type].id}
+          text={dgettext("entities", "field_default_tax_rate_type")}
+          tooltip={dgettext("entities", "tooltip_field_default_tax_rate_type")}
+        />
+        <.input
+          field={@form[:default_tax_rate_type]}
+          type="select"
+          options={Entity.default_tax_rate_type_options(effective_tax_country_code(@form))}
+          prompt=""
+        />
+        <p class="text-[11px] text-white/60 -mt-1 mb-2">
+          {dgettext("entities", "hint_default_tax_rate_type_derived")}
+        </p>
+
+        <.input field={@form[:notes]} type="textarea" label={dgettext("entities", "field_notes")} />
+
+        <div class="flex items-center justify-end gap-[8px] pt-[6px]">
+          <button id="cancel-entity-btn" type="button" class="au-btn" phx-click="new_entity">
+            {dgettext("entities", "btn_clear")}
+          </button>
+          <button id="save-entity-btn" type="submit" class="au-btn au-btn-primary">
+            {if(
+              @editing_entity,
+              do: dgettext("entities", "btn_save_changes"),
+              else: dgettext("entities", "btn_create_entity")
+            )}
+          </button>
+        </div>
+      </.form>
+    </.au_card>
+  </div>
+
+  <div id="entities-guidance">
+    <.au_card class="mt-[14px]">
+      <:header>
+        <span>{dgettext("entities", "section_guidance")}</span>
+      </:header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]">
+        <.info_callout title={dgettext("entities", "callout_how_use_title")} tone={:info}>
+          <ul class="list-disc pl-5 space-y-1">
+            <li>{dgettext("entities", "callout_how_use_item_1")}</li>
+            <li>{dgettext("entities", "callout_how_use_item_2")}</li>
+            <li>{dgettext("entities", "callout_how_use_item_3")}</li>
+          </ul>
+        </.info_callout>
+
+        <div class="space-y-[10px]">
+          <.info_callout title={dgettext("entities", "callout_warning_title")} tone={:warn}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("entities", "callout_warning_item_1")}</li>
+              <li>{dgettext("entities", "callout_warning_item_2")}</li>
+            </ul>
+          </.info_callout>
+          <.info_callout title={dgettext("entities", "callout_tips_title")} tone={:tip}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("entities", "callout_tips_item_1")}</li>
+              <li>{dgettext("entities", "callout_tips_item_2")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+      </div>
+    </.au_card>
+  </div>
+</div>

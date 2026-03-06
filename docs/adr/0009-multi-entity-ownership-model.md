@@ -85,28 +85,25 @@ access to all entities on the instance.
 |---|---|---|---|
 | id | Primary key (UUID) | Yes | Immutable |
 | name | Display name (e.g., "Personal", "My LLC") | Yes | Mutable |
-| slug | URL-friendly identifier, unique per instance | Yes | Mutable |
-| type | `:personal`, `:company`, `:trust`, `:other` | Yes | Mutable |
+| type | `:individual`, `:legal_entity`, `:trust`, `:other` | Yes | Mutable |
 | country_code | Country of incorporation/registration (ISO 3166-1 alpha-2) | Yes | Mutable |
-| tax_id | Primary tax identifier for this entity (free string — format is country+type-specific) | No | Mutable |
-| default_currency_code | Default currency for new accounts in this entity | Yes | Mutable |
-| fiscal_residency_country_code | Country where this entity files its primary tax return. When null, defaults to `country_code`. | No | Mutable |
-| default_tax_rate_type | Default rate type for tax-relevant FX snapshots (e.g., `"sii_official"`). When null, tax snapshots require an explicit rate type. | No | Mutable |
-| description | Optional free-text description | No | Mutable |
-| metadata | JSON map for extensible fields (address, phone, email, secondary tax IDs, etc.) | No | Mutable |
-| is_active | Soft-active flag; inactive entities are hidden from the UI but data is preserved | Yes | Mutable |
+| tax_identifier | Primary tax identifier for this entity (free string — format is country+type-specific) | No | Mutable |
+| fiscal_residency_country_code | Country where this entity files its primary tax return. When omitted at write time, defaults to `country_code`. | No | Mutable |
+| default_tax_rate_type | Default rate type for tax-relevant FX snapshots (e.g., `"sii_official"`). | No | Mutable |
+| notes | Optional free-text notes | No | Mutable |
+| archived_at | Soft-archive timestamp. `NULL` means active. | No | Mutable |
 | inserted_at | Creation timestamp | — | Immutable |
 | updated_at | Last modification timestamp | — | Auto |
 
 **On `type`:**
 The entity type distinguishes between legal person categories, which affects how
-`tax_id` is interpreted:
-- `:personal` — natural person (e.g., individual; tax ID format varies by country)
-- `:company` — incorporated legal entity (e.g., LLC, S.A., Ltd; company registration number)
+`tax_identifier` is interpreted:
+- `:individual` — natural person (tax ID format varies by country)
+- `:legal_entity` — incorporated legal entity (e.g., LLC, S.A., Ltd; company registration number)
 - `:trust` — trust or estate
 - `:other` — any other ownership structure
 
-The system stores `tax_id` as a free string — no format validation is performed.
+The system stores `tax_identifier` as a free string — no format validation is performed.
 The `country_code` + `type` combination tells the operator (and future features)
 how to interpret the tax ID.
 
@@ -116,16 +113,11 @@ from `country_code` (country of incorporation) because these often differ:
 - A company incorporated in Ireland but paying taxes in Peru → `country_code: "IE"`, `fiscal_residency_country_code: "PE"`
 - A personal entity where both are the same → `fiscal_residency_country_code` left null; system resolves to `country_code`
 
-**On `metadata`:**
-A JSON map for fields that are not queried by the system: contact information
-(address, phone, email), secondary tax registration numbers, notes. No schema
-validation — the operator stores what is useful to them.
-
 **Rules:**
 - Every instance has at least one entity. The first entity is created during
   initial setup (or seeded).
 - Entity names are unique within an instance (enforced at the database level).
-- Deleting an entity is not supported — entities can be deactivated. This
+- Deleting an entity is not supported — entities can be archived. This
   prevents orphaned references from other contexts.
 - An entity's ID is a UUID, consistent with all other primary keys in the system.
 - The effective fiscal residency country is: `fiscal_residency_country_code ?? country_code`.
@@ -358,16 +350,13 @@ erDiagram
     Entity {
         uuid id PK
         string name
-        string slug
-        enum type "personal|company|trust|other"
+        enum type "individual|legal_entity|trust|other"
         string country_code "ISO 3166-1 alpha-2, required"
-        string tax_id "optional free string"
-        string default_currency_code
+        string tax_identifier "optional free string"
         string fiscal_residency_country_code "optional; defaults to country_code"
         string default_tax_rate_type "optional free string"
-        string description
-        map metadata "JSON — address, phone, email, etc."
-        boolean is_active
+        string notes "optional"
+        timestamp archived_at "NULL means active"
         timestamp inserted_at
         timestamp updated_at
     }
@@ -505,9 +494,7 @@ and self-contained. The cross-entity relationship is metadata, not structure.
 - `fiscal_residency_country_code` and `default_tax_rate_type` are nullable
   columns on the entities table. Application logic resolves effective fiscal
   residency as `fiscal_residency_country_code ?? country_code`.
-- `metadata` is stored as a JSONB column (PostgreSQL). No schema validation at
-  the database level; validation (if any) is at the application layer.
-- `tax_id` is a nullable VARCHAR. No format validation — stored as entered.
+- `tax_identifier` is a nullable VARCHAR. No format validation — stored as entered.
 - Entity selection in the UI is a session-level concept — stored in the LiveView
   socket assigns or a signed session cookie. It is not a database-level filter.
 - The Entities context API is intentionally small. Its primary role is to define

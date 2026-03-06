@@ -17,10 +17,15 @@ msgstr "Ledger-first · Multi-entity · Multi-currency"
 msgid "breadcrumb_app"
 msgstr "App"
 
-#: lib/aurum_finance_web/components/layouts.ex:138
+#: lib/aurum_finance_web/components/layouts.ex:139
 #, elixir-autogen, elixir-format
 msgid "nav_accounts"
 msgstr "Accounts"
+
+#: lib/aurum_finance_web/components/layouts.ex:138
+#, elixir-autogen, elixir-format
+msgid "nav_entities"
+msgstr "Entities"
 
 #: lib/aurum_finance_web/components/layouts.ex:83
 #: lib/aurum_finance_web/components/layouts.ex:137
@@ -28,32 +33,32 @@ msgstr "Accounts"
 msgid "nav_dashboard"
 msgstr "Dashboard"
 
-#: lib/aurum_finance_web/components/layouts.ex:146
+#: lib/aurum_finance_web/components/layouts.ex:147
 #, elixir-autogen, elixir-format
 msgid "nav_fx"
 msgstr "FX Rates"
 
-#: lib/aurum_finance_web/components/layouts.ex:142
+#: lib/aurum_finance_web/components/layouts.ex:143
 #, elixir-autogen, elixir-format
 msgid "nav_import"
 msgstr "Import"
 
-#: lib/aurum_finance_web/components/layouts.ex:144
+#: lib/aurum_finance_web/components/layouts.ex:145
 #, elixir-autogen, elixir-format
 msgid "nav_reconciliation"
 msgstr "Reconciliation"
 
-#: lib/aurum_finance_web/components/layouts.ex:147
+#: lib/aurum_finance_web/components/layouts.ex:148
 #, elixir-autogen, elixir-format
 msgid "nav_reports"
 msgstr "Reports"
 
-#: lib/aurum_finance_web/components/layouts.ex:143
+#: lib/aurum_finance_web/components/layouts.ex:144
 #, elixir-autogen, elixir-format
 msgid "nav_rules"
 msgstr "Rules"
 
-#: lib/aurum_finance_web/components/layouts.ex:148
+#: lib/aurum_finance_web/components/layouts.ex:149
 #, elixir-autogen, elixir-format
 msgid "nav_settings"
 msgstr "Settings"
@@ -63,7 +68,7 @@ msgstr "Settings"
 msgid "nav_logout"
 msgstr "Logout"
 
-#: lib/aurum_finance_web/components/layouts.ex:140
+#: lib/aurum_finance_web/components/layouts.ex:141
 #, elixir-autogen, elixir-format
 msgid "nav_transactions"
 msgstr "Transactions"

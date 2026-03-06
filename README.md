@@ -308,7 +308,7 @@ AurumFinance borrows lessons, not UI or product direction.
 | Multi-currency | Supported | Strong support | ❌ | ✅ First-class with named FX series per pair |
 | Multi-jurisdiction tax posture | ❌ | ❌ | ❌ | ✅ Fiscal-residency aware defaults and tax behavior |
 | Tax FX snapshots | ❌ | ❌ | ❌ | ✅ Immutable tax-rate snapshot at event time |
-| Multi-entity support | Limited | Separate books | Limited | ✅ Planned first-class entities (person/family/company/trust) |
+| Multi-entity support | Limited | Separate books | Limited | ✅ First-class entities (individual/legal_entity/trust/other) |
 | AI/MCP direction | ❌ | ❌ | ❌ | ✅ Optional final phase with scoped, privacy-safe access |
 
 ---
