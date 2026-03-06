@@ -14,10 +14,29 @@ defmodule AurumFinanceWeb.Router do
     plug :accepts, ["json"]
   end
 
-  scope "/", AurumFinanceWeb do
-    pipe_through :browser
+  pipeline :redirect_if_root_authenticated do
+    plug AurumFinanceWeb.RootAuth, :redirect_if_root_authenticated
+  end
 
-    live_session :app, layout: {AurumFinanceWeb.Layouts, :app} do
+  pipeline :require_authenticated_root do
+    plug AurumFinanceWeb.RootAuth, :require_authenticated_root
+  end
+
+  scope "/", AurumFinanceWeb do
+    pipe_through [:browser, :redirect_if_root_authenticated]
+
+    get "/login", AuthController, :new
+    post "/login", AuthController, :create
+  end
+
+  scope "/", AurumFinanceWeb do
+    pipe_through [:browser, :require_authenticated_root]
+
+    delete "/logout", AuthController, :delete
+
+    live_session :app,
+      on_mount: [{AurumFinanceWeb.RootAuth, :ensure_authenticated}],
+      layout: {AurumFinanceWeb.Layouts, :app} do
       live "/", DashboardLive, :index
       live "/dashboard", DashboardLive, :index
       live "/accounts", AccountsLive, :index

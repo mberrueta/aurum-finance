@@ -107,3 +107,9 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+msgid "error_missing_root_password_hash"
+msgstr ""
+
+msgid "error_missing_root_password_hash_hint"
+msgstr ""

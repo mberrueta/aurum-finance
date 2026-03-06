@@ -230,7 +230,7 @@ direnv allow
 cp .envrc.custom.example .envrc.custom
 ```
 
-Use `.envrc.custom` (or `.envrc_custom`) for machine-local overrides.
+Use `.envrc.custom` for machine-local overrides.
 
 `tmux_proj.sh` uses `DIR` from your environment when set. If `DIR` is not set, it falls back to the script directory automatically.
 
@@ -339,7 +339,14 @@ AurumFinance handles highly sensitive data. Core goals:
 * auditable changes + reconciliation workflows
 * secure secret management practices
 
-See `docs/security.md` and `docs/privacy.md` (planned).
+### Security Model
+
+AurumFinance uses a minimal password-based authentication layer to prevent unauthorized network access.
+
+It is designed for **self-hosted single-operator environments** and assumes the operator controls the host system.
+See `docs/security.md` for details.
+
+See `docs/privacy.md` for privacy details.
 
 ---
 

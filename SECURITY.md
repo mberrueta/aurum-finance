@@ -44,9 +44,10 @@ AurumFinance is designed for **self-hosted financial data**, so security and pri
 - auditable ledger-based data model
 - minimal external dependencies where possible
 
-Future releases will include additional security documentation covering:
+## Threat Model and Security Architecture
 
-- threat model
-- secret management
-- backup and recovery practices
-- secure deployment recommendations
+For the current threat model and authentication security model, see:
+
+- `docs/security.md`
+
+In short, AurumFinance's single-user authentication is designed to prevent unauthorized network access, and it intentionally assumes the operator controls the host environment.

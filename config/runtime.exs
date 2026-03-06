@@ -20,6 +20,10 @@ if System.get_env("PHX_SERVER") do
   config :aurum_finance, AurumFinanceWeb.Endpoint, server: true
 end
 
+if root_password_hash = System.get_env("AURUM_ROOT_PASSWORD_HASH") do
+  config :aurum_finance, :root_password_hash, root_password_hash
+end
+
 config :aurum_finance, AurumFinanceWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 

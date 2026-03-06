@@ -110,3 +110,9 @@ msgstr ""
 
 msgid "must be equal to %{number}"
 msgstr ""
+
+msgid "error_missing_root_password_hash"
+msgstr "environment variable AURUM_ROOT_PASSWORD_HASH is missing."
+
+msgid "error_missing_root_password_hash_hint"
+msgstr "Generate one with: mix aurum.gen_password_hash <password>"

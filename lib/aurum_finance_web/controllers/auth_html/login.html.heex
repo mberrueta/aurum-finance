@@ -1,0 +1,48 @@
+<section id="login-page" class="min-h-screen grid place-items-center px-6 py-10 bg-[#0b1020]">
+  <div class="w-full max-w-md rounded-2xl border border-white/10 bg-[#101933] p-7 shadow-[0_20px_60px_-30px_rgba(0,0,0,0.65)]">
+    <div class="mb-6">
+      <p class="text-xs uppercase tracking-[0.24em] text-cyan-300/70">AurumFinance</p>
+      <h1 class="mt-2 text-2xl font-semibold text-white">{dgettext("auth", "title_login")}</h1>
+      <p class="mt-2 text-sm text-white/65">{dgettext("auth", "subtitle_login")}</p>
+    </div>
+
+    <div class="mb-4 space-y-2">
+      <.flash kind={:info} flash={@flash} />
+      <.flash kind={:error} flash={@flash} />
+    </div>
+
+    <.form
+      :if={@root_auth_configured?}
+      for={@form}
+      id="login-form"
+      action={~p"/login"}
+      method="post"
+      class="space-y-4"
+    >
+      <.input
+        field={@form[:password]}
+        id="root-password"
+        name="auth[password]"
+        type="password"
+        label={dgettext("auth", "label_password")}
+        required
+      />
+
+      <button
+        id="login-submit"
+        type="submit"
+        class="au-btn au-btn-primary w-full justify-center"
+      >
+        {dgettext("auth", "btn_login")}
+      </button>
+    </.form>
+
+    <p
+      :if={!@root_auth_configured?}
+      id="missing-root-password-hash"
+      class="text-sm text-amber-200 whitespace-pre-line"
+    >
+      {@missing_hash_message}
+    </p>
+  </div>
+</section>
