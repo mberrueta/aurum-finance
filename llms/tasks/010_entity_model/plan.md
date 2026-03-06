@@ -71,16 +71,16 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 - `entity_type`
 - `entity_id`
 - `action`
-- `actor` (structured map)
+- `actor` (string)
 - `channel` (supports `web`, `system`, `mcp`, `ai_assistant`)
 - `before`
 - `after`
 - `occurred_at`
 
-Actor format decision:
-- `actor` is a structured map from day one (not a plain string).
-- Minimum expected keys for root-auth flows: `type`, `id`.
-- This avoids migration/API churn when new channels (`mcp`, `ai_assistant`) are used.
+Actor format decision (single-user rationale):
+- `actor` is a plain string (`"system"`, `"person"`, `"scheduler"`, etc.).
+- We intentionally avoid a structured map because this is a single-user application and actor IDs do not add meaningful value now.
+- This keeps schema/API simpler while preserving audit readability.
 
 ## Project Context and ADR Alignment
 
@@ -208,7 +208,8 @@ Actor format decision:
 2. `tax_identifier` is optional at DB level unless product policy requires mandatory per entity type (to be confirmed in Task 01 validation).
 3. `country_code`/`fiscal_residency_country_code` use string storage with validation in changesets.
 4. `audit_events.before` and `audit_events.after` are structured JSON-like payloads suitable for explainability and later domain reuse.
-5. `occurred_at` is explicitly stored (append-only semantics) and not inferred solely from insertion timestamp.
+5. `audit_events.actor` is a string by design (single-user simplification).
+6. `occurred_at` is explicitly stored (append-only semantics) and not inferred solely from insertion timestamp.
 
 ## Open Questions (To Resolve Before Implementation Freeze)
 - None at this stage. Core modeling decisions are resolved.
@@ -227,3 +228,4 @@ Actor format decision:
 | 2026-03-06 | Plan | Initial issue #10 plan created | Start planning workflow |
 | 2026-03-06 | Plan | Revised for ADR/domain alignment and canonical field/type/audit decisions | Align with staff-level architecture requirements |
 | 2026-03-06 | Plan | Open questions resolved: fiscal residency write-default, non-unique tax_identifier, archived entities editable | Remove ambiguity before Task 02 |
+| 2026-03-06 | Plan | Actor format revised to string (not map) with single-user rationale documented | Keep audit model pragmatic for current architecture |

@@ -56,6 +56,7 @@ defmodule AurumFinance.Entities.Entity do
     )
     |> update_change(:country_code, &normalize_to_upper/1)
     |> update_change(:fiscal_residency_country_code, &normalize_to_upper/1)
+    |> put_default_fiscal_residency_country_code()
     |> unique_constraint(:name)
   end
 
@@ -64,4 +65,19 @@ defmodule AurumFinance.Entities.Entity do
 
   defp normalize_to_upper(value) when is_binary(value), do: String.upcase(value)
   defp normalize_to_upper(value), do: value
+
+  defp put_default_fiscal_residency_country_code(changeset) do
+    fiscal_residency_country_code =
+      get_field(changeset, :fiscal_residency_country_code)
+
+    country_code = get_field(changeset, :country_code)
+
+    case {fiscal_residency_country_code, country_code} do
+      {nil, country_code} when is_binary(country_code) ->
+        put_change(changeset, :fiscal_residency_country_code, country_code)
+
+      _ ->
+        changeset
+    end
+  end
 end

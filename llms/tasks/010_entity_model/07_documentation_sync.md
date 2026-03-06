@@ -28,7 +28,7 @@ Update all relevant docs and ADR references so terminology, model semantics, and
   - `:individual`, `:legal_entity`, `:trust`, `:other`
   - `tax_identifier`
   - `archived_at` archive semantics
-  - generic `audit_events` model
+  - generic `audit_events` model with `actor` as string (single-user rationale documented)
 - [ ] Removal/replacement of stale terms (`person/company`, `tax_id`, `is_active` archive language where obsolete)
 - [ ] Sync note in task output confirming updated files
 

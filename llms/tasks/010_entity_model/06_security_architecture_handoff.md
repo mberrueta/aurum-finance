@@ -28,7 +28,7 @@ Validate that the implementation matches required security/traceability posture:
 
 ## Acceptance Criteria
 - [ ] Confirms no hard-delete route/path exposed
-- [ ] Confirms audit shape includes actor/channel/occurred_at/before/after
+- [ ] Confirms audit shape includes actor(string)/channel/occurred_at/before/after
 - [ ] Identifies any sensitive-data leakage risks (`tax_identifier` handling)
 - [ ] Provides clear pass/fail recommendation for release
 

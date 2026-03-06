@@ -5,8 +5,13 @@ defmodule AurumFinance.Entities do
 
   import Ecto.Query, warn: false
 
+  alias AurumFinance.Audit
   alias AurumFinance.Entities.Entity
   alias AurumFinance.Repo
+
+  @entity_type "entity"
+  @default_actor "system"
+  @audit_redact_fields []
 
   @type list_opt ::
           {:include_archived, boolean()}
@@ -14,15 +19,14 @@ defmodule AurumFinance.Entities do
           | {:country_code, String.t()}
           | {:search, String.t()}
 
+  @type audit_opt ::
+          {:actor, String.t()}
+          | {:channel, :web | :system | :mcp | :ai_assistant}
+
   @doc """
   Lists entities with optional filters.
 
   By default, archived entities are excluded.
-
-  ## Examples
-
-      iex> function_exported?(AurumFinance.Entities, :list_entities, 1)
-      true
   """
   @spec list_entities([list_opt()]) :: [Entity.t()]
   def list_entities(opts \\ []) do
@@ -38,62 +42,71 @@ defmodule AurumFinance.Entities do
   Fetches one entity by id.
 
   Raises `Ecto.NoResultsError` when the id does not exist.
-
-  ## Examples
-
-      iex> function_exported?(AurumFinance.Entities, :get_entity!, 1)
-      true
   """
   @spec get_entity!(Ecto.UUID.t()) :: Entity.t()
   def get_entity!(id), do: Repo.get!(Entity, id)
 
   @doc """
-  Creates an entity.
+  Creates an entity and emits an audit event.
 
-  Returns `{:ok, entity}` on success or `{:error, changeset}` on validation failure.
-
-  ## Examples
-
-      iex> function_exported?(AurumFinance.Entities, :create_entity, 1)
-      true
+  Optional audit metadata can be passed with `opts`:
+  - `:actor` (string)
+  - `:channel` (`:web | :system | :mcp | :ai_assistant`)
   """
   @spec create_entity(map()) :: {:ok, Entity.t()} | {:error, Ecto.Changeset.t()}
-  def create_entity(attrs) do
-    %Entity{}
-    |> Entity.changeset(attrs)
-    |> Repo.insert()
+  @spec create_entity(map(), [audit_opt()]) ::
+          {:ok, Entity.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+  def create_entity(attrs, opts \\ []) do
+    audit_metadata = extract_audit_metadata(opts)
+
+    Audit.with_event(
+      %{
+        event: "created",
+        target: nil,
+        entity_type: @entity_type,
+        actor: audit_metadata.actor,
+        channel: audit_metadata.channel,
+        redact_fields: @audit_redact_fields
+      },
+      fn -> Repo.insert(Entity.changeset(%Entity{}, attrs)) end,
+      serializer: &entity_snapshot/1
+    )
   end
 
   @doc """
-  Updates an existing entity.
+  Updates an existing entity and emits an audit event.
 
-  Returns `{:ok, entity}` on success or `{:error, changeset}` on validation failure.
-
-  ## Examples
-
-      iex> function_exported?(AurumFinance.Entities, :update_entity, 2)
-      true
+  Optional audit metadata can be passed with `opts`:
+  - `:actor` (string)
+  - `:channel` (`:web | :system | :mcp | :ai_assistant`)
   """
   @spec update_entity(Entity.t(), map()) :: {:ok, Entity.t()} | {:error, Ecto.Changeset.t()}
-  def update_entity(%Entity{} = entity, attrs) do
-    entity
-    |> Entity.changeset(attrs)
-    |> Repo.update()
+  @spec update_entity(Entity.t(), map(), [audit_opt()]) ::
+          {:ok, Entity.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+  def update_entity(%Entity{} = entity, attrs, opts \\ []) do
+    update_entity_with_action(entity, attrs, "updated", opts)
   end
 
   @doc """
-  Soft-archives an entity by setting `archived_at`.
+  Soft-archives an entity by setting `archived_at` and emits an audit event.
 
   This context does not expose hard delete paths.
 
-  ## Examples
-
-      iex> function_exported?(AurumFinance.Entities, :archive_entity, 1)
-      true
+  Optional audit metadata can be passed with `opts`:
+  - `:actor` (string)
+  - `:channel` (`:web | :system | :mcp | :ai_assistant`)
   """
   @spec archive_entity(Entity.t()) :: {:ok, Entity.t()} | {:error, Ecto.Changeset.t()}
-  def archive_entity(%Entity{} = entity) do
-    update_entity(entity, %{archived_at: DateTime.utc_now()})
+  @spec archive_entity(Entity.t(), [audit_opt()]) ::
+          {:ok, Entity.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+  def archive_entity(%Entity{} = entity, opts \\ []) do
+    update_entity_with_action(entity, %{archived_at: DateTime.utc_now()}, "archived", opts)
   end
 
   @doc """
@@ -115,6 +128,67 @@ defmodule AurumFinance.Entities do
   def change_entity(%Entity{} = entity, attrs \\ %{}) do
     Entity.changeset(entity, attrs)
   end
+
+  defp update_entity_with_action(%Entity{} = entity, attrs, action, opts) do
+    audit_metadata = extract_audit_metadata(opts)
+
+    Audit.with_event(
+      %{
+        event: action,
+        target: entity,
+        entity_type: @entity_type,
+        actor: audit_metadata.actor,
+        channel: audit_metadata.channel,
+        redact_fields: @audit_redact_fields
+      },
+      fn -> Repo.update(Entity.changeset(entity, attrs)) end,
+      serializer: &entity_snapshot/1
+    )
+  end
+
+  defp entity_snapshot(entity) when is_struct(entity, Entity) do
+    %{
+      "id" => entity.id,
+      "name" => entity.name,
+      "type" => entity.type,
+      "tax_identifier" => entity.tax_identifier,
+      "country_code" => entity.country_code,
+      "fiscal_residency_country_code" => entity.fiscal_residency_country_code,
+      "default_tax_rate_type" => entity.default_tax_rate_type,
+      "notes" => entity.notes,
+      "archived_at" => entity.archived_at,
+      "inserted_at" => entity.inserted_at,
+      "updated_at" => entity.updated_at
+    }
+  end
+
+  defp entity_snapshot(value), do: value
+
+  defp extract_audit_metadata(opts) do
+    actor =
+      opts
+      |> Keyword.get(:actor, @default_actor)
+      |> normalize_actor()
+
+    channel =
+      case Keyword.get(opts, :channel, :system) do
+        channel when channel in [:web, :system, :mcp, :ai_assistant] -> channel
+        _ -> :system
+      end
+
+    %{actor: actor, channel: channel}
+  end
+
+  defp normalize_actor(actor) when is_binary(actor) do
+    actor
+    |> String.trim()
+    |> case do
+      "" -> @default_actor
+      value -> value
+    end
+  end
+
+  defp normalize_actor(_actor), do: @default_actor
 
   defp filter_query(query, []), do: query
 

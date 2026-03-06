@@ -130,6 +130,7 @@ defmodule AurumFinance.MixProject do
       precommit: [
         "format --check-formatted",
         "compile --warnings-as-errors",
+        "dialyzer",
         "credo"
       ],
       # Full validation (before PR)
@@ -138,7 +139,6 @@ defmodule AurumFinance.MixProject do
         "deps.unlock --unused",
         "sobelow --config .sobelow-conf",
         "credo --strict",
-        "dialyzer",
         "deps.audit",
         "test",
         "docs"
