@@ -28,23 +28,23 @@ msgstr "Sign in"
 msgid "error_login_required"
 msgstr "You must sign in to continue."
 
-#: lib/aurum_finance_web/controllers/auth_controller.ex:43
-#: lib/aurum_finance_web/controllers/auth_controller.ex:54
+#: lib/aurum_finance_web/controllers/auth_controller.ex:49
+#: lib/aurum_finance_web/controllers/auth_controller.ex:56
 #, elixir-autogen
 msgid "error_invalid_password"
 msgstr "Invalid password."
 
-#: lib/aurum_finance_web/controllers/auth_controller.ex:31
+#: lib/aurum_finance_web/controllers/auth_controller.ex:34
 #, elixir-autogen
 msgid "error_too_many_login_attempts"
 msgstr "Too many login attempts. Please wait and try again."
 
-#: lib/aurum_finance_web/controllers/auth_controller.ex:38
+#: lib/aurum_finance_web/controllers/auth_controller.ex:42
 #, elixir-autogen
 msgid "msg_login_success"
 msgstr "Signed in successfully."
 
-#: lib/aurum_finance_web/controllers/auth_controller.ex:66
+#: lib/aurum_finance_web/controllers/auth_controller.ex:64
 #, elixir-autogen
 msgid "msg_logged_out"
 msgstr "Signed out successfully."

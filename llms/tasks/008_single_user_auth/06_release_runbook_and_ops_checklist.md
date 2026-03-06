@@ -1,9 +1,9 @@
 # Task 06: Release Runbook and Ops Checklist
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
-- **Blocked by**: Task 05
+- **Blocked by**: None
 - **Blocks**: None
 
 ## Assigned Agent
@@ -16,20 +16,20 @@ Use `llms/agents/rm_release_manager.md` (`name: rm-release-manager`) to prepare 
 Document operator setup steps for `AURUM_ROOT_PASSWORD_HASH`, validation checks, deployment checklist, and rollback guidance for the auth guard release.
 
 ## Inputs Required
-- [ ] Task 01-05 outputs
-- [ ] Runtime and auth configuration changes
-- [ ] Test/audit outcomes
-- [ ] Existing project docs for setup/deployment
+- [x] Task 01-05 outputs
+- [x] Runtime and auth configuration changes
+- [x] Test/audit outcomes
+- [x] Existing project docs for setup/deployment
 
 ## Expected Outputs
-- [ ] Release checklist with pre-deploy and post-deploy checks
-- [ ] Operator runbook for generating hash and configuring env var safely
-- [ ] Rollback steps if login guard blocks expected access
+- [x] Release checklist with pre-deploy and post-deploy checks
+- [x] Operator runbook for generating hash and configuring env var safely
+- [x] Rollback steps if login guard blocks expected access
 
 ## Acceptance Criteria
-- [ ] Setup instructions avoid exposing plaintext passwords
-- [ ] Checklist includes verification for protected routes and timeout behavior
-- [ ] Rollback plan is explicit and low-risk
+- [x] Setup instructions avoid exposing plaintext passwords
+- [x] Checklist includes verification for protected routes and timeout behavior
+- [x] Rollback plan is explicit and low-risk
 
 ## Technical Notes
 ### Relevant Code Locations
@@ -59,34 +59,44 @@ Document operator setup steps for `AURUM_ROOT_PASSWORD_HASH`, validation checks,
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Completed.
 
 ### Work Performed
-- 
+- Updated deployment documentation with an auth rollout checklist tied to issue #8.
+- Added operator-safe hash generation instructions for `AURUM_ROOT_PASSWORD_HASH`.
+- Added explicit post-deploy auth validation steps (route protection, login/logout, throttling, timeout policy).
+- Added auth-focused rollback and recovery guidance when login guard blocks expected access.
+- Added secret-handling note for `AURUM_ROOT_PASSWORD_HASH`.
 
 ### Outputs Created
-- 
+- `docs/deployment.md` updated with:
+  - required auth runtime variable documentation
+  - pre-deploy checklist
+  - post-deploy verification checklist
+  - auth rollback/recovery steps
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Existing `docs/security.md` threat model remains the source of truth for security boundaries. | Avoid duplicate long-form security text in deployment runbook. |
+| In-memory rate limiter behavior (5/5m + 5m lockout) is sufficient to document as current operational behavior. | Matches current implemented scope and tests. |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Keep runbook updates inside `docs/deployment.md` instead of creating a new auth runbook file. | New standalone `docs/auth_runbook.md` | Keep operator guidance centralized and low-maintenance. |
+| Document timeout as policy and enforcement source (Aurum auth logic), not as cookie-native feature. | Short wording implying signed cookies alone enforce timeout | Prevent ambiguity and match finalized architecture decision. |
 
 ### Blockers Encountered
-- 
+- None.
 
 ### Questions for Human
-1. 
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

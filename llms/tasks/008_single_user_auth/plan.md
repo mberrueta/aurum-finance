@@ -3,8 +3,8 @@
 ## Metadata
 - **Spec**: `https://github.com/mberrueta/aurum-finance/issues/8`
 - **Created**: 2026-03-06
-- **Status**: PLANNING
-- **Current Task**: 05 (awaiting human approval)
+- **Status**: IN_REVIEW
+- **Current Task**: 06 (awaiting human approval)
 
 ## Overview
 Issue #8 introduces minimal self-hosted authentication to block anonymous access while keeping the product single-user. The implementation centers on password-only login, session storage in Phoenix signed cookies, router/LiveView protection, inactivity-timeout enforcement in Aurum auth logic, and boot-time configuration enforcement for `AURUM_ROOT_PASSWORD_HASH`.
@@ -50,8 +50,8 @@ Issue #8 introduces minimal self-hosted authentication to block anonymous access
 | 02 | Backend Auth Foundation | ✅ COMPLETED | [x] | Task 01 |
 | 03 | Login UX and Route/LiveView Guarding | ✅ COMPLETED | [x] | Task 02 |
 | 04 | Auth Test Coverage | ✅ COMPLETED | [x] | Task 03 |
-| 05 | Security Audit and Hardening Review | ✅ COMPLETED | [ ] | Task 04 |
-| 06 | Release Runbook and Ops Checklist | 🔒 BLOCKED | [ ] | Task 05 |
+| 05 | Security Audit and Hardening Review | ✅ COMPLETED | [x] | Task 04 |
+| 06 | Release Runbook and Ops Checklist | ✅ COMPLETED | [ ] | Task 05 |
 
 **Status Legend:**
 - ⏳ PENDING - Ready to start (dependencies met)

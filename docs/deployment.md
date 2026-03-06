@@ -28,6 +28,13 @@ Required in production:
 - `PHX_HOST`
   - Public hostname, used by endpoint URL generation.
 
+Required for authenticated operation:
+
+- `AURUM_ROOT_PASSWORD_HASH`
+  - Bcrypt hash for the single root password used by `/login`.
+  - Generate with: `mix aurum.gen_password_hash <password>`
+  - Do not store plaintext passwords in repo files or shell history.
+
 Recommended in production:
 
 - `PORT`
@@ -71,6 +78,35 @@ Run local stack:
 docker compose up --build
 ```
 
+## Auth rollout checklist (Issue #8)
+
+Pre-deploy:
+
+1. Generate a bcrypt hash without persisting plaintext credentials in files.
+2. Store `AURUM_ROOT_PASSWORD_HASH` in your runtime secret manager or host env.
+3. Confirm the deployment manifest injects `AURUM_ROOT_PASSWORD_HASH`.
+4. Confirm `docs/security.md` is included in operator handoff docs so security boundaries are explicit.
+
+Operator-safe hash generation example:
+
+```bash
+read -r -s ROOT_PASSWORD \
+  && echo \
+  && ROOT_PASSWORD_HASH="$(mix aurum.gen_password_hash "$ROOT_PASSWORD")" \
+  && unset ROOT_PASSWORD \
+  && echo "$ROOT_PASSWORD_HASH"
+```
+
+Post-deploy verification:
+
+1. `GET /` as anonymous user redirects to `/login`.
+2. `GET /login` renders the login page.
+3. Invalid password shows an auth error and does not create a session.
+4. Repeated invalid attempts from same IP are throttled (5 failures in 5 minutes, then temporary lockout).
+5. Valid password creates a session and grants access to protected routes.
+6. `DELETE /logout` removes session and redirects to `/login`.
+7. Idle timeout policy is enforced by Aurum auth logic (2 hours inactivity) while session data remains in Phoenix signed cookie.
+
 ## Migration strategy
 
 Startup migration is currently enabled in container `CMD`.
@@ -98,6 +134,14 @@ Notes:
 - Use exact migration timestamp version.
 - Always confirm target DB and environment before rollback.
 
+Auth rollback/recovery (if guard blocks expected access):
+
+1. Verify `AURUM_ROOT_PASSWORD_HASH` is present in runtime env and matches an intended password hash.
+2. If missing/wrong, replace env secret with a newly generated hash and restart app instances.
+3. If operators are temporarily rate-limited, wait for lockout window expiry (5 minutes) or perform a controlled app restart.
+4. If release still blocks valid access, rollback to previous app image/tag and previous known-good runtime secret set.
+5. Re-run post-deploy auth verification before reopening network exposure.
+
 ## Verification checklist
 
 After deploy:
@@ -113,6 +157,7 @@ After deploy:
 - Never commit `.env`, `.env.*`, `.envrc.custom`, or `.envrc_custom`.
 - Inject secrets from runtime secret manager or platform secrets.
 - Treat `SECRET_KEY_BASE` as sensitive and rotate on compromise events.
+- Treat `AURUM_ROOT_PASSWORD_HASH` as a secret (even though it is hashed) and avoid leaking it in logs/tickets.
 
 ## Operational notes
 
