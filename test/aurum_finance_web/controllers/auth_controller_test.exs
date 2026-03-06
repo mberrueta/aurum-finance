@@ -1,5 +1,5 @@
 defmodule AurumFinanceWeb.AuthControllerTest do
-  use AurumFinanceWeb.ConnCase, async: true
+  use AurumFinanceWeb.ConnCase
 
   import Phoenix.LiveViewTest
 
@@ -7,6 +7,7 @@ defmodule AurumFinanceWeb.AuthControllerTest do
     previous_hash = Application.get_env(:aurum_finance, :root_password_hash)
     hash = Bcrypt.hash_pwd_salt("test-root-password")
     Application.put_env(:aurum_finance, :root_password_hash, hash)
+    :ok = AurumFinanceWeb.AuthRateLimiter.reset!()
 
     on_exit(fn ->
       if previous_hash do
@@ -14,6 +15,8 @@ defmodule AurumFinanceWeb.AuthControllerTest do
       else
         Application.delete_env(:aurum_finance, :root_password_hash)
       end
+
+      :ok = AurumFinanceWeb.AuthRateLimiter.reset!()
     end)
 
     :ok
@@ -58,6 +61,18 @@ defmodule AurumFinanceWeb.AuthControllerTest do
     html = html_response(conn, 200)
     assert html =~ "login-form"
     assert html =~ "Invalid password"
+  end
+
+  test "POST /login throttles repeated invalid attempts", %{conn: conn} do
+    conn =
+      Enum.reduce(1..6, conn, fn _, acc_conn ->
+        acc_conn
+        |> Phoenix.ConnTest.recycle()
+        |> post("/login", %{"auth" => %{"password" => "invalid"}})
+      end)
+
+    html = html_response(conn, 200)
+    assert html =~ "Too many login attempts"
   end
 
   test "POST /login shows setup message when root hash is missing", %{conn: conn} do

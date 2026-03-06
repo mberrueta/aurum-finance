@@ -1,7 +1,7 @@
 # Task 05: Security Audit and Hardening Review
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 04
 - **Blocks**: Task 06
@@ -61,34 +61,39 @@ Validate that implementation satisfies security expectations for single-user pas
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Performed end-to-end security review of auth/session flow, router boundaries, and secret handling.
+- Verified implementation behavior against accepted threat model documentation.
+- Produced a findings report with severity classification and dispositions.
+- Attempted to run Sobelow as an additional automated check.
 
 ### Outputs Created
-- 
+- `llms/tasks/008_single_user_auth/05_security_findings_report.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Missing-hash setup message on `/login` is an intentional accepted product behavior | Prior explicit decision from maintainer to show setup guidance instead of silent login failures |
+| Dev dashboard remains intentionally outside auth scope in dev | Explicit decision captured in plan and prior tasks |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Marked findings as non-blocking for current issue scope | Holding release for brute-force throttling and dev dashboard policy | Current issue acceptance criteria are satisfied; follow-up hardening can be tracked separately |
+| Treated missing-hash login message as accepted minor information disclosure | Hiding setup state and failing generically | Better operator usability for self-hosted setup, accepted tradeoff |
 
 ### Blockers Encountered
-- 
+- `mix sobelow` unavailable in repository (`The task "sobelow" could not be found`), so automated Sobelow scan could not be executed.
 
 ### Questions for Human
-1. 
+1. Approve Task 05 so Task 06 (release runbook and ops checklist) can begin.
+2. Do you want a follow-up issue for login throttling/rate limiting hardening?
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

@@ -31,6 +31,11 @@ msgstr ""
 msgid "error_invalid_password"
 msgstr ""
 
+#: lib/aurum_finance_web/controllers/auth_controller.ex:31
+#, elixir-autogen
+msgid "error_too_many_login_attempts"
+msgstr ""
+
 #: lib/aurum_finance_web/controllers/auth_controller.ex:38
 #, elixir-autogen
 msgid "msg_login_success"
