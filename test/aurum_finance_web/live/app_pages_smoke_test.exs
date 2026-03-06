@@ -7,6 +7,7 @@ defmodule AurumFinanceWeb.AppPagesSmokeTest do
     {:ok, view, _html} = live(conn, "/dashboard")
     assert has_element?(view, "#dashboard-page")
     assert has_element?(view, "#app-shell-search")
+    assert has_element?(view, "#logout-link")
   end
 
   test "accounts page smoke", %{conn: conn} do

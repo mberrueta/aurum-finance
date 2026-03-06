@@ -1,7 +1,7 @@
 # Task 04: Auth Test Coverage
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 03
 - **Blocks**: Task 05
@@ -62,34 +62,44 @@ Author comprehensive tests for auth guard behavior, login/logout flow, session t
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Expanded controller tests for login/logout behavior and session cookie assertion.
+- Added explicit missing-hash login-path tests (`GET /login`, `POST /login`) to verify setup message and hidden submit state.
+- Added protection matrix tests for all app LiveView routes when unauthenticated.
+- Added web-level timeout behavior tests for expired session and timeout-boundary-valid session.
+- Extended smoke coverage to assert logout control presence in protected app shell.
 
 ### Outputs Created
-- 
+- `test/aurum_finance_web/live/auth_protection_test.exs`
+
+### Outputs Updated
+- `test/aurum_finance_web/controllers/auth_controller_test.exs`
+- `test/support/conn_case.ex`
+- `test/aurum_finance_web/live/app_pages_smoke_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Live route protection assertions via `live/2` redirect checks are sufficient evidence for route guarding in this slice | All protected app pages are LiveViews and share the same guarded router/live_session topology |
+| Timeout-boundary validation at web layer using synthetic session timestamps is deterministic enough for policy checks | Avoids sleeps and validates exact idle timeout semantics |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Added dedicated auth protection test module | Extending existing smoke test only | Keeps auth-policy assertions explicit and maintainable |
+| Asserted session cookie presence after successful login | Trusting redirect-only assertion | Directly validates signed-cookie session persistence requirement |
 
 ### Blockers Encountered
-- 
+- None.
 
 ### Questions for Human
-1. 
+1. Approve Task 04 so Task 05 (security audit and hardening review) can begin.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

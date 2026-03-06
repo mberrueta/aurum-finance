@@ -45,10 +45,11 @@ defmodule AurumFinanceWeb.AuthControllerTest do
     assert redirected_to(conn) == "/"
   end
 
-  test "POST /login authenticates and redirects", %{conn: conn} do
+  test "POST /login authenticates, redirects, and sets session cookie", %{conn: conn} do
     conn = post(conn, "/login", %{"auth" => %{"password" => "test-root-password"}})
 
     assert redirected_to(conn) == "/"
+    assert conn.resp_cookies["_aurum_finance_key"]
   end
 
   test "POST /login with invalid password re-renders page", %{conn: conn} do
@@ -74,6 +75,12 @@ defmodule AurumFinanceWeb.AuthControllerTest do
       conn
       |> log_in_root()
       |> delete("/logout")
+
+    assert redirected_to(conn) == "/login"
+  end
+
+  test "DELETE /logout redirects unauthenticated requests to /login", %{conn: conn} do
+    conn = delete(conn, "/logout")
 
     assert redirected_to(conn) == "/login"
   end
