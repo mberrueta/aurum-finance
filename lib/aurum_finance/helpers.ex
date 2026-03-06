@@ -49,6 +49,32 @@ defmodule AurumFinance.Helpers do
   end
 
   @doc """
+  Formats a price based on country code.
+
+  Defaults to BR-style formatting for unknown countries.
+
+  ## Examples
+
+      iex> AurumFinance.Helpers.format_price("BR", Decimal.new("123.45"))
+      "R$ 123,45"
+
+      iex> AurumFinance.Helpers.format_price("US", Decimal.new("123.45"))
+      "U$D 123.45"
+  """
+  @spec format_price(String.t(), Decimal.t() | number() | String.t()) :: String.t()
+  def format_price(country_code, price) do
+    country_code
+    |> normalize_country_code()
+    |> do_format_price(normalize_price(price))
+  end
+
+  @doc """
+  Backward-compatible formatter that assumes Brazil (`"BR"`).
+  """
+  @spec format_price(Decimal.t() | number() | String.t()) :: String.t()
+  def format_price(price), do: format_price("BR", price)
+
+  @doc """
   Formats an identifier-like token to human-readable text.
 
   ## Examples
@@ -82,6 +108,15 @@ defmodule AurumFinance.Helpers do
   def map_get(map, key) when is_atom(key), do: Map.get(map, key) || Map.get(map, to_string(key))
   def map_get(map, key) when is_binary(key), do: Map.get(map, key) || Map.get(map, to_atom(key))
 
+  @doc """
+  Generates a URL-safe random token.
+  """
+  @spec generate_urlsafe_token(pos_integer()) :: String.t()
+  def generate_urlsafe_token(num_bytes \\ 7) do
+    :crypto.strong_rand_bytes(num_bytes)
+    |> Base.url_encode64(padding: false)
+  end
+
   defp to_atom(key) when is_binary(key) do
     try do
       String.to_existing_atom(key)
@@ -91,4 +126,22 @@ defmodule AurumFinance.Helpers do
   end
 
   defp to_atom(key) when is_atom(key), do: key
+
+  defp do_format_price("BR", price) do
+    "R$ #{Decimal.round(price, 2)}"
+    |> String.replace(".", ",")
+  end
+
+  defp do_format_price("US", price), do: "U$D #{Decimal.round(price, 2)}"
+  defp do_format_price(_country_code, price), do: "$ #{Decimal.round(price, 2)}"
+
+  defp normalize_country_code(country_code) when is_binary(country_code),
+    do: country_code |> String.trim() |> String.upcase()
+
+  defp normalize_country_code(_country_code), do: ""
+
+  defp normalize_price(%Decimal{} = price), do: price
+  defp normalize_price(price) when is_integer(price), do: Decimal.new(price)
+  defp normalize_price(price) when is_float(price), do: price |> to_string() |> Decimal.new()
+  defp normalize_price(price) when is_binary(price), do: Decimal.new(price)
 end

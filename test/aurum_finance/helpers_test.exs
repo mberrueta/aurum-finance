@@ -23,6 +23,19 @@ defmodule AurumFinance.HelpersTest do
     end
   end
 
+  describe "format_price/2" do
+    test "formats decimal by country code" do
+      assert Helpers.format_price("BR", Decimal.new("123.45")) == "R$ 123,45"
+      assert Helpers.format_price("BR", Decimal.new("123.456")) == "R$ 123,46"
+      assert Helpers.format_price("US", Decimal.new("123.45")) == "U$D 123.45"
+    end
+
+    test "accepts numbers and keeps format_price/1 backwards-compatible" do
+      assert Helpers.format_price("US", 10.0) == "U$D 10.00"
+      assert Helpers.format_price(Decimal.new("10.50")) == "R$ 10,50"
+    end
+  end
+
   describe "humanize_token/1" do
     test "humanizes strings and atoms" do
       assert Helpers.humanize_token("legal_entity") == "Legal entity"
@@ -43,6 +56,15 @@ defmodule AurumFinance.HelpersTest do
     test "supports atom/string keys" do
       assert Helpers.map_get(%{name: "John"}, "name") == "John"
       assert Helpers.map_get(%{"name" => "Jane"}, :name) == "Jane"
+    end
+  end
+
+  describe "generate_urlsafe_token/1" do
+    test "generates url-safe non-empty token" do
+      token = Helpers.generate_urlsafe_token(7)
+      assert is_binary(token)
+      assert token != ""
+      assert String.match?(token, ~r/^[A-Za-z0-9\-_]+$/)
     end
   end
 end

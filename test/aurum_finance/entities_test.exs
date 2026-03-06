@@ -116,7 +116,8 @@ defmodule AurumFinance.EntitiesTest do
                  %{
                    name: "Audit subject",
                    type: :legal_entity,
-                   country_code: "AR"
+                   country_code: "AR",
+                   tax_identifier: "TAX-SECRET-OLD"
                  },
                  actor: "person",
                  channel: :web
@@ -125,7 +126,7 @@ defmodule AurumFinance.EntitiesTest do
       assert {:ok, entity} =
                Entities.update_entity(
                  entity,
-                 %{notes: "changed"},
+                 %{notes: "changed", tax_identifier: "TAX-SECRET-NEW"},
                  actor: "scheduler",
                  channel: :system
                )
@@ -148,6 +149,7 @@ defmodule AurumFinance.EntitiesTest do
       assert created.channel == :web
       assert created.before == nil
       assert is_map(created.after)
+      assert created.after["tax_identifier"] == "[REDACTED]"
       assert %DateTime{} = created.occurred_at
 
       assert updated.action == "updated"
@@ -157,6 +159,8 @@ defmodule AurumFinance.EntitiesTest do
       assert is_map(updated.after)
       assert updated.before["notes"] == nil
       assert updated.after["notes"] == "changed"
+      assert updated.before["tax_identifier"] == "[REDACTED]"
+      assert updated.after["tax_identifier"] == "[REDACTED]"
       assert %DateTime{} = updated.occurred_at
 
       assert archived.action == "archived"
@@ -166,6 +170,8 @@ defmodule AurumFinance.EntitiesTest do
       assert is_map(archived.after)
       assert archived.before["archived_at"] == nil
       refute is_nil(archived.after["archived_at"])
+      assert archived.before["tax_identifier"] == "[REDACTED]"
+      assert archived.after["tax_identifier"] == "[REDACTED]"
       assert %DateTime{} = archived.occurred_at
 
       assert unarchived.action == "unarchived"
@@ -173,6 +179,8 @@ defmodule AurumFinance.EntitiesTest do
       assert unarchived.channel == :web
       refute is_nil(unarchived.before["archived_at"])
       assert unarchived.after["archived_at"] == nil
+      assert unarchived.before["tax_identifier"] == "[REDACTED]"
+      assert unarchived.after["tax_identifier"] == "[REDACTED]"
       assert %DateTime{} = unarchived.occurred_at
     end
   end

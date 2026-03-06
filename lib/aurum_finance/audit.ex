@@ -221,6 +221,10 @@ defmodule AurumFinance.Audit do
     do_redact(snapshot, redact_keys)
   end
 
+  defp do_redact(%_{} = struct, redact_keys) do
+    do_redact_struct(struct, redact_keys)
+  end
+
   defp do_redact(map, redact_keys) when is_map(map) do
     Enum.reduce(map, %{}, fn {key, value}, acc ->
       key_string = to_string(key)
@@ -241,12 +245,24 @@ defmodule AurumFinance.Audit do
 
   defp do_redact(value, _redact_keys), do: value
 
+  defp do_redact_struct(%DateTime{} = value, _redact_keys), do: value
+  defp do_redact_struct(%NaiveDateTime{} = value, _redact_keys), do: value
+  defp do_redact_struct(%Date{} = value, _redact_keys), do: value
+  defp do_redact_struct(%Time{} = value, _redact_keys), do: value
+  defp do_redact_struct(%Decimal{} = value, _redact_keys), do: value
+  defp do_redact_struct(struct, _redact_keys), do: struct
+
   defp stringify_keys(map) when is_map(map) do
     Enum.reduce(map, %{}, fn {key, value}, acc ->
       Map.put(acc, to_string(key), stringify_value(value))
     end)
   end
 
+  defp stringify_value(%DateTime{} = value), do: DateTime.to_iso8601(value)
+  defp stringify_value(%NaiveDateTime{} = value), do: NaiveDateTime.to_iso8601(value)
+  defp stringify_value(%Date{} = value), do: Date.to_iso8601(value)
+  defp stringify_value(%Time{} = value), do: Time.to_iso8601(value)
+  defp stringify_value(%Decimal{} = value), do: Decimal.to_string(value)
   defp stringify_value(%_{} = struct), do: default_snapshot(struct)
   defp stringify_value(map) when is_map(map), do: stringify_keys(map)
   defp stringify_value(list) when is_list(list), do: Enum.map(list, &stringify_value/1)

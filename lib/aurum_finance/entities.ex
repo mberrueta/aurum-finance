@@ -11,7 +11,7 @@ defmodule AurumFinance.Entities do
 
   @entity_type "entity"
   @default_actor "system"
-  @audit_redact_fields []
+  @audit_redact_fields [:tax_identifier]
 
   @type list_opt ::
           {:include_archived, boolean()}
