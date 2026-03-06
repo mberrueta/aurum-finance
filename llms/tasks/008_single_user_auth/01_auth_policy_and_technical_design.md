@@ -1,7 +1,7 @@
 # Task 01: Auth Policy and Technical Design
 
 ## Status
-- **Status**: ⏳ PENDING
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: None
 - **Blocks**: Task 02
@@ -63,34 +63,38 @@ Confirm and document the already-decided session model, guarding strategy, timeo
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Reviewed issue #8 requirements and finalized plan decisions.
+- Analyzed current router, endpoint session configuration, and runtime config boundaries.
+- Produced implementation-facing design output with guard matrix and acceptance-criteria mapping.
 
 ### Outputs Created
-- 
+- `llms/tasks/008_single_user_auth/01_design_output.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Existing app LiveViews can be protected centrally via `live_session` + `on_mount` | Matches current routing topology and keeps implementation minimal |
+| Controller-based login endpoints are acceptable for issue #8 | Already agreed decision and aligns with explicit route verbs |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Idle timeout is 2h and enforced by Aurum auth logic | Absolute timeout or mixed model | Finalized scope choice; least ambiguity for implementation |
+| `/dev/dashboard` remains public in dev | Protect dev dashboard with same guard | Preserves current dev ergonomics per approved decision |
+| Login/logout flow is controller-based (`GET/POST/DELETE`) | Login LiveView route/action flow | Cleaner HTTP semantics and already approved |
 
 ### Blockers Encountered
-- 
+- None.
 
 ### Questions for Human
-1. 
+1. Approve Task 01 so Task 02 can begin implementation.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
