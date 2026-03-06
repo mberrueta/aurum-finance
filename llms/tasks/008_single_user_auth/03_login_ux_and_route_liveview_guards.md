@@ -1,7 +1,7 @@
 # Task 03: Login UX and Route/LiveView Guarding
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 02
 - **Blocks**: Task 04
@@ -63,34 +63,49 @@ Build minimal password-only login flow, add logout action in navigation, and enf
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Implemented controller-based login/logout flow (`GET /login`, `POST /login`, `DELETE /logout`).
+- Added web auth integration module (`AurumFinanceWeb.RootAuth`) with:
+  - plug-based route protection (`require_authenticated_root`, `redirect_if_root_authenticated`)
+  - LiveView `on_mount` enforcement (`:ensure_authenticated`).
+- Updated router with public auth scope and protected app scope.
+- Added logout action in app topbar/nav shell.
+- Added auth i18n domain/messages and layout logout translation key.
+- Updated smoke tests to authenticate before protected LiveViews and added dedicated auth controller tests.
 
 ### Outputs Created
-- 
+- `lib/aurum_finance_web/root_auth.ex`
+- `lib/aurum_finance_web/controllers/auth_controller.ex`
+- `lib/aurum_finance_web/controllers/auth_html.ex`
+- `lib/aurum_finance_web/controllers/auth_html/login.html.heex`
+- `priv/gettext/auth.pot`
+- `priv/gettext/en/LC_MESSAGES/auth.po`
+- `test/aurum_finance_web/controllers/auth_controller_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Idle-timeout refresh during LiveView interaction is enforced at request/mount boundaries in this slice | Session mutation from LiveView websocket events is out-of-scope for Task 03; dedicated behavior checks remain in Task 04 |
+| Showing logout action on the protected app shell is sufficient to satisfy "logout button in nav" | All protected app pages use the same `Layouts.app` shell |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Controller-based login page and submit actions | LiveView login flow | Matches approved final decision in plan |
+| Protect LiveViews via both plug pipeline and `live_session` `on_mount` | Plug-only protection | Meets explicit issue requirement for plug + `on_mount` coverage |
+| Keep dev dashboard auth policy unchanged (no auth in dev scope) | Protect `/dev/dashboard` too | Matches approved decision |
 
 ### Blockers Encountered
-- 
+- Plug integration initially failed due missing `init/1` + `call/2`; resolved by implementing plug dispatcher in `RootAuth`.
 
 ### Questions for Human
-1. 
+1. Approve Task 03 so Task 04 (auth test coverage expansion) can begin.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

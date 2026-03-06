@@ -3,3 +3,5 @@
 # export DIR="/absolute/path/to/aurum-finance"
 # export SECRET_KEY_BASE="replace_me"
 # export DATABASE_URL="ecto://postgres:postgres@localhost:5432/aurum_finance_dev"
+
+# export AURUM_ROOT_PASSWORD_HASH="Generate one with: mix aurum.gen_password_hash <password>"

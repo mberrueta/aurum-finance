@@ -31,6 +31,15 @@ defmodule AurumFinanceWeb.ConnCase do
     end
   end
 
+  def log_in_root(conn) do
+    session = AurumFinance.Auth.put_authenticated_session(%{}, DateTime.utc_now())
+
+    Enum.reduce(session, Phoenix.ConnTest.init_test_session(conn, %{}), fn {key, value},
+                                                                           acc_conn ->
+      Plug.Conn.put_session(acc_conn, key, value)
+    end)
+  end
+
   setup tags do
     AurumFinance.DataCase.setup_sandbox(tags)
     {:ok, conn: Phoenix.ConnTest.build_conn()}

@@ -84,6 +84,14 @@ defmodule AurumFinanceWeb.Layouts do
             </span>
           </div>
           <div class="flex items-center gap-[10px]">
+            <.link
+              id="logout-link"
+              href={~p"/logout"}
+              method="delete"
+              class="au-btn"
+            >
+              {dgettext("layout", "nav_logout")}
+            </.link>
             <div class="au-control">
               <span>{dgettext("layout", "topbar_entity_label")}</span>
               <span class="text-white/88 text-[13px]">

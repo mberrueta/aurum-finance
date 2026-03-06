@@ -16,18 +16,18 @@ msgstr ""
 msgid "Actions"
 msgstr ""
 
-#: lib/aurum_finance_web/components/layouts.ex:168
-#: lib/aurum_finance_web/components/layouts.ex:180
+#: lib/aurum_finance_web/components/layouts.ex:176
+#: lib/aurum_finance_web/components/layouts.ex:188
 #, elixir-autogen, elixir-format
 msgid "Attempting to reconnect"
 msgstr ""
 
-#: lib/aurum_finance_web/components/layouts.ex:175
+#: lib/aurum_finance_web/components/layouts.ex:183
 #, elixir-autogen, elixir-format
 msgid "Something went wrong!"
 msgstr ""
 
-#: lib/aurum_finance_web/components/layouts.ex:163
+#: lib/aurum_finance_web/components/layouts.ex:171
 #, elixir-autogen, elixir-format
 msgid "We can't find the internet"
 msgstr ""

@@ -117,4 +117,4 @@ After deploy:
 ## Operational notes
 
 - `.envrc` provides open-source defaults for local development.
-- `.envrc_custom` is for machine-specific overrides.
+- `.envrc.custom` is for machine-specific overrides.

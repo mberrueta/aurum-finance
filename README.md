@@ -230,7 +230,7 @@ direnv allow
 cp .envrc.custom.example .envrc.custom
 ```
 
-Use `.envrc.custom` (or `.envrc_custom`) for machine-local overrides.
+Use `.envrc.custom` for machine-local overrides.
 
 `tmux_proj.sh` uses `DIR` from your environment when set. If `DIR` is not set, it falls back to the script directory automatically.
 

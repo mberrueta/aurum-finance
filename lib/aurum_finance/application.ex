@@ -7,8 +7,6 @@ defmodule AurumFinance.Application do
 
   @impl true
   def start(_type, _args) do
-    AurumFinance.Auth.ensure_configured!()
-
     children = [
       AurumFinanceWeb.Telemetry,
       AurumFinance.Repo,

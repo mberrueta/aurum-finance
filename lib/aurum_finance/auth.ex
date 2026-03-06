@@ -27,6 +27,33 @@ defmodule AurumFinance.Auth do
     end
   end
 
+  @doc "Returns true when root password hash is configured."
+  @spec configured?() :: boolean()
+  def configured? do
+    case Application.get_env(:aurum_finance, :root_password_hash) do
+      hash when is_binary(hash) and byte_size(hash) > 0 -> true
+      _ -> false
+    end
+  end
+
+  @doc "Returns the missing-hash setup message shown in the login UI."
+  @spec missing_root_password_hash_error_message() :: String.t()
+  def missing_root_password_hash_error_message do
+    [
+      Gettext.dgettext(
+        AurumFinanceWeb.Gettext,
+        "errors",
+        "error_missing_root_password_hash"
+      ),
+      Gettext.dgettext(
+        AurumFinanceWeb.Gettext,
+        "errors",
+        "error_missing_root_password_hash_hint"
+      )
+    ]
+    |> Enum.join("\n")
+  end
+
   @doc """
   Raises when root password hash is not configured.
 
@@ -51,7 +78,7 @@ defmodule AurumFinance.Auth do
   """
   @spec valid_root_password?(term()) :: boolean()
   def valid_root_password?(password) when is_binary(password) and byte_size(password) > 0 do
-    Bcrypt.verify_pass(password, root_password_hash())
+    bcrypt_verify_pass(password, root_password_hash())
   end
 
   def valid_root_password?(_), do: false
@@ -142,19 +169,10 @@ defmodule AurumFinance.Auth do
   @spec idle_timeout_seconds() :: pos_integer()
   def idle_timeout_seconds, do: @idle_timeout_seconds
 
-  defp missing_root_password_hash_error_message do
-    [
-      Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
-        "errors",
-        "error_missing_root_password_hash"
-      ),
-      Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
-        "errors",
-        "error_missing_root_password_hash_hint"
-      )
-    ]
-    |> Enum.join("\n")
+  defp bcrypt_verify_pass(password, hash) do
+    case Code.ensure_loaded(Bcrypt) do
+      {:module, Bcrypt} -> apply(Bcrypt, :verify_pass, [password, hash])
+      _ -> raise RuntimeError, "bcrypt dependency is not available"
+    end
   end
 end

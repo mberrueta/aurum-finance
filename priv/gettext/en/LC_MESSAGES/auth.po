@@ -1,0 +1,45 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:5
+#, elixir-autogen
+msgid "title_login"
+msgstr "Root Access"
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:6
+#, elixir-autogen
+msgid "subtitle_login"
+msgstr "Enter your root password to access this AurumFinance instance."
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:27
+#, elixir-autogen
+msgid "label_password"
+msgstr "Password"
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:36
+#, elixir-autogen
+msgid "btn_login"
+msgstr "Sign in"
+
+#: lib/aurum_finance_web/root_auth.ex:54
+#: lib/aurum_finance_web/root_auth.ex:86
+#, elixir-autogen
+msgid "error_login_required"
+msgstr "You must sign in to continue."
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:43
+#: lib/aurum_finance_web/controllers/auth_controller.ex:54
+#, elixir-autogen
+msgid "error_invalid_password"
+msgstr "Invalid password."
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:38
+#, elixir-autogen
+msgid "msg_login_success"
+msgstr "Signed in successfully."
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:66
+#, elixir-autogen
+msgid "msg_logged_out"
+msgstr "Signed out successfully."

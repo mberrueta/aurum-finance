@@ -1,0 +1,42 @@
+## Auth domain template
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:5
+#, elixir-autogen
+msgid "title_login"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:6
+#, elixir-autogen
+msgid "subtitle_login"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:27
+#, elixir-autogen
+msgid "label_password"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_html/login.html.heex:36
+#, elixir-autogen
+msgid "btn_login"
+msgstr ""
+
+#: lib/aurum_finance_web/root_auth.ex:54
+#: lib/aurum_finance_web/root_auth.ex:86
+#, elixir-autogen
+msgid "error_login_required"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:43
+#: lib/aurum_finance_web/controllers/auth_controller.ex:54
+#, elixir-autogen
+msgid "error_invalid_password"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:38
+#, elixir-autogen
+msgid "msg_login_success"
+msgstr ""
+
+#: lib/aurum_finance_web/controllers/auth_controller.ex:66
+#, elixir-autogen
+msgid "msg_logged_out"
+msgstr ""
