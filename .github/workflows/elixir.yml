@@ -2,21 +2,19 @@ name: app_checks
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: [main, develop]
+  schedule:
+    - cron: "0 8 * * 1"
 
 concurrency:
   group: ${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
-  build:
-    name: Build and test
+  fast_checks:
+    name: Fast checks
     runs-on: ubuntu-22.04
 
     env:
@@ -43,8 +41,8 @@ jobs:
       - name: Set up Elixir
         uses: erlef/setup-beam@v1
         with:
-          elixir-version: "1.19.1"
-          otp-version: "28.1"
+          elixir-version: "1.19.5"
+          otp-version: "28.4"
 
       - name: Restore deps cache
         uses: actions/cache@v4
@@ -65,8 +63,95 @@ jobs:
       - name: Install dependencies
         run: mix deps.get
 
-      - name: Run tests
-        run: mix test
+      - name: Prepare dialyzer ignore file
+        run: test -f .dialyzer_ignore.exs || touch .dialyzer_ignore.exs
 
-      - name: Run precommit
-        run: mix precommit
+      - name: Run fast CI quality checks
+        run: mix quality.ci
+
+  full_quality:
+    name: Full quality
+    runs-on: ubuntu-22.04
+    needs: fast_checks
+
+    env:
+      MIX_ENV: test
+      POSTGRES_PASSWORD: postgres
+
+    services:
+      db:
+        image: postgres:16
+        ports: ["5432:5432"]
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: aurum_finance_test
+        options: >-
+          --health-cmd "pg_isready -U postgres -d aurum_finance_test"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "28.4"
+
+      - name: Restore deps cache
+        uses: actions/cache@v4
+        with:
+          path: deps
+          key: ${{ runner.os }}-deps-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-deps-
+
+      - name: Restore build cache
+        uses: actions/cache@v4
+        with:
+          path: _build
+          key: ${{ runner.os }}-build-${{ env.MIX_ENV }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-build-${{ env.MIX_ENV }}-
+
+      - name: Restore dialyzer PLT cache
+        uses: actions/cache@v4
+        with:
+          path: priv/plts
+          key: ${{ runner.os }}-plt-${{ env.MIX_ENV }}-${{ hashFiles('mix.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-plt-${{ env.MIX_ENV }}-
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Prepare dialyzer ignore file
+        run: |
+          mkdir -p priv/plts
+          test -f .dialyzer_ignore.exs || touch .dialyzer_ignore.exs
+
+      - name: Run full validation
+        run: mix precommit.full
+
+  deps_outdated:
+    name: Dependency freshness
+    runs-on: ubuntu-22.04
+    if: github.event_name == 'schedule'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          elixir-version: "1.19.5"
+          otp-version: "28.4"
+
+      - name: Install dependencies
+        run: mix deps.get
+
+      - name: Report outdated Hex deps
+        run: mix hex.outdated

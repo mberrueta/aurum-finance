@@ -129,11 +129,10 @@ defmodule AurumFinanceWeb.UiComponents do
       {Float.round(x, 2), Float.round(y, 2)}
     end)
     |> Enum.with_index()
-    |> Enum.map(fn {{x, y}, i} ->
+    |> Enum.map_join(" ", fn {{x, y}, i} ->
       cmd = if i == 0, do: "M", else: "L"
       "#{cmd}#{x} #{y}"
     end)
-    |> Enum.join(" ")
   end
 
   @doc """
@@ -245,8 +244,7 @@ defmodule AurumFinanceWeb.UiComponents do
     |> String.reverse()
     |> String.graphemes()
     |> Enum.chunk_every(3)
-    |> Enum.map(&Enum.join/1)
-    |> Enum.join(",")
+    |> Enum.map_join(",", &Enum.join/1)
     |> String.reverse()
   end
 end
