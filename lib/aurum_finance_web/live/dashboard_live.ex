@@ -15,7 +15,7 @@ defmodule AurumFinanceWeb.DashboardLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="dashboard-page">
       <%!-- Page header --%>
       <.page_header title={dgettext("dashboard", "page_title")}>
         <:subtitle>

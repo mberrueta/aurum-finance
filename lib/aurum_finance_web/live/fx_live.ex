@@ -22,7 +22,7 @@ defmodule AurumFinanceWeb.FxLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="fx-page">
       <.page_header title={dgettext("fx", "page_title")}>
         <:subtitle>
           Named FX series (market / official_tax / ptax / mep). Used for reporting and tax snapshots.

@@ -16,7 +16,7 @@ defmodule AurumFinanceWeb.ReportsLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="reports-page">
       <.page_header title={dgettext("reports", "page_title")}>
         <:subtitle>
           Derived read models for explainable reporting. UI-only charts and drilldowns.

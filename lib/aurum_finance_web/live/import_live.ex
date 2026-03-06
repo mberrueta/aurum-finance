@@ -30,7 +30,7 @@ defmodule AurumFinanceWeb.ImportLive do
     assigns = assign(assigns, :steps, Enum.with_index(@steps))
 
     ~H"""
-    <div>
+    <div id="import-page">
       <.page_header title={dgettext("import", "page_title")}>
         <:subtitle>{dgettext("import", "page_subtitle")}</:subtitle>
         <:actions>

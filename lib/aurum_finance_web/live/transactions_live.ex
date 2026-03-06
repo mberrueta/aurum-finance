@@ -13,7 +13,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="transactions-page">
       <.page_header title={dgettext("transactions", "page_title")}>
         <:subtitle>{dgettext("transactions", "page_subtitle")}</:subtitle>
         <:actions>

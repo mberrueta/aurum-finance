@@ -35,7 +35,7 @@ defmodule AurumFinanceWeb.RulesLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="rules-page">
       <.page_header title={dgettext("rules", "page_title")}>
         <:subtitle>{dgettext("rules", "page_subtitle")}</:subtitle>
         <:actions>

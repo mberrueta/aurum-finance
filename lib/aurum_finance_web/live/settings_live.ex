@@ -44,7 +44,7 @@ defmodule AurumFinanceWeb.SettingsLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="settings-page">
       <.page_header title={dgettext("settings", "page_title")}>
         <:subtitle>
           Privacy-first, self-hosted posture. This page is informational in the UI prototype.

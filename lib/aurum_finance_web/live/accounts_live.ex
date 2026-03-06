@@ -15,7 +15,7 @@ defmodule AurumFinanceWeb.AccountsLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="accounts-page">
       <.page_header title={dgettext("accounts", "page_title")}>
         <:subtitle>{dgettext("accounts", "page_subtitle")}</:subtitle>
       </.page_header>

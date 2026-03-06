@@ -22,7 +22,7 @@ defmodule AurumFinanceWeb.ReconciliationLive do
 
   def render(assigns) do
     ~H"""
-    <div>
+    <div id="reconciliation-page">
       <.page_header title={dgettext("reconciliation", "page_title")}>
         <:subtitle>{dgettext("reconciliation", "page_subtitle")}</:subtitle>
         <:actions>
