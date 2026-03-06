@@ -1,7 +1,7 @@
 # Task 02: Backend Auth Foundation
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01
 - **Blocks**: Task 03
@@ -65,34 +65,44 @@ Implement bcrypt verification, auth/session helper layer, runtime env enforcemen
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Added backend auth module `AurumFinance.Auth` with bcrypt verification, session helpers, idle-timeout validation, and configuration guard.
+- Added startup enforcement in `AurumFinance.Application.start/2` via `AurumFinance.Auth.ensure_configured!/0`.
+- Wired runtime config to read `AURUM_ROOT_PASSWORD_HASH` from environment when present.
+- Added mix task `mix aurum.gen_password_hash <password>` that outputs bcrypt hash only.
+- Added focused unit tests for auth logic and mix task behavior.
+- Added `bcrypt_elixir` dependency.
 
 ### Outputs Created
-- 
+- `lib/aurum_finance/auth.ex`
+- `lib/mix/tasks/aurum.gen_password_hash.ex`
+- `test/aurum_finance/auth_test.exs`
+- `test/mix/tasks/aurum.gen_password_hash_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Startup enforcement at `Application.start/2` satisfies "app refuses to start" while avoiding unrelated mix-task breakage | Keeps strict startup guarantee without forcing env var for every development command |
+| Runtime config should source `AURUM_ROOT_PASSWORD_HASH` from env only, without hardcoded fallback | Aligns with security requirement to avoid plaintext/default password material |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Enforce missing hash on app start (not unconditional runtime raise) | Raising in `runtime.exs` for every command | Better developer ergonomics while still meeting startup refusal requirement |
+| Keep session timeout logic in `AurumFinance.Auth.validate_session/2` | Relying on cookie signing/storage behavior | Matches finalized decision: timeout enforced by Aurum auth logic |
+| Mix task outputs hash only via `Mix.shell().info/1` | Verbose output with labels | Requirement asks for hash-only output suitable for shell piping |
 
 ### Blockers Encountered
-- 
+- `mix format` failed in sandbox due Mix.PubSub socket permissions; resolved by running with approved escalated execution.
 
 ### Questions for Human
-1. 
+1. Approve Task 02 so Task 03 (login UX + route/LiveView guarding) can begin.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

@@ -1,5 +1,11 @@
 import Config
 
+# Keep runtime auth env check satisfied in test runs.
+System.put_env(
+  "AURUM_ROOT_PASSWORD_HASH",
+  "$2b$12$0f4f9X6BlsQW2gD2qSiJ8el6x8xL5f0lIsvHF6f2L2hR8CT22zG0W"
+)
+
 # Configure your database
 #
 # The MIX_TEST_PARTITION environment variable can be used
