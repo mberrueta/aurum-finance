@@ -71,11 +71,16 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 - `entity_type`
 - `entity_id`
 - `action`
-- `actor`
+- `actor` (structured map)
 - `channel` (supports `web`, `system`, `mcp`, `ai_assistant`)
 - `before`
 - `after`
 - `occurred_at`
+
+Actor format decision:
+- `actor` is a structured map from day one (not a plain string).
+- Minimum expected keys for root-auth flows: `type`, `id`.
+- This avoids migration/API churn when new channels (`mcp`, `ai_assistant`) are used.
 
 ## Project Context and ADR Alignment
 
@@ -87,7 +92,7 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 
 ### Fiscal residency alignment
 - Fiscal residency belongs to entity (`fiscal_residency_country_code`, `default_tax_rate_type`) per ADR/domain docs.
-- Defaults and fallback behavior are implemented in entity-level validations/business rules.
+- Decision: `fiscal_residency_country_code` defaults at write time from `country_code` when omitted.
 
 ### Traceability alignment
 - Entity lifecycle changes are captured as append-only audit events.
@@ -117,6 +122,8 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
     - `update_entity/2`
     - `archive_entity/1` (sets `archived_at`)
   - Explicit omission of any hard-delete API.
+  - `tax_identifier` has no unique restriction.
+  - Archived entities remain editable through standard update flows.
 - **Output file**: `llms/tasks/010_entity_model/01_domain_data_model_foundation.md`
 
 ### Task 02 - Generic Audit Events Foundation
@@ -135,7 +142,9 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 - **Goal**: Ship list/new/edit/archive UI in authenticated app shell.
 - **Deliverables**:
   - New `EntitiesLive` route and navigation entry.
-  - List page showing active and archived state clearly.
+  - List behavior decision:
+    - show active entities by default
+    - provide explicit toggle/control to include archived entities
   - Create/edit forms using `<.form for={@form}>` and `<.input>` patterns.
   - Archive action wired to `archive_entity/1` (no delete UI).
   - Stable DOM IDs for testability.
@@ -158,6 +167,7 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
   - `archive_entity/1` sets `archived_at` and does not delete.
   - No hard-delete function/path exists in context behavior.
   - Audit events emitted with expected shape for create/update/archive.
+  - Fiscal residency behavior test (required): write-time default from `country_code` when omitted.
   - LiveView tests for list/new/edit/archive interactions via explicit element IDs.
 - **Output file**: `llms/tasks/010_entity_model/05_test_coverage.md`
 
@@ -201,10 +211,7 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 5. `occurred_at` is explicitly stored (append-only semantics) and not inferred solely from insertion timestamp.
 
 ## Open Questions (To Resolve Before Implementation Freeze)
-1. Should `fiscal_residency_country_code` default to `country_code` at write time, or remain nullable and resolved at read time per ADR text?
-2. Should archived entities be editable (metadata-only) after archival, or locked except unarchive flows (future)?
-3. What is the canonical actor identifier format for root-auth sessions in audit events (string constant vs structured map)?
-4. Should `tax_identifier` uniqueness be global, scoped by `country_code`, or intentionally non-unique due to data-entry realities?
+- None at this stage. Core modeling decisions are resolved.
 
 ## Validation Plan
 - Add/expand ExUnit coverage for context and audit integration.
@@ -219,3 +226,4 @@ Use a shared `audit_events` concept/table/model from the start, with at least:
 |---|---|---|---|
 | 2026-03-06 | Plan | Initial issue #10 plan created | Start planning workflow |
 | 2026-03-06 | Plan | Revised for ADR/domain alignment and canonical field/type/audit decisions | Align with staff-level architecture requirements |
+| 2026-03-06 | Plan | Open questions resolved: fiscal residency write-default, non-unique tax_identifier, archived entities editable | Remove ambiguity before Task 02 |
