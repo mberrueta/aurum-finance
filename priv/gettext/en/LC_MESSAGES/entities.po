@@ -1,0 +1,139 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/entities_live.ex:13
+#: lib/aurum_finance_web/live/entities_live.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "Entities"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr "Ownership boundary for accounts and holdings."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "btn_new_entity"
+msgstr "New entity"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:18
+#, elixir-autogen, elixir-format
+msgid "btn_hide_archived"
+msgstr "Hide archived"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "btn_show_archived"
+msgstr "Show archived"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:28
+#, elixir-autogen, elixir-format
+msgid "section_entities"
+msgstr "Entities"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "empty_state"
+msgstr "No entities found."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "badge_archived"
+msgstr "archived"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:49
+#, elixir-autogen, elixir-format
+msgid "label_fiscal"
+msgstr "Fiscal"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:65
+#, elixir-autogen, elixir-format
+msgid "btn_edit"
+msgstr "Edit"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:75
+#, elixir-autogen, elixir-format
+msgid "btn_archive"
+msgstr "Archive"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:87
+#, elixir-autogen, elixir-format
+msgid "form_title_edit"
+msgstr "Edit entity"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:88
+#, elixir-autogen, elixir-format
+msgid "form_title_create"
+msgstr "Create entity"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:100
+#, elixir-autogen, elixir-format
+msgid "field_name"
+msgstr "Name"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:105
+#, elixir-autogen, elixir-format
+msgid "field_type"
+msgstr "Type"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:113
+#, elixir-autogen, elixir-format
+msgid "field_tax_identifier"
+msgstr "Tax identifier"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:120
+#, elixir-autogen, elixir-format
+msgid "field_country_code"
+msgstr "Country code"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:126
+#, elixir-autogen, elixir-format
+msgid "field_fiscal_residency_country_code"
+msgstr "Fiscal residency country code"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:133
+#, elixir-autogen, elixir-format
+msgid "field_default_tax_rate_type"
+msgstr "Default tax rate type"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:136
+#, elixir-autogen, elixir-format
+msgid "field_notes"
+msgstr "Notes"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:140
+#, elixir-autogen, elixir-format
+msgid "btn_clear"
+msgstr "Clear"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:145
+#, elixir-autogen, elixir-format
+msgid "btn_save_changes"
+msgstr "Save changes"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:146
+#, elixir-autogen, elixir-format
+msgid "btn_create_entity"
+msgstr "Create entity"
+
+#: lib/aurum_finance_web/live/entities_live.ex:50
+#, elixir-autogen, elixir-format
+msgid "flash_entity_archived"
+msgstr "Entity archived."
+
+#: lib/aurum_finance_web/live/entities_live.ex:76
+#, elixir-autogen, elixir-format
+msgid "flash_entity_updated"
+msgstr "Entity updated."
+
+#: lib/aurum_finance_web/live/entities_live.ex:77
+#, elixir-autogen, elixir-format
+msgid "flash_entity_created"
+msgstr "Entity created."
+
+#: lib/aurum_finance_web/live/entities_live.ex:96
+#, elixir-autogen, elixir-format
+msgid "flash_audit_logging_failed"
+msgstr "Entity saved, but audit logging failed."

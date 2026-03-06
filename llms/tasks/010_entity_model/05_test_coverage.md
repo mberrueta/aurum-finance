@@ -1,7 +1,7 @@
 # Task 05: Test Coverage
 
 ## Status
-- **Status**: ⏳ PENDING
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Tasks 02, 03
 - **Blocks**: Task 06
@@ -71,31 +71,50 @@ Provide complete deterministic test coverage for the issue acceptance criteria, 
 *[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Added deterministic context tests for `AurumFinance.Entities` covering:
+  - required fields and canonical enum behavior
+  - fiscal residency write-time default from `country_code`
+  - non-unique `tax_identifier`
+  - archive semantics via `archived_at` and archived-entity editability
+  - audit event emission for create/update/archive with required shape fields
+- Added LiveView tests for `/entities` covering:
+  - active-only default list
+  - archived toggle behavior
+  - create/edit flow via `#entity-form`
+  - archive action from list
+- Ran validation pipeline and fixed one Dialyzer warning in `EntitiesLive`:
+  - `mix format`
+  - `mix test`
+  - `mix precommit`
 
 ### Outputs Created
-- 
+- `test/aurum_finance/entities_test.exs`
+- `test/aurum_finance_web/live/entities_live_test.exs`
+- `lib/aurum_finance_web/live/entities_live.ex` (small internal simplification to satisfy Dialyzer)
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Audit integration assertions can be validated through persisted `audit_events` records | This is the contract required by Task 02 and acceptance criteria |
+| LiveView tests should assert by stable selectors/IDs instead of text-heavy HTML checks | Reduces brittleness and follows project testing guidance |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Keep issue-#10 test coverage in dedicated files (`entities_test`, `entities_live_test`) | Extending unrelated smoke/auth test files only | Improves maintainability and keeps issue scope explicit |
+| Validate archive behavior by persistence/list filtering and UI behavior, not by introspecting missing API symbols | Asserting function absence directly | Behavioral coverage is stronger and less brittle |
 
 ### Blockers Encountered
-- 
+- Initial fixture helper expected maps and failed when tests passed keyword attrs; resolved by normalizing keyword input.
+- `mix precommit` surfaced one unreachable pattern warning in `EntitiesLive`; resolved by simplifying `assign_form/2` signature.
 
 ### Questions for Human
-1. 
+1. Approve Task 05 so we can continue with Task 06 (security/architecture handoff).
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

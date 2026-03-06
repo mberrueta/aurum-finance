@@ -17,10 +17,15 @@ msgstr "Ledger-first · Multi-entity · Multi-currency"
 msgid "breadcrumb_app"
 msgstr "App"
 
-#: lib/aurum_finance_web/components/layouts.ex:138
+#: lib/aurum_finance_web/components/layouts.ex:139
 #, elixir-autogen, elixir-format
 msgid "nav_accounts"
 msgstr "Accounts"
+
+#: lib/aurum_finance_web/components/layouts.ex:138
+#, elixir-autogen, elixir-format
+msgid "nav_entities"
+msgstr "Entities"
 
 #: lib/aurum_finance_web/components/layouts.ex:83
 #: lib/aurum_finance_web/components/layouts.ex:137

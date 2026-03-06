@@ -1,7 +1,7 @@
 # Task 03: Entities CRUD LiveView
 
 ## Status
-- **Status**: ⏳ PENDING
+- **Status**: ✅ COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01
 - **Blocks**: Task 05
@@ -73,31 +73,42 @@ Deliver list/new/edit/archive UI for entities within authenticated app shell, us
 *[Filled by executing agent after completion]*
 
 ### Work Performed
-- 
+- Implemented `AurumFinanceWeb.EntitiesLive` with end-to-end list/new/edit/archive flows.
+- Added authenticated route and app navigation entry for `/entities`.
+- Implemented default active-only list with explicit archived toggle.
+- Added stable DOM IDs for key interactive elements to support LiveView tests.
+- Wired archive and save flows to `AurumFinance.Entities` context APIs with audit metadata (`actor`, `channel`).
+- Ran `mix format` and `mix compile` successfully after fixing template syntax issues.
 
 ### Outputs Created
-- 
+- `lib/aurum_finance_web/live/entities_live.ex`
+- `lib/aurum_finance_web/router.ex` (route integration)
+- `lib/aurum_finance_web/components/layouts.ex` (navigation integration)
+- `priv/gettext/en/LC_MESSAGES/layout.po` (new nav translation key)
+- `priv/gettext/layout.pot` (template update)
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-|  |  |
+| Entity list can be rendered without pagination for this phase | Issue scope focuses on CRUD and archive semantics, not list scalability |
+| Default actor for UI-triggered mutations is `\"person\"` with `channel: :web` | Matches single-user audit model agreed in Task 02 |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-|  |  |  |
+| Show active entities by default with archived toggle | Show all entities by default | Aligns with product decision to keep archived records secondary but accessible |
+| Keep archived entities editable through normal edit flow | Lock edits after archive | Matches accepted domain decision from plan |
 
 ### Blockers Encountered
-- 
+- Initial HEEx syntax errors due extra `)` in inline `if` expressions; resolved and re-validated with formatter/compiler.
 
 ### Questions for Human
-1. 
+1. Approve Task 03 so Task 05 can rely on final UI structure and stable selectors.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

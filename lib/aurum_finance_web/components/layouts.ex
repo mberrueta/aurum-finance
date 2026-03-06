@@ -135,6 +135,7 @@ defmodule AurumFinanceWeb.Layouts do
   defp nav_items do
     [
       {:dashboard, dgettext("layout", "nav_dashboard"), "hero-home-mini", ~p"/dashboard"},
+      {:entities, dgettext("layout", "nav_entities"), "hero-user-group-mini", ~p"/entities"},
       {:accounts, dgettext("layout", "nav_accounts"), "hero-building-library-mini",
        ~p"/accounts"},
       {:transactions, dgettext("layout", "nav_transactions"), "hero-list-bullet-mini",

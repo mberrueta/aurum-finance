@@ -39,6 +39,7 @@ defmodule AurumFinanceWeb.Router do
       layout: {AurumFinanceWeb.Layouts, :app} do
       live "/", DashboardLive, :index
       live "/dashboard", DashboardLive, :index
+      live "/entities", EntitiesLive, :index
       live "/accounts", AccountsLive, :index
       live "/transactions", TransactionsLive, :index
       live "/import", ImportLive, :index

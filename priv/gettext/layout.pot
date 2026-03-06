@@ -26,9 +26,14 @@ msgstr ""
 msgid "breadcrumb_app"
 msgstr ""
 
-#: lib/aurum_finance_web/components/layouts.ex:138
+#: lib/aurum_finance_web/components/layouts.ex:139
 #, elixir-autogen, elixir-format
 msgid "nav_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/components/layouts.ex:138
+#, elixir-autogen, elixir-format
+msgid "nav_entities"
 msgstr ""
 
 #: lib/aurum_finance_web/components/layouts.ex:83

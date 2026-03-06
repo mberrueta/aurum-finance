@@ -1,0 +1,158 @@
+<div id="entities-page">
+  <.page_header title={dgettext("entities", "page_title")}>
+    <:subtitle>
+      {dgettext("entities", "page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <button id="new-entity-btn" type="button" class="au-btn" phx-click="new_entity">
+        {dgettext("entities", "btn_new_entity")}
+      </button>
+      <button
+        id="toggle-archived-btn"
+        type="button"
+        class={["au-btn", @show_archived && "au-btn-primary"]}
+        phx-click="toggle_archived"
+      >
+        {if(
+          @show_archived,
+          do: dgettext("entities", "btn_hide_archived"),
+          else: dgettext("entities", "btn_show_archived")
+        )}
+      </button>
+    </:actions>
+  </.page_header>
+
+  <div class="grid grid-cols-1 xl:grid-cols-2 gap-[14px]">
+    <.au_card>
+      <:header>
+        <span>{dgettext("entities", "section_entities")}</span>
+        <.badge variant={:purple}>{length(@entities)}</.badge>
+      </:header>
+
+      <div id="entities-list" class="au-list">
+        <div :if={@entities == []} class="au-empty" id="entities-empty-state">
+          {dgettext("entities", "empty_state")}
+        </div>
+
+        <div :for={entity <- @entities} id={"entity-#{entity.id}"} class="au-item">
+          <div>
+            <div class="flex items-center gap-[8px]">
+              <div class="text-[13px] text-white/92">{entity.name}</div>
+              <.badge>{entity.type}</.badge>
+              <.badge :if={entity.archived_at} variant={:warn}>
+                {dgettext("entities", "badge_archived")}
+              </.badge>
+            </div>
+            <div class="text-[12px] text-white/68 mt-[2px]">
+              {entity.country_code}
+              <span :if={entity.fiscal_residency_country_code}>
+                &nbsp;•&nbsp;{dgettext("entities", "label_fiscal")}: {entity.fiscal_residency_country_code}
+              </span>
+              <span :if={entity.default_tax_rate_type}>
+                &nbsp;•&nbsp;{entity.default_tax_rate_type}
+              </span>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-[8px]">
+            <button
+              id={"edit-entity-#{entity.id}"}
+              type="button"
+              class="au-btn"
+              phx-click="edit_entity"
+              phx-value-id={entity.id}
+            >
+              {dgettext("entities", "btn_edit")}
+            </button>
+            <button
+              :if={is_nil(entity.archived_at)}
+              id={"archive-entity-#{entity.id}"}
+              type="button"
+              class="au-btn"
+              phx-click="archive_entity"
+              phx-value-id={entity.id}
+            >
+              {dgettext("entities", "btn_archive")}
+            </button>
+          </div>
+        </div>
+      </div>
+    </.au_card>
+
+    <.au_card>
+      <:header>
+        <span>
+          {if(
+            @editing_entity,
+            do: dgettext("entities", "form_title_edit"),
+            else: dgettext("entities", "form_title_create")
+          )}
+        </span>
+      </:header>
+
+      <.form
+        id="entity-form"
+        for={@form}
+        phx-change="validate"
+        phx-submit="save"
+        class="space-y-[10px]"
+      >
+        <.input
+          field={@form[:name]}
+          type="text"
+          label={dgettext("entities", "field_name")}
+          required
+        />
+
+        <.input
+          field={@form[:type]}
+          type="select"
+          label={dgettext("entities", "field_type")}
+          options={Entity.type_options()}
+          required
+        />
+
+        <.input
+          field={@form[:tax_identifier]}
+          type="text"
+          label={dgettext("entities", "field_tax_identifier")}
+        />
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
+          <.input
+            field={@form[:country_code]}
+            type="text"
+            label={dgettext("entities", "field_country_code")}
+            required
+          />
+          <.input
+            field={@form[:fiscal_residency_country_code]}
+            type="text"
+            label={dgettext("entities", "field_fiscal_residency_country_code")}
+          />
+        </div>
+
+        <.input
+          field={@form[:default_tax_rate_type]}
+          type="text"
+          label={dgettext("entities", "field_default_tax_rate_type")}
+        />
+
+        <.input field={@form[:notes]} type="textarea" label={dgettext("entities", "field_notes")} />
+
+        <div class="flex items-center justify-end gap-[8px] pt-[6px]">
+          <button id="cancel-entity-btn" type="button" class="au-btn" phx-click="new_entity">
+            {dgettext("entities", "btn_clear")}
+          </button>
+          <button id="save-entity-btn" type="submit" class="au-btn au-btn-primary">
+            {if(
+              @editing_entity,
+              do: dgettext("entities", "btn_save_changes"),
+              else: dgettext("entities", "btn_create_entity")
+            )}
+          </button>
+        </div>
+      </.form>
+    </.au_card>
+  </div>
+</div>

@@ -5,7 +5,7 @@
 - **Created**: 2026-03-06
 - **Updated**: 2026-03-06
 - **Status**: PLANNED
-- **Current Task**: 01 (awaiting human approval)
+- **Current Task**: 06 (ready after Task 05 review)
 
 ## Overview
 Issue #10 establishes the multi-entity ownership foundation for M1. In AurumFinance, **Entity is the tenant/ownership boundary** for financial data. This plan delivers the entity model, LiveView CRUD (including archive), and a **generic audit_events** foundation so every entity change is traceable (who, when, old/new values) from day one.
@@ -197,9 +197,9 @@ Actor format decision (single-user rationale):
 |---|------|--------|----------|--------------|
 | 01 | Domain + Data Model Foundation | ⏳ PENDING | [ ] | None |
 | 02 | Generic Audit Events Foundation | ⏳ PENDING | [ ] | Task 01 |
-| 03 | Entities CRUD LiveView | ⏳ PENDING | [ ] | Task 01 |
-| 04 | Ownership Boundary Contract for Downstream Contexts | ⏳ PENDING | [ ] | Task 01 |
-| 05 | Test Coverage | ⏳ PENDING | [ ] | Tasks 02, 03 |
+| 03 | Entities CRUD LiveView | ✅ COMPLETED | [ ] | Task 01 |
+| 04 | Ownership Boundary Contract for Downstream Contexts | ✅ COMPLETED | [ ] | Task 01 |
+| 05 | Test Coverage | ✅ COMPLETED | [ ] | Tasks 02, 03 |
 | 06 | Security/Architecture Review + Handoff | ⏳ PENDING | [ ] | Task 05 |
 | 07 | Documentation and ADR/README Sync | ⏳ PENDING | [ ] | Task 06 |
 

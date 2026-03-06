@@ -63,6 +63,22 @@ defmodule AurumFinance.Entities.Entity do
   @spec types() :: [atom()]
   def types, do: @types
 
+  @doc """
+  Returns UI-friendly options for entity type selects.
+  """
+  @spec type_options() :: [{String.t(), atom()}]
+  def type_options do
+    Enum.map(@types, fn type ->
+      label =
+        type
+        |> Atom.to_string()
+        |> String.replace("_", " ")
+        |> String.capitalize()
+
+      {label, type}
+    end)
+  end
+
   defp normalize_to_upper(value) when is_binary(value), do: String.upcase(value)
   defp normalize_to_upper(value), do: value
 
