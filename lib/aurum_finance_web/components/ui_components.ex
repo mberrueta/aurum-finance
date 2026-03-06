@@ -9,6 +9,8 @@ defmodule AurumFinanceWeb.UiComponents do
     - empty_state/1   — dashed placeholder box
     - au_card/1       — content card with optional header row
     - section_panel/1 — common titled section card with optional badge/actions
+    - info_label/1    — field label with small info tooltip icon
+    - info_callout/1  — informative callout with tone-based colors/icons
 
   Utility:
     - format_money/2  — formats a number as "sign + value + currency code"
@@ -218,6 +220,71 @@ defmodule AurumFinanceWeb.UiComponents do
     </.au_card>
     """
   end
+
+  @doc """
+  Purpose: label helper with an inline info icon and native tooltip.
+  """
+  attr :for, :string, required: true
+  attr :text, :string, required: true
+  attr :tooltip, :string, required: true
+
+  def info_label(assigns) do
+    ~H"""
+    <div class="flex items-center gap-2 mb-1">
+      <label for={@for} class="label mb-0">{@text}</label>
+      <span
+        class="inline-flex items-center justify-center size-4 rounded-full border border-white/30 text-[10px] text-white/80 cursor-help select-none"
+        title={@tooltip}
+        aria-label={@tooltip}
+      >
+        i
+      </span>
+    </div>
+    """
+  end
+
+  @doc """
+  Purpose: renders an informational callout with tone-based style.
+  """
+  attr :title, :string, required: true
+  attr :tone, :atom, default: :info, values: [:info, :warn, :tip]
+  slot :inner_block, required: true
+
+  def info_callout(assigns) do
+    ~H"""
+    <div class={["rounded-xl border p-3", callout_class(@tone)]}>
+      <div class="flex items-start gap-3">
+        <span class={[
+          "inline-flex items-center justify-center size-5 rounded-full text-[11px] font-semibold",
+          callout_icon_class(@tone)
+        ]}>
+          {callout_icon(@tone)}
+        </span>
+        <div class="min-w-0">
+          <h4 class="text-[13px] font-semibold text-white/90">{@title}</h4>
+          <div class="text-[12px] text-white/75 mt-1 leading-relaxed">
+            {render_slot(@inner_block)}
+          </div>
+        </div>
+      </div>
+    </div>
+    """
+  end
+
+  defp callout_class(:info), do: "border-cyan-300/30 bg-cyan-400/10"
+  defp callout_class(:warn), do: "border-amber-300/30 bg-amber-400/10"
+  defp callout_class(:tip), do: "border-emerald-300/30 bg-emerald-400/10"
+  defp callout_class(_), do: "border-white/20 bg-white/5"
+
+  defp callout_icon_class(:info), do: "bg-cyan-300/20 text-cyan-100"
+  defp callout_icon_class(:warn), do: "bg-amber-300/20 text-amber-100"
+  defp callout_icon_class(:tip), do: "bg-emerald-300/20 text-emerald-100"
+  defp callout_icon_class(_), do: "bg-white/20 text-white"
+
+  defp callout_icon(:info), do: "i"
+  defp callout_icon(:warn), do: "!"
+  defp callout_icon(:tip), do: "t"
+  defp callout_icon(_), do: "i"
 
   @doc """
   Purpose: formats numeric amounts for consistent UI display.

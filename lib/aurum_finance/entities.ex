@@ -110,6 +110,22 @@ defmodule AurumFinance.Entities do
   end
 
   @doc """
+  Removes archive state from an entity by setting `archived_at` to `nil` and emits an audit event.
+
+  Optional audit metadata can be passed with `opts`:
+  - `:actor` (string)
+  - `:channel` (`:web | :system | :mcp | :ai_assistant`)
+  """
+  @spec unarchive_entity(Entity.t()) :: {:ok, Entity.t()} | {:error, Ecto.Changeset.t()}
+  @spec unarchive_entity(Entity.t(), [audit_opt()]) ::
+          {:ok, Entity.t()}
+          | {:error, Ecto.Changeset.t()}
+          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+  def unarchive_entity(%Entity{} = entity, opts \\ []) do
+    update_entity_with_action(entity, %{archived_at: nil}, "unarchived", opts)
+  end
+
+  @doc """
   Returns a changeset for entity form handling.
 
   ## Examples

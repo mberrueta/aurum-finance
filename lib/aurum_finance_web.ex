@@ -88,6 +88,8 @@ defmodule AurumFinanceWeb do
       import AurumFinanceWeb.CoreComponents
       # Shared Aurum UI primitives (page_header, badge, sparkline, au_card, etc.)
       import AurumFinanceWeb.UiComponents
+      # Specialized badge renderers
+      import AurumFinanceWeb.BadgeComponent
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS

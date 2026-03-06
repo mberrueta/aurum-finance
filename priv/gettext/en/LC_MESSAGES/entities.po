@@ -28,112 +28,252 @@ msgstr "Hide archived"
 msgid "btn_show_archived"
 msgstr "Show archived"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:28
+#: lib/aurum_finance_web/live/entities_live.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "section_entities"
 msgstr "Entities"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:34
+#: lib/aurum_finance_web/live/entities_live.html.heex:45
 #, elixir-autogen, elixir-format
 msgid "empty_state"
 msgstr "No entities found."
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:43
+#: lib/aurum_finance_web/live/entities_live.html.heex:54
 #, elixir-autogen, elixir-format
 msgid "badge_archived"
 msgstr "archived"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:49
+#: lib/aurum_finance_web/components/badge_component.ex:32
+#, elixir-autogen, elixir-format
+msgid "entity_type_individual"
+msgstr "Individual"
+
+#: lib/aurum_finance_web/components/badge_component.ex:33
+#, elixir-autogen, elixir-format
+msgid "entity_type_legal_entity"
+msgstr "Legal entity"
+
+#: lib/aurum_finance_web/components/badge_component.ex:34
+#, elixir-autogen, elixir-format
+msgid "entity_type_trust"
+msgstr "Trust"
+
+#: lib/aurum_finance_web/components/badge_component.ex:35
+#, elixir-autogen, elixir-format
+msgid "entity_type_other"
+msgstr "Other"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:60
 #, elixir-autogen, elixir-format
 msgid "label_fiscal"
 msgstr "Fiscal"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:65
+#: lib/aurum_finance_web/live/entities_live.html.heex:76
 #, elixir-autogen, elixir-format
 msgid "btn_edit"
 msgstr "Edit"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:75
+#: lib/aurum_finance_web/live/entities_live.html.heex:86
 #, elixir-autogen, elixir-format
 msgid "btn_archive"
 msgstr "Archive"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:87
+#: lib/aurum_finance_web/live/entities_live.html.heex:96
+#, elixir-autogen, elixir-format
+msgid "btn_unarchive"
+msgstr "Unarchive"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:108
 #, elixir-autogen, elixir-format
 msgid "form_title_edit"
 msgstr "Edit entity"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:88
+#: lib/aurum_finance_web/live/entities_live.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "form_title_create"
 msgstr "Create entity"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:100
+#: lib/aurum_finance_web/live/entities_live.html.heex:124
 #, elixir-autogen, elixir-format
 msgid "field_name"
 msgstr "Name"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:105
+#: lib/aurum_finance_web/live/entities_live.html.heex:130
 #, elixir-autogen, elixir-format
 msgid "field_type"
 msgstr "Type"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:113
+#: lib/aurum_finance_web/live/entities_live.html.heex:131
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_type"
+msgstr "Legal/fiscal category of the ownership boundary (individual, legal entity, trust, or other)."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:142
 #, elixir-autogen, elixir-format
 msgid "field_tax_identifier"
 msgstr "Tax identifier"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:120
+#: lib/aurum_finance_web/live/entities_live.html.heex:143
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_tax_identifier"
+msgstr "Official fiscal identifier (for example SSN/TIN/EIN, CPF/CNPJ, CUIT, RUT)."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:154
 #, elixir-autogen, elixir-format
 msgid "field_country_code"
 msgstr "Country code"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:126
+#: lib/aurum_finance_web/live/entities_live.html.heex:155
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_country_code"
+msgstr "Country of incorporation/registration for this entity."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:168
 #, elixir-autogen, elixir-format
 msgid "field_fiscal_residency_country_code"
 msgstr "Fiscal residency country code"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:133
+#: lib/aurum_finance_web/live/entities_live.html.heex:169
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_fiscal_residency_country_code"
+msgstr "Country where this entity files taxes. If empty, we use country code."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:182
 #, elixir-autogen, elixir-format
 msgid "field_default_tax_rate_type"
 msgstr "Default tax rate type"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:136
+#: lib/aurum_finance_web/live/entities_live.html.heex:183
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_default_tax_rate_type"
+msgstr "Default FX/tax rate series used for tax calculations. Auto-derived from fiscal country, but editable."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:192
+#, elixir-autogen, elixir-format
+msgid "hint_default_tax_rate_type_derived"
+msgstr "Derived automatically from fiscal residency country."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:195
 #, elixir-autogen, elixir-format
 msgid "field_notes"
 msgstr "Notes"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:140
+#: lib/aurum_finance_web/live/entities_live.html.heex:199
 #, elixir-autogen, elixir-format
 msgid "btn_clear"
 msgstr "Clear"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:145
+#: lib/aurum_finance_web/live/entities_live.html.heex:204
 #, elixir-autogen, elixir-format
 msgid "btn_save_changes"
 msgstr "Save changes"
 
-#: lib/aurum_finance_web/live/entities_live.html.heex:146
+#: lib/aurum_finance_web/live/entities_live.html.heex:205
 #, elixir-autogen, elixir-format
 msgid "btn_create_entity"
 msgstr "Create entity"
 
-#: lib/aurum_finance_web/live/entities_live.ex:50
+#: lib/aurum_finance_web/live/entities_live.ex:51
 #, elixir-autogen, elixir-format
 msgid "flash_entity_archived"
 msgstr "Entity archived."
 
-#: lib/aurum_finance_web/live/entities_live.ex:76
+#: lib/aurum_finance_web/live/entities_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "flash_entity_unarchived"
+msgstr "Entity unarchived."
+
+#: lib/aurum_finance_web/live/entities_live.ex:86
 #, elixir-autogen, elixir-format
 msgid "flash_entity_updated"
 msgstr "Entity updated."
 
-#: lib/aurum_finance_web/live/entities_live.ex:77
+#: lib/aurum_finance_web/live/entities_live.ex:87
 #, elixir-autogen, elixir-format
 msgid "flash_entity_created"
 msgstr "Entity created."
 
-#: lib/aurum_finance_web/live/entities_live.ex:96
+#: lib/aurum_finance_web/live/entities_live.ex:106
 #, elixir-autogen, elixir-format
 msgid "flash_audit_logging_failed"
 msgstr "Entity saved, but audit logging failed."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:216
+#, elixir-autogen, elixir-format
+msgid "section_guidance"
+msgstr "What is an entity?"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_title"
+msgstr "Entity is the ownership boundary"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:27
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_body"
+msgstr "Each entity is a separate ownership boundary in your finance system."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_1"
+msgstr "Use one entity for your personal accounts (banks, brokers, cash, cards)."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_2"
+msgstr "If you manage family/spouse accounts, model them as their own entity boundary."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_3"
+msgstr "Business/company accounts should live in a separate entity for clean ownership and reporting."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:220
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_title"
+msgstr "How to use entities"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:222
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_1"
+msgstr "Create one entity per legal/fiscal unit (for example: Personal, LLC, Trust)."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:223
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_2"
+msgstr "Set country and fiscal residency carefully, because tax defaults depend on them."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:224
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_3"
+msgstr "Use type and tax identifier to keep compliance and reporting clear."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:229
+#, elixir-autogen, elixir-format
+msgid "callout_warning_title"
+msgstr "Warnings"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:231
+#, elixir-autogen, elixir-format
+msgid "callout_warning_item_1"
+msgstr "Archived entities are hidden by default, but still part of historical data."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:232
+#, elixir-autogen, elixir-format
+msgid "callout_warning_item_2"
+msgstr "Changing fiscal data impacts future defaults; past audit history remains immutable."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:235
+#, elixir-autogen, elixir-format
+msgid "callout_tips_title"
+msgstr "Tips"
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:237
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_1"
+msgstr "Keep entity names simple and stable (for example: Personal, Main LLC)."
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:238
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_2"
+msgstr "Review this setup before importing data, because ownership drives downstream accounting."

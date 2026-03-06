@@ -6,6 +6,8 @@ defmodule AurumFinance.Entities.Entity do
   use Ecto.Schema
 
   import Ecto.Changeset
+  alias AurumFinance.Helpers
+  alias AurumFinance.Entities.Country
 
   @primary_key {:id, :binary_id, autogenerate: true}
   @foreign_key_type :binary_id
@@ -57,6 +59,7 @@ defmodule AurumFinance.Entities.Entity do
     |> update_change(:country_code, &normalize_to_upper/1)
     |> update_change(:fiscal_residency_country_code, &normalize_to_upper/1)
     |> put_default_fiscal_residency_country_code()
+    |> put_default_tax_rate_type()
     |> unique_constraint(:name)
   end
 
@@ -70,14 +73,23 @@ defmodule AurumFinance.Entities.Entity do
   def type_options do
     Enum.map(@types, fn type ->
       label =
-        type
-        |> Atom.to_string()
-        |> String.replace("_", " ")
-        |> String.capitalize()
+        Helpers.humanize_token(type)
 
       {label, type}
     end)
   end
+
+  @doc """
+  Returns country options for UI combo inputs.
+  """
+  @spec country_options() :: [{String.t(), String.t()}]
+  def country_options, do: Country.options()
+
+  @doc """
+  Returns suggested tax rate type options for a country code.
+  """
+  @spec default_tax_rate_type_options(String.t() | nil) :: [String.t()]
+  def default_tax_rate_type_options(country_code), do: Country.tax_rate_type_options(country_code)
 
   defp normalize_to_upper(value) when is_binary(value), do: String.upcase(value)
   defp normalize_to_upper(value), do: value
@@ -94,6 +106,29 @@ defmodule AurumFinance.Entities.Entity do
 
       _ ->
         changeset
+    end
+  end
+
+  defp put_default_tax_rate_type(changeset) do
+    default_tax_rate_type = get_field(changeset, :default_tax_rate_type)
+    fiscal_country = get_field(changeset, :fiscal_residency_country_code)
+    country_code = get_field(changeset, :country_code)
+
+    effective_fiscal_country =
+      case fiscal_country do
+        value when is_binary(value) and value != "" -> value
+        _ -> country_code
+      end
+
+    case default_tax_rate_type do
+      value when is_binary(value) and value != "" ->
+        changeset
+
+      _ ->
+        case Country.default_tax_rate_type(effective_fiscal_country) do
+          nil -> changeset
+          derived -> put_change(changeset, :default_tax_rate_type, derived)
+        end
     end
   end
 end

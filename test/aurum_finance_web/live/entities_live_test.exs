@@ -13,6 +13,8 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
 
     assert has_element?(view, "#entities-list")
+    assert has_element?(view, "#entities-ownership-boundary")
+    assert has_element?(view, "#entities-guidance")
     assert has_element?(view, "#entity-#{active.id}")
     refute has_element?(view, "#entity-#{archived.id}")
 
@@ -29,7 +31,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     params = %{
       "name" => "LiveView entity",
       "type" => "individual",
-      "country_code" => "uy",
+      "country_code" => "UY",
       "tax_identifier" => "LV-001",
       "notes" => "created from live view"
     }
@@ -69,6 +71,28 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     archived = Entities.get_entity!(entity.id)
     assert %DateTime{} = archived.archived_at
     refute has_element?(view, "#entity-#{entity.id}")
+  end
+
+  test "unarchives an entity from the archived list", %{conn: conn} do
+    entity = entity_fixture(name: "Unarchive from UI")
+    {:ok, _archived} = Entities.archive_entity(entity)
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
+
+    view
+    |> element("#toggle-archived-btn")
+    |> render_click()
+
+    assert has_element?(view, "#unarchive-entity-#{entity.id}")
+
+    view
+    |> element("#unarchive-entity-#{entity.id}")
+    |> render_click()
+
+    unarchived = Entities.get_entity!(entity.id)
+    assert is_nil(unarchived.archived_at)
+    assert has_element?(view, "#entity-#{entity.id}")
+    refute has_element?(view, "#unarchive-entity-#{entity.id}")
   end
 
   defp entity_fixture(attrs) do

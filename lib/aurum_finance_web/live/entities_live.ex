@@ -51,6 +51,15 @@ defmodule AurumFinanceWeb.EntitiesLive do
      handle_persist_result(socket, result, dgettext("entities", "flash_entity_archived"))}
   end
 
+  def handle_event("unarchive_entity", %{"id" => id}, socket) do
+    entity = Entities.get_entity!(id)
+
+    result = Entities.unarchive_entity(entity, actor: "person", channel: :web)
+
+    {:noreply,
+     handle_persist_result(socket, result, dgettext("entities", "flash_entity_unarchived"))}
+  end
+
   def handle_event("validate", %{"entity" => params}, socket) do
     target_entity = socket.assigns.editing_entity || %Entity{}
 
@@ -113,4 +122,22 @@ defmodule AurumFinanceWeb.EntitiesLive do
     changeset = Entities.change_entity(entity)
     assign(socket, :form, to_form(changeset, as: :entity))
   end
+
+  defp effective_tax_country_code(form) do
+    fiscal_country_code =
+      form[:fiscal_residency_country_code].value
+      |> blank_to_nil()
+
+    country_code =
+      form[:country_code].value
+      |> blank_to_nil()
+
+    fiscal_country_code || country_code
+  end
+
+  defp blank_to_nil(value) when is_binary(value) do
+    if String.trim(value) == "", do: nil, else: value
+  end
+
+  defp blank_to_nil(value), do: value
 end

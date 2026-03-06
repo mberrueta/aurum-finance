@@ -26,6 +26,15 @@ defmodule AurumFinance.EntitiesTest do
       refute changeset.valid?
       assert "is invalid" in errors_on(changeset).type
     end
+
+    test "exposes multiple default tax rate type options per country" do
+      options = Entity.default_tax_rate_type_options("US")
+
+      assert "irs_official" in options
+      assert "us_market_close" in options
+      assert "us_tax_specific" in options
+      assert "us_bank_settlement" in options
+    end
   end
 
   describe "create_entity/2" do
@@ -39,6 +48,7 @@ defmodule AurumFinance.EntitiesTest do
 
       assert entity.country_code == "CL"
       assert entity.fiscal_residency_country_code == "CL"
+      assert entity.default_tax_rate_type == "sii_official"
     end
 
     test "allows repeated tax_identifier values" do
@@ -85,10 +95,22 @@ defmodule AurumFinance.EntitiesTest do
       assert updated.tax_identifier == "ARCH-EDIT-001"
       assert %DateTime{} = updated.archived_at
     end
+
+    test "unarchive_entity/2 clears archived_at and returns entity to active list" do
+      entity = entity_fixture(name: "Unarchive target")
+      assert {:ok, archived} = Entities.archive_entity(entity)
+      assert %DateTime{} = archived.archived_at
+
+      assert {:ok, unarchived} =
+               Entities.unarchive_entity(archived, actor: "person", channel: :web)
+
+      assert is_nil(unarchived.archived_at)
+      assert unarchived.id in Enum.map(Entities.list_entities(), & &1.id)
+    end
   end
 
   describe "audit events integration" do
-    test "create/update/archive emit required audit event shape" do
+    test "create/update/archive/unarchive emit required audit event shape" do
       assert {:ok, entity} =
                Entities.create_entity(
                  %{
@@ -109,14 +131,15 @@ defmodule AurumFinance.EntitiesTest do
                )
 
       assert {:ok, entity} = Entities.archive_entity(entity, actor: "person", channel: :mcp)
+      assert {:ok, entity} = Entities.unarchive_entity(entity, actor: "person", channel: :web)
 
       events =
         Audit.list_audit_events(entity_id: entity.id)
         |> Enum.sort_by(& &1.occurred_at, {:asc, DateTime})
 
-      assert length(events) == 3
+      assert length(events) == 4
 
-      [created, updated, archived] = events
+      [created, updated, archived, unarchived] = events
 
       assert created.entity_type == "entity"
       assert created.entity_id == entity.id
@@ -144,6 +167,13 @@ defmodule AurumFinance.EntitiesTest do
       assert archived.before["archived_at"] == nil
       refute is_nil(archived.after["archived_at"])
       assert %DateTime{} = archived.occurred_at
+
+      assert unarchived.action == "unarchived"
+      assert unarchived.actor == "person"
+      assert unarchived.channel == :web
+      refute is_nil(unarchived.before["archived_at"])
+      assert unarchived.after["archived_at"] == nil
+      assert %DateTime{} = unarchived.occurred_at
     end
   end
 
