@@ -1,0 +1,48 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:34
+#, elixir-autogen, elixir-format
+msgid "label_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:54
+#, elixir-autogen, elixir-format
+msgid "label_balance_note"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "label_currencies"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "label_recent_activity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:12
+#: lib/aurum_finance_web/live/accounts_live.ex:19
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:27
+#, elixir-autogen, elixir-format
+msgid "section_accounts"
+msgstr ""

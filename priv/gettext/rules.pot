@@ -1,0 +1,103 @@
+## This file is a PO Template file.
+##
+## "msgid"s here are often extracted from source code.
+## Add new messages manually only if they're dynamic
+## messages that can't be statically extracted.
+##
+## Run "mix gettext.extract" to bring this file up to
+## date. Leave "msgstr"s empty as changing them here has no
+## effect: edit them in PO (.po) files instead.
+#
+msgid ""
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "badge_ordered"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:42
+#, elixir-autogen, elixir-format
+msgid "btn_new_group"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "btn_run_test"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:83
+#, elixir-autogen, elixir-format
+msgid "col_order"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:86
+#, elixir-autogen, elixir-format
+msgid "col_stop"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:85
+#, elixir-autogen, elixir-format
+msgid "col_then"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "col_when"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:39
+#, elixir-autogen, elixir-format
+msgid "label_rules"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:78
+#, elixir-autogen, elixir-format
+msgid "label_rules_table"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:72
+#, elixir-autogen, elixir-format
+msgid "label_stop_no"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:70
+#, elixir-autogen, elixir-format
+msgid "label_stop_yes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:120
+#, elixir-autogen, elixir-format
+msgid "label_test_confidence"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:113
+#, elixir-autogen, elixir-format
+msgid "label_test_matched"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "label_test_proposed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:98
+#, elixir-autogen, elixir-format
+msgid "label_test_runner"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:40
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:12
+#: lib/aurum_finance_web/live/rules_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:50
+#, elixir-autogen, elixir-format
+msgid "section_rule_groups"
+msgstr ""

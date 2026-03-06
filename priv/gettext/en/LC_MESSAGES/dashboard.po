@@ -1,0 +1,179 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "alert_anomaly_sub"
+msgstr "Spend spike vs 30-day average"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:189
+#, elixir-autogen, elixir-format
+msgid "alert_anomaly_title"
+msgstr "Anomaly detected"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:180
+#, elixir-autogen, elixir-format
+msgid "alert_missing_fx_sub"
+msgstr "USD/ARS official_tax not available for 2026-03-02"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:179
+#, elixir-autogen, elixir-format
+msgid "alert_missing_fx_title"
+msgstr "Missing FX rate"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:185
+#, elixir-autogen, elixir-format
+msgid "alert_unreconciled_sub"
+msgstr "1 statement line has no match (commission)"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:184
+#, elixir-autogen, elixir-format
+msgid "alert_unreconciled_title"
+msgstr "Unreconciled items"
+
+#: lib/aurum_finance_web/components/dashboard_components.ex:94
+#, elixir-autogen, elixir-format
+msgid "badge_impact"
+msgstr "impact"
+
+## KPI cards
+#: lib/aurum_finance_web/components/dashboard_components.ex:43
+#, elixir-autogen, elixir-format
+msgid "badge_mock"
+msgstr "mock"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:50
+#, elixir-autogen, elixir-format
+msgid "btn_explain"
+msgstr "Explain"
+
+## Action buttons
+#: lib/aurum_finance_web/live/dashboard_live.ex:31
+#, elixir-autogen, elixir-format
+msgid "btn_explain_week"
+msgstr "Explain this week"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:34
+#, elixir-autogen, elixir-format
+msgid "btn_new_import"
+msgstr "New import (mock)"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:170
+#, elixir-autogen, elixir-format
+msgid "changed_card_spend"
+msgstr "Card + bank spend"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:163
+#, elixir-autogen, elixir-format
+msgid "changed_cash_inflow"
+msgstr "Cash inflow"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:156
+#, elixir-autogen, elixir-format
+msgid "changed_fx_effect"
+msgstr "Display currency effect"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "changed_holdings_reprice"
+msgstr "Holdings reprice"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:24
+#, elixir-autogen, elixir-format
+msgid "header_display_label"
+msgstr "Display:"
+
+## Page header context
+#: lib/aurum_finance_web/live/dashboard_live.ex:22
+#, elixir-autogen, elixir-format
+msgid "header_entity_label"
+msgstr "Entity:"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:26
+#, elixir-autogen, elixir-format
+msgid "header_rate_label"
+msgstr "Rate:"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:122
+#, elixir-autogen, elixir-format
+msgid "kpi_cash"
+msgstr "Cash"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:127
+#, elixir-autogen, elixir-format
+msgid "kpi_cash_footer"
+msgstr "Across cash & checking"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:130
+#, elixir-autogen, elixir-format
+msgid "kpi_investments"
+msgstr "Investments"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "kpi_investments_footer"
+msgstr "Holdings + cost basis overlays"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:138
+#, elixir-autogen, elixir-format
+msgid "kpi_liabilities"
+msgstr "Liabilities"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:143
+#, elixir-autogen, elixir-format
+msgid "kpi_liabilities_footer"
+msgstr "Credit cards + payables"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:114
+#, elixir-autogen, elixir-format
+msgid "kpi_net_worth"
+msgstr "Net Worth"
+
+#: lib/aurum_finance_web/components/dashboard_components.ex:60
+#, elixir-autogen, elixir-format
+msgid "kpi_since_last_point"
+msgstr "since last point"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:60
+#, elixir-autogen, elixir-format
+msgid "label_net_change"
+msgstr "Net worth change this week"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:12
+#: lib/aurum_finance_web/live/dashboard_live.ex:20
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "Dashboard"
+
+## Alerts section
+#: lib/aurum_finance_web/live/dashboard_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "section_alerts"
+msgstr "Alerts & next actions"
+
+## What changed section
+#: lib/aurum_finance_web/live/dashboard_live.ex:49
+#, elixir-autogen, elixir-format
+msgid "section_what_changed"
+msgstr "What changed this week"
+
+#: lib/aurum_finance_web/components/dashboard_components.ex:137
+#, elixir-autogen, elixir-format
+msgid "severity_bad"
+msgstr "error"
+
+#: lib/aurum_finance_web/components/dashboard_components.ex:138
+#, elixir-autogen, elixir-format
+msgid "severity_info"
+msgstr "info"
+
+#: lib/aurum_finance_web/components/dashboard_components.ex:136
+#, elixir-autogen, elixir-format
+msgid "severity_warn"
+msgstr "warn"
+
+#: lib/aurum_finance_web/live/dashboard_live.ex:79
+#, elixir-autogen, elixir-format
+msgid "tip_immutable_facts"
+msgstr "Tip: in AurumFinance, facts are immutable; overlays capture classification, reconciliation, and derived reporting."

@@ -1,0 +1,2182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>AurumFinance — UI Prototype</title>
+  <style>
+    :root{
+      --bg:#0b1020;
+      --panel:#0f1730;
+      --panel2:#101b36;
+      --border:rgba(255,255,255,.08);
+      --muted:rgba(255,255,255,.68);
+      --muted2:rgba(255,255,255,.5);
+      --text:rgba(255,255,255,.92);
+      --accent:#7c6cff;
+      --accent2:#22c55e;
+      --warn:#f59e0b;
+      --bad:#ef4444;
+      --chip:rgba(124,108,255,.16);
+      --shadow: 0 10px 30px rgba(0,0,0,.35);
+      --r12:12px;
+      --r16:16px;
+      --r20:20px;
+      --mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      --sans: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, "Apple Color Emoji","Segoe UI Emoji";
+    }
+
+    *{ box-sizing:border-box; }
+    html,body{ height:100%; }
+    body{
+      margin:0;
+      font-family:var(--sans);
+      background: radial-gradient(1200px 700px at 20% -10%, rgba(124,108,255,.25), transparent 55%),
+                  radial-gradient(900px 600px at 90% 0%, rgba(34,197,94,.18), transparent 60%),
+                  linear-gradient(180deg, #070a14 0%, #0b1020 50%, #070a14 100%);
+      color:var(--text);
+      overflow:hidden;
+    }
+
+    a{ color:inherit; text-decoration:none; }
+    button, select, input{
+      font-family:inherit;
+      color:var(--text);
+    }
+
+    /* Layout */
+    .app{
+      height:100vh;
+      display:grid;
+      grid-template-columns: 280px 1fr;
+    }
+
+    .sidebar{
+      border-right:1px solid var(--border);
+      background: linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,0));
+      padding:18px 16px;
+      overflow:auto;
+    }
+
+    .brand{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px 16px;
+    }
+
+    .logo{
+      width:34px; height:34px;
+      border-radius:12px;
+      background: linear-gradient(135deg, rgba(124,108,255,.95), rgba(34,197,94,.75));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.18), var(--shadow);
+      position:relative;
+    }
+    .logo:after{
+      content:"";
+      position:absolute;
+      inset:8px;
+      border-radius:10px;
+      background:rgba(0,0,0,.25);
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.08);
+    }
+
+    .brand h1{
+      margin:0;
+      font-size:15px;
+      letter-spacing:.2px;
+    }
+    .brand p{
+      margin:2px 0 0;
+      color:var(--muted2);
+      font-size:12px;
+    }
+
+    .nav{
+      margin-top:8px;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+    }
+
+    .nav a{
+      display:flex;
+      align-items:center;
+      gap:10px;
+      padding:10px 10px;
+      border-radius:12px;
+      color:var(--muted);
+      border:1px solid transparent;
+    }
+
+    .nav a:hover{
+      background:rgba(255,255,255,.04);
+      border-color:rgba(255,255,255,.06);
+      color:var(--text);
+    }
+
+    .nav a.active{
+      background: linear-gradient(180deg, rgba(124,108,255,.16), rgba(124,108,255,.08));
+      border-color: rgba(124,108,255,.28);
+      color:var(--text);
+    }
+
+    .icon{
+      width:18px; height:18px;
+      opacity:.9;
+      flex: 0 0 auto;
+    }
+
+    .sidebar .section{
+      margin-top:18px;
+      padding:0 10px;
+      color:var(--muted2);
+      font-size:12px;
+      text-transform:uppercase;
+      letter-spacing:.12em;
+    }
+
+    .sidecard{
+      margin-top:12px;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background:rgba(255,255,255,.03);
+      padding:12px;
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+    }
+
+    .sidecard .label{ color:var(--muted2); font-size:12px; }
+    .sidecard .value{ margin-top:6px; font-size:14px; }
+    .sidecard .mini{ margin-top:8px; font-size:12px; color:var(--muted); display:flex; justify-content:space-between; }
+
+    .main{
+      display:grid;
+      grid-template-rows: 64px 1fr;
+      overflow:hidden;
+    }
+
+    .topbar{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      padding:12px 18px;
+      border-bottom:1px solid var(--border);
+      background: rgba(10,14,28,.75);
+      backdrop-filter: blur(10px);
+    }
+
+    .top-left{ display:flex; align-items:center; gap:12px; }
+
+    .crumb{
+      font-size:13px;
+      color:var(--muted);
+    }
+
+    .top-right{ display:flex; align-items:center; gap:10px; }
+
+    .control{
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      border-radius:12px;
+    }
+
+    .control label{
+      font-size:12px;
+      color:var(--muted2);
+    }
+
+    select{
+      border:0;
+      background:transparent;
+      outline:none;
+      font-size:13px;
+      color:var(--text);
+      padding:0;
+      appearance:none;
+      cursor:pointer;
+    }
+
+    .search{
+      min-width:260px;
+      display:flex;
+      align-items:center;
+      gap:8px;
+      padding:8px 10px;
+      border:1px solid var(--border);
+      background:rgba(255,255,255,.03);
+      border-radius:12px;
+    }
+    .search input{
+      width:100%;
+      border:0;
+      background:transparent;
+      outline:none;
+      font-size:13px;
+      color:var(--text);
+    }
+    .search input::placeholder{ color:rgba(255,255,255,.45); }
+
+    .content{
+      overflow:auto;
+      padding:18px;
+    }
+
+    /* Components */
+    .page-title{
+      display:flex;
+      align-items:flex-end;
+      justify-content:space-between;
+      gap:12px;
+      margin-bottom:16px;
+    }
+    .page-title h2{
+      margin:0;
+      font-size:20px;
+      letter-spacing:.2px;
+    }
+    .page-title p{
+      margin:6px 0 0;
+      color:var(--muted);
+      font-size:13px;
+    }
+
+    .grid{
+      display:grid;
+      gap:14px;
+    }
+
+    .grid.cols-4{ grid-template-columns: repeat(4, minmax(0,1fr)); }
+    .grid.cols-3{ grid-template-columns: repeat(3, minmax(0,1fr)); }
+    .grid.cols-2{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+
+    .card{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background: linear-gradient(180deg, rgba(255,255,255,.04), rgba(255,255,255,.02));
+      box-shadow: inset 0 0 0 1px rgba(255,255,255,.03);
+      padding:14px;
+      overflow:hidden;
+    }
+
+    .card h3{
+      margin:0;
+      font-size:13px;
+      font-weight:600;
+      color:var(--muted);
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+    }
+
+    .card .big{
+      margin-top:10px;
+      font-size:24px;
+      letter-spacing:.2px;
+    }
+
+    .row{ display:flex; align-items:center; justify-content:space-between; gap:10px; }
+
+    .muted{ color:var(--muted); }
+    .muted2{ color:var(--muted2); }
+
+    .badge{
+      display:inline-flex;
+      align-items:center;
+      gap:6px;
+      padding:4px 8px;
+      border-radius:999px;
+      font-size:12px;
+      border:1px solid rgba(255,255,255,.10);
+      background:rgba(255,255,255,.04);
+      color:var(--muted);
+      white-space:nowrap;
+    }
+
+    .badge.good{ border-color: rgba(34,197,94,.25); background: rgba(34,197,94,.10); color: rgba(204,255,225,.85); }
+    .badge.warn{ border-color: rgba(245,158,11,.25); background: rgba(245,158,11,.12); color: rgba(255,235,204,.9); }
+    .badge.bad{ border-color: rgba(239,68,68,.25); background: rgba(239,68,68,.12); color: rgba(255,220,220,.9); }
+    .badge.purple{ border-color: rgba(124,108,255,.28); background: rgba(124,108,255,.12); color: rgba(230,228,255,.95); }
+
+    .btn{
+      cursor:pointer;
+      border:1px solid rgba(255,255,255,.12);
+      background:rgba(255,255,255,.05);
+      color:var(--text);
+      padding:8px 10px;
+      border-radius:12px;
+      font-size:13px;
+      display:inline-flex;
+      align-items:center;
+      gap:8px;
+    }
+    .btn:hover{ background:rgba(255,255,255,.08); }
+    .btn.primary{ border-color: rgba(124,108,255,.35); background: rgba(124,108,255,.18); }
+    .btn.primary:hover{ background: rgba(124,108,255,.24); }
+
+    .table{
+      width:100%;
+      border-collapse:separate;
+      border-spacing:0;
+      overflow:hidden;
+      border:1px solid var(--border);
+      border-radius:16px;
+      background: rgba(255,255,255,.02);
+    }
+    .table thead th{
+      font-size:12px;
+      text-align:left;
+      color:var(--muted2);
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.06);
+      background: rgba(255,255,255,.02);
+      position:sticky;
+      top:0;
+      backdrop-filter: blur(8px);
+      z-index:1;
+    }
+    .table tbody td{
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      color:var(--text);
+      font-size:13px;
+      vertical-align:top;
+    }
+    .table tbody tr:hover{ background: rgba(255,255,255,.03); cursor:pointer; }
+    .table tbody tr:last-child td{ border-bottom:0; }
+
+    .kpi-foot{
+      margin-top:10px;
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:10px;
+      color:var(--muted);
+      font-size:12px;
+    }
+
+    .spark{
+      width:110px;
+      height:24px;
+      display:block;
+      opacity:.95;
+    }
+
+    .list{
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+      margin-top:12px;
+    }
+
+    .item{
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(255,255,255,.07);
+      background: rgba(255,255,255,.02);
+    }
+
+    .item .title{ font-size:13px; }
+    .item .sub{ font-size:12px; color:var(--muted); margin-top:2px; }
+
+    .split{
+      display:grid;
+      grid-template-columns: 1.15fr .85fr;
+      gap:14px;
+      align-items:start;
+    }
+
+    .pill{
+      display:inline-flex;
+      padding:4px 8px;
+      border-radius:999px;
+      background: var(--chip);
+      border:1px solid rgba(124,108,255,.28);
+      color: rgba(230,228,255,.95);
+      font-size:12px;
+      font-family:var(--mono);
+    }
+
+    .tree{
+      border:1px solid var(--border);
+      border-radius:16px;
+      background: rgba(255,255,255,.02);
+      overflow:hidden;
+    }
+
+    .tree .node{
+      display:flex;
+      align-items:center;
+      justify-content:space-between;
+      gap:12px;
+      padding:10px 12px;
+      border-bottom:1px solid rgba(255,255,255,.05);
+      cursor:pointer;
+    }
+    .tree .node:hover{ background: rgba(255,255,255,.03); }
+    .tree .node:last-child{ border-bottom:0; }
+    .tree .node .left{ display:flex; align-items:center; gap:10px; }
+    .tree .node .name{ font-size:13px; }
+    .tree .node .meta{ font-size:12px; color:var(--muted); }
+
+    .drawer{
+      position:fixed;
+      top:0; right:0;
+      height:100vh;
+      width:min(520px, 92vw);
+      transform:translateX(105%);
+      transition:transform .22s ease;
+      background: rgba(10,14,28,.88);
+      border-left:1px solid var(--border);
+      backdrop-filter: blur(12px);
+      box-shadow: var(--shadow);
+      z-index:50;
+      display:flex;
+      flex-direction:column;
+    }
+    .drawer.open{ transform:translateX(0); }
+    .drawer .head{
+      padding:14px 14px 10px;
+      border-bottom:1px solid var(--border);
+      display:flex;
+      align-items:flex-start;
+      justify-content:space-between;
+      gap:10px;
+    }
+    .drawer .head h3{ margin:0; font-size:14px; color:var(--text); }
+    .drawer .head .sub{ margin-top:4px; font-size:12px; color:var(--muted); }
+    .drawer .body{ padding:14px; overflow:auto; }
+    .drawer .section{
+      border:1px solid rgba(255,255,255,.08);
+      border-radius:16px;
+      padding:12px;
+      background: rgba(255,255,255,.03);
+      margin-bottom:12px;
+    }
+    .drawer .section h4{ margin:0 0 8px; font-size:12px; color:var(--muted2); text-transform:uppercase; letter-spacing:.1em; }
+    .kv{ display:grid; grid-template-columns: 160px 1fr; gap:8px 10px; }
+    .kv .k{ color:var(--muted2); font-size:12px; }
+    .kv .v{ font-size:12.5px; color:var(--text); font-family:var(--mono); }
+
+    .overlay{
+      position:fixed;
+      inset:0;
+      background: rgba(0,0,0,.55);
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .22s ease;
+      z-index:45;
+    }
+    .overlay.open{ opacity:1; pointer-events:auto; }
+
+    .steps{
+      display:flex;
+      gap:10px;
+      flex-wrap:wrap;
+      margin-top:10px;
+    }
+    .step{
+      padding:8px 10px;
+      border-radius:999px;
+      border:1px solid rgba(255,255,255,.10);
+      background: rgba(255,255,255,.03);
+      color:var(--muted);
+      font-size:12px;
+      cursor:pointer;
+    }
+    .step.active{ border-color: rgba(124,108,255,.35); background: rgba(124,108,255,.14); color: rgba(230,228,255,.95); }
+
+    .empty{
+      border:1px dashed rgba(255,255,255,.16);
+      border-radius:16px;
+      padding:14px;
+      color:var(--muted);
+      background: rgba(255,255,255,.02);
+    }
+
+    /* Responsive */
+    @media (max-width: 980px){
+      body{ overflow:auto; }
+      .app{ grid-template-columns: 1fr; height:auto; min-height:100vh; }
+      .sidebar{ position:sticky; top:0; z-index:5; border-right:0; border-bottom:1px solid var(--border); }
+      .main{ grid-template-rows:auto 1fr; }
+      .topbar{ position:sticky; top:0; z-index:6; }
+      .search{ min-width: 180px; }
+      .grid.cols-4{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+      .split{ grid-template-columns: 1fr; }
+    }
+    @media (max-width: 560px){
+      .grid.cols-4{ grid-template-columns: 1fr; }
+      .grid.cols-3{ grid-template-columns: 1fr; }
+      .grid.cols-2{ grid-template-columns: 1fr; }
+      .search{ display:none; }
+    }
+
+    /* Tiny helpers */
+    .hr{ height:1px; background:rgba(255,255,255,.06); margin:10px 0; }
+    .right{ text-align:right; }
+    .mono{ font-family:var(--mono); }
+    .small{ font-size:12px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <aside class="sidebar">
+      <div class="brand">
+        <div class="logo" aria-hidden="true"></div>
+        <div>
+          <h1>AurumFinance</h1>
+          <p>Ledger-first • Multi-entity • Multi-currency</p>
+        </div>
+      </div>
+
+      <nav class="nav" id="nav">
+        <!-- injected -->
+      </nav>
+
+      <div class="section">Snapshot</div>
+      <div class="sidecard" id="snapshotCard">
+        <!-- injected -->
+      </div>
+
+      <div class="section">Project</div>
+      <div class="sidecard">
+        <div class="label">What this is</div>
+        <div class="value">UI-only demo. All numbers are mocked.</div>
+        <div class="mini">
+          <span>Repo</span>
+          <span class="pill">Apache-2.0</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="main">
+      <header class="topbar">
+        <div class="top-left">
+          <div class="crumb" id="crumb">App / Dashboard</div>
+          <span class="badge purple" id="entityBadge">Entity: Personal (BR)</span>
+          <span class="badge" id="modeBadge">Display: USD • market</span>
+        </div>
+
+        <div class="top-right">
+          <div class="search" title="UI-only">
+            <svg class="icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="7"></circle>
+              <path d="M21 21l-4.2-4.2"></path>
+            </svg>
+            <input id="searchInput" placeholder="Search transactions, accounts… (mock)" />
+          </div>
+
+          <div class="control" title="UI-only">
+            <label>Entity</label>
+            <select id="entitySelect"></select>
+          </div>
+
+          <div class="control" title="UI-only">
+            <label>Currency</label>
+            <select id="currencySelect"></select>
+          </div>
+
+          <div class="control" title="UI-only">
+            <label>Rate</label>
+            <select id="rateSelect"></select>
+          </div>
+        </div>
+      </header>
+
+      <section class="content">
+        <div id="view"></div>
+      </section>
+    </main>
+  </div>
+
+  <div class="overlay" id="overlay"></div>
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="head">
+      <div>
+        <h3 id="drawerTitle">Details</h3>
+        <div class="sub" id="drawerSub">—</div>
+      </div>
+      <button class="btn" id="drawerClose" aria-label="Close">✕</button>
+    </div>
+    <div class="body" id="drawerBody"></div>
+  </aside>
+
+  <script>
+    // -----------------------------
+    // Mock data (single source)
+    // -----------------------------
+    const DATA = {
+      entities: [
+        {
+          id: 'pf_br',
+          name: 'Personal (BR)',
+          homeCountry: 'BR',
+          baseCurrency: 'BRL',
+          tags: ['self', 'resident'],
+          accounts: [
+            { id:'a_cash_br', name:'Banco Inter • Checking', type:'asset', subtype:'checking', currencies:['BRL'], group:'Assets' },
+            { id:'a_cc_br', name:'Nubank • Credit Card', type:'liability', subtype:'credit_card', currencies:['BRL'], group:'Liabilities' },
+            { id:'a_broker_us', name:'US Broker • Taxable', type:'asset', subtype:'brokerage', currencies:['USD'], group:'Assets' },
+            { id:'a_income', name:'Salary', type:'income', subtype:'salary', currencies:['USD'], group:'Income' },
+            { id:'a_expenses', name:'Living Expenses', type:'expense', subtype:'general', currencies:['BRL','USD'], group:'Expenses' },
+          ],
+          holdings: [
+            { symbol:'QQQD', name:'NASDAQ 100 UCITS (acc)', qty:107, currency:'USD', price:31.52, changePct7d:-1.8 },
+            { symbol:'IVVB11', name:'S&P 500 ETF (BR)', qty:34, currency:'BRL', price:312.10, changePct7d:0.6 },
+          ]
+        },
+        {
+          id: 'pj_ar',
+          name: 'My LLC (AR)',
+          homeCountry: 'AR',
+          baseCurrency: 'ARS',
+          tags: ['company'],
+          accounts: [
+            { id:'b_op_ars', name:'Banco Nación • Ops', type:'asset', subtype:'checking', currencies:['ARS'], group:'Assets' },
+            { id:'b_tax', name:'Tax Payable', type:'liability', subtype:'tax', currencies:['ARS'], group:'Liabilities' },
+            { id:'b_revenue', name:'Revenue', type:'income', subtype:'service', currencies:['USD','ARS'], group:'Income' },
+            { id:'b_costs', name:'Operating Costs', type:'expense', subtype:'ops', currencies:['ARS'], group:'Expenses' },
+          ],
+          holdings: [
+            { symbol:'CASH', name:'Operating Float', qty:1, currency:'ARS', price:0, changePct7d:0 }
+          ]
+        },
+        {
+          id: 'trust',
+          name: 'Family Trust',
+          homeCountry: 'US',
+          baseCurrency: 'USD',
+          tags: ['trust', 'family'],
+          accounts: [
+            { id:'t_cash', name:'Trust Cash', type:'asset', subtype:'cash', currencies:['USD'], group:'Assets' },
+            { id:'t_broker', name:'Trust Brokerage', type:'asset', subtype:'brokerage', currencies:['USD'], group:'Assets' },
+            { id:'t_income', name:'Dividends', type:'income', subtype:'dividend', currencies:['USD'], group:'Income' },
+            { id:'t_exp', name:'Distributions', type:'expense', subtype:'distribution', currencies:['USD'], group:'Expenses' },
+          ],
+          holdings: [
+            { symbol:'BND', name:'US Bond ETF', qty:120, currency:'USD', price:71.40, changePct7d:0.2 },
+            { symbol:'VT', name:'Total World ETF', qty:55, currency:'USD', price:109.30, changePct7d:1.1 },
+          ]
+        }
+      ],
+
+      fxSeries: [
+        { id:'usd_brl_market', pair:'USD/BRL', type:'market', label:'USD/BRL market' },
+        { id:'usd_brl_ptax', pair:'USD/BRL', type:'ptax', label:'USD/BRL PTAX (official)' },
+        { id:'usd_ars_oficial', pair:'USD/ARS', type:'official_tax', label:'USD/ARS official (tax)' },
+        { id:'usd_ars_mep', pair:'USD/ARS', type:'mep', label:'USD/ARS MEP' },
+      ],
+
+      // Simple recent series for charts (7–30d)
+      series: {
+        netWorth: {
+          pf_br: [120500, 121020, 119800, 118900, 119150, 117980, 118160, 118420, 119010, 118300, 117900, 118250],
+          pj_ar: [22100, 22140, 22110, 22050, 22090, 22120, 22105, 22070, 22040, 22090, 22110, 22130],
+          trust: [185200, 186100, 184800, 183900, 184500, 185350, 186200, 187400, 187050, 186600, 187120, 187880]
+        }
+      },
+
+      transactions: [
+        {
+          id:'tx_001',
+          entity:'pf_br',
+          date:'2026-03-02',
+          description:'Broker Buy: QQQD (83 shares)',
+          amount:-2640.00,
+          currency:'USD',
+          account:'a_broker_us',
+          category:'Investments:Buy',
+          tags:['etf','nasdaq'],
+          source:'import:broker_statement',
+          evidence:'statement:us-broker/2026-03.pdf',
+          postings:[
+            { account:'a_broker_us', currency:'USD', debit:2640.00, credit:0.00 },
+            { account:'a_cash_br', currency:'USD', debit:0.00, credit:2640.00 }
+          ],
+          overlay:{ notes:'Semestral contribution. Classification: overlay (mutable).', overridden:true }
+        },
+        {
+          id:'tx_002',
+          entity:'pf_br',
+          date:'2026-03-01',
+          description:'Uber trip',
+          amount:-47.90,
+          currency:'BRL',
+          account:'a_cash_br',
+          category:'Transport',
+          tags:['ride'],
+          source:'import:bank_csv',
+          evidence:'import:inter-2026-03.csv',
+          postings:[
+            { account:'a_expenses', currency:'BRL', debit:47.90, credit:0.00 },
+            { account:'a_cash_br', currency:'BRL', debit:0.00, credit:47.90 }
+          ],
+          overlay:{ notes:'Matched by Rule Group: Expense Category', overridden:false }
+        },
+        {
+          id:'tx_003',
+          entity:'pf_br',
+          date:'2026-02-28',
+          description:'Salary payment',
+          amount:4200.00,
+          currency:'USD',
+          account:'a_income',
+          category:'Income:Salary',
+          tags:['payroll'],
+          source:'import:bank_csv',
+          evidence:'import:us-payroll-2026-02.csv',
+          postings:[
+            { account:'a_cash_br', currency:'USD', debit:4200.00, credit:0.00 },
+            { account:'a_income', currency:'USD', debit:0.00, credit:4200.00 }
+          ],
+          overlay:{ notes:'Income category auto-applied by rule.', overridden:false }
+        },
+        {
+          id:'tx_004',
+          entity:'trust',
+          date:'2026-03-03',
+          description:'Dividend: VT',
+          amount:38.20,
+          currency:'USD',
+          account:'t_income',
+          category:'Income:Dividend',
+          tags:['dividend'],
+          source:'import:broker_statement',
+          evidence:'statement:trust/2026-03.pdf',
+          postings:[
+            { account:'t_cash', currency:'USD', debit:38.20, credit:0.00 },
+            { account:'t_income', currency:'USD', debit:0.00, credit:38.20 }
+          ],
+          overlay:{ notes:'Immutable facts preserved; overlays capture classification.', overridden:false }
+        },
+      ],
+
+      rules: {
+        groups: [
+          {
+            id:'rg_expense_cat',
+            name:'Expense Category',
+            description:'Categorize expenses via ordered rules (stop on match).',
+            rules:[
+              { id:'r1', order:1, when:'description contains "Uber"', then:'category=Transport, tag=ride', stop:true },
+              { id:'r2', order:2, when:'merchant in {"iFood","Rappi"}', then:'category=Food Delivery', stop:true },
+              { id:'r3', order:3, when:'account is credit_card', then:'category=Card Purchase', stop:false }
+            ]
+          },
+          {
+            id:'rg_invest',
+            name:'Investment Recognition',
+            description:'Detect buys/sells/dividends and attach investment metadata.',
+            rules:[
+              { id:'i1', order:1, when:'description startsWith "Broker Buy"', then:'category=Investments:Buy', stop:true },
+              { id:'i2', order:2, when:'description startsWith "Dividend"', then:'category=Income:Dividend', stop:true }
+            ]
+          }
+        ]
+      },
+
+      reconciliation: {
+        sessions:[
+          {
+            id:'rec_001',
+            entity:'pf_br',
+            account:'a_cash_br',
+            period:'2026-03',
+            status:'in_progress',
+            statementLines:[
+              { id:'s1', date:'2026-03-01', desc:'UBER *TRIP', amount:-47.90, currency:'BRL' },
+              { id:'s2', date:'2026-03-02', desc:'BROKER COMMISSION', amount:-13.09, currency:'USD' },
+              { id:'s3', date:'2026-03-02', desc:'QQQD BUY', amount:-2640.00, currency:'USD' },
+            ],
+            matches:[
+              { statement:'s1', tx:'tx_002', confidence:0.96, state:'reconciled' },
+              { statement:'s2', tx:null, confidence:0.0, state:'unreconciled' },
+              { statement:'s3', tx:'tx_001', confidence:0.92, state:'cleared' }
+            ],
+            discrepancies:[
+              { type:'missing_tx', severity:'warn', msg:'Statement line BROKER COMMISSION has no matching ledger posting.' }
+            ]
+          }
+        ]
+      }
+    };
+
+    // -----------------------------
+    // App state
+    // -----------------------------
+    const state = {
+      route: location.hash || '#/dashboard',
+      entityId: 'pf_br',
+      displayCurrency: 'USD',
+      rateType: 'market',
+      search: '',
+      importStep: 3,
+      selectedAccountId: null,
+    };
+
+    const NAV_ITEMS = [
+      { id:'dashboard', label:'Dashboard', icon: iconGrid },
+      { id:'accounts', label:'Accounts', icon: iconTree },
+      { id:'transactions', label:'Transactions', icon: iconTable },
+      { id:'import', label:'Import', icon: iconUpload },
+      { id:'rules', label:'Rules', icon: iconBolt },
+      { id:'reconciliation', label:'Reconciliation', icon: iconCheck },
+      { id:'fx', label:'FX Rates', icon: iconGlobe },
+      { id:'reports', label:'Reports', icon: iconChart },
+      { id:'settings', label:'Settings', icon: iconGear },
+    ];
+
+    // -----------------------------
+    // DOM
+    // -----------------------------
+    const elView = document.getElementById('view');
+    const elNav = document.getElementById('nav');
+    const elCrumb = document.getElementById('crumb');
+    const elEntitySelect = document.getElementById('entitySelect');
+    const elCurrencySelect = document.getElementById('currencySelect');
+    const elRateSelect = document.getElementById('rateSelect');
+    const elEntityBadge = document.getElementById('entityBadge');
+    const elModeBadge = document.getElementById('modeBadge');
+    const elSnapshotCard = document.getElementById('snapshotCard');
+    const elSearchInput = document.getElementById('searchInput');
+
+    const overlay = document.getElementById('overlay');
+    const drawer = document.getElementById('drawer');
+    const drawerBody = document.getElementById('drawerBody');
+    const drawerTitle = document.getElementById('drawerTitle');
+    const drawerSub = document.getElementById('drawerSub');
+
+    // -----------------------------
+    // Helpers
+    // -----------------------------
+    function $(sel, root=document){ return root.querySelector(sel); }
+
+    function currentEntity(){
+      return DATA.entities.find(e => e.id === state.entityId) || DATA.entities[0];
+    }
+
+    function formatMoney(n, cur){
+      const sign = n < 0 ? '-' : '';
+      const abs = Math.abs(n);
+      return sign + new Intl.NumberFormat(undefined, { maximumFractionDigits: 2, minimumFractionDigits: 2 }).format(abs) + ' ' + cur;
+    }
+
+    function formatCompact(n, cur){
+      const sign = n < 0 ? '-' : '';
+      const abs = Math.abs(n);
+      let v = abs;
+      let suf = '';
+      if(abs >= 1e6){ v = abs/1e6; suf='M'; }
+      else if(abs >= 1e3){ v = abs/1e3; suf='K'; }
+      return sign + v.toFixed(v < 10 ? 2 : 1) + suf + ' ' + cur;
+    }
+
+    function routeId(){
+      const m = (state.route || '#/dashboard').match(/^#\/([^?]+)/);
+      return (m && m[1]) ? m[1] : 'dashboard';
+    }
+
+    function setRoute(id){
+      state.route = '#/' + id;
+      location.hash = state.route;
+    }
+
+    function sparkline(values){
+      const w = 110, h = 24, pad = 2;
+      const min = Math.min(...values);
+      const max = Math.max(...values);
+      const span = (max - min) || 1;
+      const pts = values.map((v,i)=>{
+        const x = pad + (i*(w-2*pad)/(values.length-1));
+        const y = h - pad - ((v-min)/span)*(h-2*pad);
+        return [x,y];
+      });
+      const d = pts.map((p,i)=> (i? 'L':'M') + p[0].toFixed(2) + ' ' + p[1].toFixed(2)).join(' ');
+      return `
+        <svg class="spark" viewBox="0 0 ${w} ${h}" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+          <path d="${d}" fill="none" stroke="rgba(124,108,255,.95)" stroke-width="2" stroke-linecap="round" />
+          <path d="${d} L ${w-pad} ${h-pad} L ${pad} ${h-pad} Z" fill="rgba(124,108,255,.12)" />
+        </svg>
+      `;
+    }
+
+    function iconWrap(svg){
+      return `<span class="icon" aria-hidden="true">${svg}</span>`;
+    }
+
+    function openDrawer({title, sub, bodyHtml}){
+      drawerTitle.textContent = title || 'Details';
+      drawerSub.textContent = sub || '';
+      drawerBody.innerHTML = bodyHtml || '';
+      overlay.classList.add('open');
+      drawer.classList.add('open');
+      drawer.setAttribute('aria-hidden','false');
+    }
+
+    function closeDrawer(){
+      overlay.classList.remove('open');
+      drawer.classList.remove('open');
+      drawer.setAttribute('aria-hidden','true');
+    }
+
+    // -----------------------------
+    // Render shell controls
+    // -----------------------------
+    function renderNav(){
+      const rid = routeId();
+      elNav.innerHTML = NAV_ITEMS.map(item => {
+        const active = item.id === rid ? 'active' : '';
+        return `<a href="#/${item.id}" class="${active}">${iconWrap(item.icon())}<span>${item.label}</span></a>`;
+      }).join('');
+    }
+
+    function renderSelectors(){
+      // entity select
+      elEntitySelect.innerHTML = DATA.entities.map(e => {
+        const sel = e.id === state.entityId ? 'selected' : '';
+        return `<option value="${e.id}" ${sel}>${e.name}</option>`;
+      }).join('');
+
+      // currency options (global set)
+      const currencies = ['USD','BRL','ARS'];
+      if(!currencies.includes(state.displayCurrency)) state.displayCurrency = 'USD';
+      elCurrencySelect.innerHTML = currencies.map(c => `<option value="${c}" ${c===state.displayCurrency?'selected':''}>${c}</option>`).join('');
+
+      // rate options
+      const rateTypes = ['market','official_tax','ptax','mep'];
+      if(!rateTypes.includes(state.rateType)) state.rateType = 'market';
+      elRateSelect.innerHTML = rateTypes.map(r => `<option value="${r}" ${r===state.rateType?'selected':''}>${r}</option>`).join('');
+
+      // badges
+      const ent = currentEntity();
+      elEntityBadge.textContent = `Entity: ${ent.name}`;
+      elModeBadge.textContent = `Display: ${state.displayCurrency} • ${state.rateType}`;
+
+      // crumb
+      const label = NAV_ITEMS.find(n => n.id === routeId())?.label || 'Dashboard';
+      elCrumb.textContent = `App / ${label}`;
+    }
+
+    function computeEntitySnapshot(entityId){
+      const series = DATA.series.netWorth[entityId] || [0];
+      const latest = series[series.length-1];
+      const prev = series[Math.max(0, series.length-2)];
+      const delta = latest - prev;
+      const deltaPct = prev ? (delta/prev)*100 : 0;
+      return { latest, delta, deltaPct, series };
+    }
+
+    function renderSnapshotCard(){
+      const ent = currentEntity();
+      const snap = computeEntitySnapshot(ent.id);
+      const changeBadge = snap.delta >= 0
+        ? `<span class="badge good">▲ ${snap.deltaPct.toFixed(2)}%</span>`
+        : `<span class="badge bad">▼ ${Math.abs(snap.deltaPct).toFixed(2)}%</span>`;
+
+      elSnapshotCard.innerHTML = `
+        <div class="label">Net worth (mock)</div>
+        <div class="value" style="display:flex; align-items:center; justify-content:space-between; gap:10px;">
+          <span class="mono">${formatCompact(snap.latest, state.displayCurrency)}</span>
+          ${changeBadge}
+        </div>
+        <div class="mini">
+          <span class="muted2">Last point</span>
+          <span class="mono">${formatMoney(snap.latest, state.displayCurrency)}</span>
+        </div>
+        <div style="margin-top:10px;">${sparkline(snap.series)}</div>
+      `;
+    }
+
+    // -----------------------------
+    // Pages
+    // -----------------------------
+    function pageHeader(title, subtitle, actionsHtml=''){
+      return `
+        <div class="page-title">
+          <div>
+            <h2>${title}</h2>
+            <p>${subtitle}</p>
+          </div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">${actionsHtml}</div>
+        </div>
+      `;
+    }
+
+    function viewDashboard(){
+      const ent = currentEntity();
+      const snap = computeEntitySnapshot(ent.id);
+      const nw = snap.latest;
+      const cash = Math.round(nw * 0.18);
+      const inv = Math.round(nw * 0.72);
+      const liab = Math.round(nw * 0.22);
+      const change30 = snap.series[snap.series.length-1] - snap.series[0];
+
+      const whatChanged = [
+        { label:'NASDAQ ETF (QQQD)', sub:'Holdings reprice', value:-1200, cur:state.displayCurrency, badge:'bad' },
+        { label:'USD/BRL FX movement', sub:'Display currency effect', value:-700, cur:state.displayCurrency, badge:'warn' },
+        { label:'Income: Salary', sub:'Cash inflow', value:4200, cur:state.displayCurrency, badge:'good' },
+        { label:'Living expenses', sub:'Card + bank spend', value:-4640, cur:state.displayCurrency, badge:'warn' },
+      ];
+
+      const alerts = [
+        { title:'Missing FX rate', sub:'USD/ARS official_tax not available for 2026-03-02', badge:'warn' },
+        { title:'Unreconciled items', sub:'1 statement line has no match (commission)', badge:'bad' },
+        { title:'Anomaly detected', sub:'Spend spike vs 30-day average', badge:'warn' },
+      ];
+
+      const kpis = [
+        {
+          title:'Net Worth',
+          value: formatMoney(nw, state.displayCurrency),
+          foot: `${formatMoney(snap.delta, state.displayCurrency)} since last point`,
+          extra: sparkline(snap.series)
+        },
+        { title:'Cash', value: formatMoney(cash, state.displayCurrency), foot:'Across cash & checking', extra: sparkline(jitter(snap.series, 0.08)) },
+        { title:'Investments', value: formatMoney(inv, state.displayCurrency), foot:'Holdings + cost basis overlays', extra: sparkline(jitter(snap.series, 0.10)) },
+        { title:'Liabilities', value: formatMoney(liab, state.displayCurrency), foot:'Credit cards + payables', extra: sparkline(jitter(snap.series, 0.06, true)) },
+      ];
+
+      const actions = `
+        <button class="btn primary" id="btnExplain">Explain this week</button>
+        <button class="btn" id="btnNewImport">New import (mock)</button>
+      `;
+
+      const html = `
+        ${pageHeader(
+          'Dashboard',
+          `Entity: <span class="pill">${ent.name}</span> • Display: <span class="pill">${state.displayCurrency}</span> • Rate: <span class="pill">${state.rateType}</span>`,
+          actions
+        )}
+
+        <div class="grid cols-4">
+          ${kpis.map(k => `
+            <div class="card">
+              <h3><span>${k.title}</span><span class="badge purple">mock</span></h3>
+              <div class="big mono">${k.value}</div>
+              <div class="kpi-foot">
+                <span>${k.foot}</span>
+                ${k.extra}
+              </div>
+            </div>
+          `).join('')}
+        </div>
+
+        <div class="split" style="margin-top:14px;">
+          <div class="card">
+            <h3>
+              <span>What changed this week</span>
+              <button class="btn" id="btnExplain2">Explain</button>
+            </h3>
+            <div class="list">
+              ${whatChanged.map(i => `
+                <div class="item">
+                  <div>
+                    <div class="title">${i.label}</div>
+                    <div class="sub">${i.sub}</div>
+                  </div>
+                  <div class="right">
+                    <div class="mono">${formatMoney(i.value, i.cur)}</div>
+                    <div class="badge ${i.badge}">${i.badge === 'good' ? 'tailwind' : 'impact'} • mock</div>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div class="hr"></div>
+            <div class="row">
+              <div class="muted">Net worth change this week</div>
+              <div class="mono">${formatMoney(-2340, state.displayCurrency)}</div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3>
+              <span>Alerts & next actions</span>
+              <span class="badge warn">3</span>
+            </h3>
+            <div class="list">
+              ${alerts.map(a => `
+                <div class="item">
+                  <div>
+                    <div class="title">${a.title}</div>
+                    <div class="sub">${a.sub}</div>
+                  </div>
+                  <span class="badge ${a.badge}">${a.badge}</span>
+                </div>
+              `).join('')}
+            </div>
+            <div class="hr"></div>
+            <div class="small muted">Tip: in AurumFinance, facts are immutable; overlays capture classification, reconciliation, and derived reporting.</div>
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      // wire actions
+      $('#btnExplain')?.addEventListener('click', explainWeek);
+      $('#btnExplain2')?.addEventListener('click', explainWeek);
+      $('#btnNewImport')?.addEventListener('click', ()=> setRoute('import'));
+    }
+
+    function explainWeek(){
+      openDrawer({
+        title:'Explain: Net worth change this week',
+        sub:`Entity: ${currentEntity().name} • Display: ${state.displayCurrency} • Rate: ${state.rateType}`,
+        bodyHtml: `
+          <div class="section">
+            <h4>Summary</h4>
+            <div class="row">
+              <div class="muted">Net worth change (mock)</div>
+              <div class="mono">${formatMoney(-2340, state.displayCurrency)}</div>
+            </div>
+            <div class="hr"></div>
+            <div class="small muted">This drawer demonstrates the “explainable reporting” pattern. In the real system, each line would drill down to the exact ledger events + evidence.</div>
+          </div>
+
+          <div class="section">
+            <h4>Breakdown</h4>
+            <div class="kv">
+              <div class="k">NASDAQ ETF (QQQD)</div><div class="v">${formatMoney(-1200, state.displayCurrency)}</div>
+              <div class="k">USD/BRL FX movement</div><div class="v">${formatMoney(-700, state.displayCurrency)}</div>
+              <div class="k">Expenses (net)</div><div class="v">${formatMoney(-4440, state.displayCurrency)}</div>
+              <div class="k">Income</div><div class="v">${formatMoney(4000, state.displayCurrency)}</div>
+            </div>
+          </div>
+
+          <div class="section">
+            <h4>Audit trail (mock)</h4>
+            <div class="kv">
+              <div class="k">Facts source</div><div class="v">ledger_events + postings (immutable)</div>
+              <div class="k">Overlays</div><div class="v">classification + reconciliation (mutable)</div>
+              <div class="k">Derived</div><div class="v">read-model reports (recomputed)</div>
+            </div>
+          </div>
+        `
+      });
+    }
+
+    function viewAccounts(){
+      const ent = currentEntity();
+
+      const grouped = groupBy(ent.accounts, a => a.group);
+      const groupsOrder = ['Assets','Liabilities','Income','Expenses','Equity'];
+      const orderedGroups = groupsOrder.filter(g => grouped[g]).concat(Object.keys(grouped).filter(g => !groupsOrder.includes(g)));
+
+      const selected = ent.accounts.find(a => a.id === state.selectedAccountId) || ent.accounts[0];
+
+      const rightPanel = selected ? `
+        <div class="card">
+          <h3>
+            <span>${selected.name}</span>
+            <span class="badge purple">${selected.subtype}</span>
+          </h3>
+          <div class="big mono" style="font-size:20px;">${formatMoney(mockBalance(selected), state.displayCurrency)}</div>
+          <div class="kpi-foot">
+            <span class="muted">Balance shown per currency (no implicit FX netting)</span>
+            <span class="badge">UI-only</span>
+          </div>
+          <div class="hr"></div>
+          <div class="row">
+            <div class="muted">Currencies</div>
+            <div style="display:flex; gap:6px; flex-wrap:wrap;">${selected.currencies.map(c => `<span class="badge">${c}</span>`).join('')}</div>
+          </div>
+          <div class="hr"></div>
+          <div class="muted" style="font-size:12px;">Recent activity (mock)</div>
+          <div class="list">
+            ${DATA.transactions.filter(t => t.entity===ent.id).slice(0,3).map(t => `
+              <div class="item" data-tx="${t.id}">
+                <div>
+                  <div class="title">${t.description}</div>
+                  <div class="sub">${t.date} • ${t.account}</div>
+                </div>
+                <div class="mono">${formatMoney(t.amount, t.currency)}</div>
+              </div>
+            `).join('') || `<div class="empty">No recent transactions for this entity.</div>`}
+          </div>
+        </div>
+      ` : `<div class="empty">Select an account to see details.</div>`;
+
+      const html = `
+        ${pageHeader('Accounts', 'A tree view of accounts (assets, liabilities, income, expenses). Click to preview details.')} 
+        <div class="split">
+          <div class="tree" id="acctTree">
+            ${orderedGroups.map(g => `
+              <div class="node" style="background:rgba(255,255,255,.02); cursor:default;">
+                <div class="left">
+                  <span class="badge purple">${g}</span>
+                  <span class="meta">${grouped[g].length} accounts</span>
+                </div>
+                <div class="meta">—</div>
+              </div>
+              ${grouped[g].map(a => `
+                <div class="node" data-acct="${a.id}">
+                  <div class="left">
+                    <span class="badge">${a.subtype}</span>
+                    <div>
+                      <div class="name">${a.name}</div>
+                      <div class="meta">${a.type} • ${a.currencies.join(', ')}</div>
+                    </div>
+                  </div>
+                  <div class="mono small">${formatCompact(mockBalance(a), state.displayCurrency)}</div>
+                </div>
+              `).join('')}
+            `).join('')}
+          </div>
+          ${rightPanel}
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#acctTree')?.addEventListener('click', (e)=>{
+        const row = e.target.closest('[data-acct]');
+        if(!row) return;
+        state.selectedAccountId = row.getAttribute('data-acct');
+        render();
+      });
+
+      elView.querySelectorAll('[data-tx]')?.forEach(el => {
+        el.addEventListener('click', ()=> openTxDrawer(el.getAttribute('data-tx')));
+      });
+    }
+
+    function viewTransactions(){
+      const ent = currentEntity();
+
+      const txs = DATA.transactions
+        .filter(t => t.entity === ent.id)
+        .filter(t => {
+          if(!state.search) return true;
+          const s = state.search.toLowerCase();
+          return (t.description.toLowerCase().includes(s) || t.category.toLowerCase().includes(s) || t.tags.join(' ').toLowerCase().includes(s));
+        });
+
+      const filtersHtml = `
+        <div style="display:flex; gap:10px; flex-wrap:wrap;">
+          <span class="badge">date: last 30d (mock)</span>
+          <span class="badge">source: any</span>
+          <span class="badge">account: any</span>
+          <span class="badge">category: any</span>
+          <span class="badge">search: <span class="mono">${escapeHtml(state.search || '—')}</span></span>
+        </div>
+      `;
+
+      const actions = `
+        <button class="btn primary" id="btnAddTx">Add manual (mock)</button>
+        <button class="btn" id="btnGoImport">Import</button>
+      `;
+
+      const html = `
+        ${pageHeader('Transactions', 'Immutable facts + mutable overlays (classification/reconciliation). Click a row for details.', actions)}
+        ${filtersHtml}
+        <div style="margin-top:12px;">
+          <table class="table" id="txTable">
+            <thead>
+              <tr>
+                <th style="width:120px;">Date</th>
+                <th>Description</th>
+                <th style="width:140px;">Amount</th>
+                <th style="width:120px;">Currency</th>
+                <th style="width:220px;">Category</th>
+                <th style="width:220px;">Source</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${txs.map(t => `
+                <tr data-tx="${t.id}">
+                  <td class="mono">${t.date}</td>
+                  <td>
+                    <div>${escapeHtml(t.description)}</div>
+                    <div class="muted2 small">tags: ${t.tags.map(x => `<span class="badge">${escapeHtml(x)}</span>`).join(' ')}</div>
+                  </td>
+                  <td class="mono" style="color:${t.amount<0?'rgba(255,220,220,.92)':'rgba(204,255,225,.88)'};">${formatMoney(t.amount, t.currency)}</td>
+                  <td class="mono">${t.currency}</td>
+                  <td>
+                    <div>${escapeHtml(t.category)}</div>
+                    <div class="muted2 small">overlay: ${t.overlay?.overridden ? '<span class="badge warn">manual override</span>' : '<span class="badge good">rule-applied</span>'}</div>
+                  </td>
+                  <td class="mono small">${escapeHtml(t.source)}</td>
+                </tr>
+              `).join('') || `
+                <tr><td colspan="6"><div class="empty">No transactions match the current filters.</div></td></tr>
+              `}
+            </tbody>
+          </table>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#txTable')?.addEventListener('click', (e)=>{
+        const row = e.target.closest('[data-tx]');
+        if(!row) return;
+        openTxDrawer(row.getAttribute('data-tx'));
+      });
+
+      $('#btnAddTx')?.addEventListener('click', ()=>{
+        openDrawer({
+          title:'Create manual transaction (mock)',
+          sub:'UI-only — no persistence',
+          bodyHtml:`
+            <div class="section">
+              <h4>Why this matters</h4>
+              <div class="small muted">Manual entries still produce immutable facts in the ledger. Later, overlays can refine classification, reconciliation, and reporting without rewriting facts.</div>
+            </div>
+            <div class="section">
+              <h4>Form (non-functional)</h4>
+              <div class="kv">
+                <div class="k">Date</div><div class="v">2026-03-05</div>
+                <div class="k">Description</div><div class="v">"Grocery"</div>
+                <div class="k">Amount</div><div class="v">-120.00 BRL</div>
+                <div class="k">Account</div><div class="v">Banco Inter • Checking</div>
+              </div>
+              <div class="hr"></div>
+              <button class="btn primary" disabled title="UI-only">Save (disabled)</button>
+            </div>
+          `
+        });
+      });
+
+      $('#btnGoImport')?.addEventListener('click', ()=> setRoute('import'));
+    }
+
+    function openTxDrawer(txId){
+      const t = DATA.transactions.find(x => x.id === txId);
+      if(!t) return;
+
+      const facts = `
+        <div class="kv">
+          <div class="k">Transaction ID</div><div class="v">${t.id}</div>
+          <div class="k">Date</div><div class="v">${t.date}</div>
+          <div class="k">Amount</div><div class="v">${formatMoney(t.amount, t.currency)}</div>
+          <div class="k">Raw description</div><div class="v">${escapeHtml(t.description)}</div>
+          <div class="k">Source</div><div class="v">${escapeHtml(t.source)}</div>
+          <div class="k">Evidence</div><div class="v">${escapeHtml(t.evidence)}</div>
+        </div>
+      `;
+
+      const overlays = `
+        <div class="kv">
+          <div class="k">Category</div><div class="v">${escapeHtml(t.category)}</div>
+          <div class="k">Tags</div><div class="v">${t.tags.map(x => `<span class="badge">${escapeHtml(x)}</span>`).join(' ')}</div>
+          <div class="k">Notes</div><div class="v">${escapeHtml(t.overlay?.notes || '—')}</div>
+          <div class="k">Override</div><div class="v">${t.overlay?.overridden ? '<span class="badge warn">manual override</span>' : '<span class="badge good">auto</span>'}</div>
+        </div>
+      `;
+
+      const postings = `
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Account</th>
+              <th style="width:90px;">Cur</th>
+              <th style="width:120px;" class="right">Debit</th>
+              <th style="width:120px;" class="right">Credit</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${(t.postings||[]).map(p => `
+              <tr>
+                <td class="mono">${escapeHtml(p.account)}</td>
+                <td class="mono">${p.currency}</td>
+                <td class="mono right">${p.debit? formatMoney(p.debit, p.currency): '—'}</td>
+                <td class="mono right">${p.credit? formatMoney(p.credit, p.currency): '—'}</td>
+              </tr>
+            `).join('')}
+          </tbody>
+        </table>
+        <div class="hr"></div>
+        <div class="small muted">In the real system: postings must balance (sum to zero) per currency. Cross-currency netting is never implicit.</div>
+      `;
+
+      openDrawer({
+        title: 'Transaction details',
+        sub: `${t.date} • ${formatMoney(t.amount, t.currency)} • ${currentEntity().name}`,
+        bodyHtml: `
+          <div class="section">
+            <h4>Immutable facts</h4>
+            ${facts}
+          </div>
+          <div class="section">
+            <h4>Mutable overlays</h4>
+            ${overlays}
+          </div>
+          <div class="section">
+            <h4>Advanced: postings preview</h4>
+            ${postings}
+          </div>
+        `
+      });
+    }
+
+    function viewImport(){
+      const steps = ['Upload','Parse','Normalize','Deduplicate','Preview','Commit'];
+      const active = state.importStep;
+
+      const previewRows = [
+        { id:'r1', date:'2026-03-01', desc:'UBER *TRIP', amount:-47.90, cur:'BRL', status:'ready', hint:'Rule matched: Transport' },
+        { id:'r2', date:'2026-03-02', desc:'QQQD BUY', amount:-2640.00, cur:'USD', status:'ready', hint:'Investment recognition: Buy' },
+        { id:'r3', date:'2026-03-02', desc:'BROKER COMMISSION', amount:-13.09, cur:'USD', status:'error', hint:'Missing fee account mapping' },
+        { id:'r4', date:'2026-03-02', desc:'QQQD BUY', amount:-2640.00, cur:'USD', status:'duplicate', hint:'Duplicate vs tx_001' },
+      ];
+
+      const stageHtml = {
+        0: `<div class="empty">Drop a CSV/OFX/PDF here (mock). No upload happens.</div>`,
+        1: `<div class="empty">Parsing step (mock). Would extract rows + evidence pointers.</div>`,
+        2: `<div class="empty">Normalization step (mock). Would map source fields to canonical transaction facts.</div>`,
+        3: `<div class="empty">Deduplication step (mock). Would detect near-duplicates using evidence, ids, heuristics.</div>`,
+        4: `
+          <table class="table" id="importPreview">
+            <thead>
+              <tr>
+                <th style="width:110px;">Date</th>
+                <th>Description</th>
+                <th style="width:140px;">Amount</th>
+                <th style="width:90px;">Cur</th>
+                <th style="width:120px;">Status</th>
+                <th style="width:240px;">Hint</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${previewRows.map(r => `
+                <tr>
+                  <td class="mono">${r.date}</td>
+                  <td>${escapeHtml(r.desc)}</td>
+                  <td class="mono">${formatMoney(r.amount, r.cur)}</td>
+                  <td class="mono">${r.cur}</td>
+                  <td>${statusBadge(r.status)}</td>
+                  <td class="muted2 small">${escapeHtml(r.hint)}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+          <div class="hr"></div>
+          <div style="display:flex; gap:10px; flex-wrap:wrap;">
+            <button class="btn primary" disabled title="UI-only">Accept all ready (disabled)</button>
+            <button class="btn" disabled title="UI-only">Skip duplicates (disabled)</button>
+            <button class="btn" id="btnImportExplain">What is immutable vs overlay?</button>
+          </div>
+        `,
+        5: `<div class="empty">Commit step (mock). Would write ledger facts, then generate derived read models.</div>`
+      };
+
+      const actions = `
+        <button class="btn" id="btnPrev">Prev</button>
+        <button class="btn primary" id="btnNext">Next</button>
+      `;
+
+      const html = `
+        ${pageHeader('Import', 'A UI-only ingestion pipeline: Upload → Parse → Normalize → Deduplicate → Preview → Commit.', actions)}
+
+        <div class="card">
+          <h3><span>Pipeline</span><span class="badge purple">mock wizard</span></h3>
+          <div class="steps" id="steps">
+            ${steps.map((s,i) => `<div class="step ${i===active?'active':''}" data-step="${i}">${i+1}. ${s}</div>`).join('')}
+          </div>
+          <div class="hr"></div>
+          ${stageHtml[active] || '<div class="empty">—</div>'}
+        </div>
+
+        <div class="grid cols-2" style="margin-top:14px;">
+          <div class="card">
+            <h3><span>Design note</span><span class="badge">facts vs overlays</span></h3>
+            <div class="small muted" style="margin-top:10px;">
+              Imports create immutable ledger facts + evidence references. Categorization, reconciliation state, and corrections live in overlays to keep the audit trail clean.
+            </div>
+          </div>
+          <div class="card">
+            <h3><span>Demo shortcuts</span><span class="badge">UI-only</span></h3>
+            <div class="list">
+              <div class="item"><div><div class="title">Jump to Preview</div><div class="sub">Shows statuses: ready/duplicate/error</div></div><button class="btn" id="jumpPreview">Go</button></div>
+              <div class="item"><div><div class="title">Jump to Reconciliation</div><div class="sub">See how statement matching works</div></div><button class="btn" id="jumpRecon">Go</button></div>
+            </div>
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      // interactions
+      $('#steps')?.addEventListener('click', (e)=>{
+        const s = e.target.closest('[data-step]');
+        if(!s) return;
+        state.importStep = parseInt(s.getAttribute('data-step'),10);
+        render();
+      });
+      $('#btnPrev')?.addEventListener('click', ()=>{ state.importStep = Math.max(0, state.importStep-1); render(); });
+      $('#btnNext')?.addEventListener('click', ()=>{ state.importStep = Math.min(5, state.importStep+1); render(); });
+      $('#jumpPreview')?.addEventListener('click', ()=>{ state.importStep = 4; render(); });
+      $('#jumpRecon')?.addEventListener('click', ()=> setRoute('reconciliation'));
+      $('#btnImportExplain')?.addEventListener('click', ()=> openDrawer({
+        title:'Facts vs overlays (concept)',
+        sub:'Why the UI shows both',
+        bodyHtml:`
+          <div class="section">
+            <h4>Immutable facts</h4>
+            <div class="small muted">What came from the source (statement/CSV/OFX): dates, amounts, currencies, raw description, and evidence pointers. Never rewritten — only appended.</div>
+          </div>
+          <div class="section">
+            <h4>Mutable overlays</h4>
+            <div class="small muted">Classification, tags, notes, reconciliation state, and operator corrections. Can change over time without corrupting the original import audit trail.</div>
+          </div>
+          <div class="section">
+            <h4>Derived read models</h4>
+            <div class="small muted">Reports are computed from facts + overlays. If logic changes, recompute safely.</div>
+          </div>
+        `
+      }));
+    }
+
+    function viewRules(){
+      const groups = DATA.rules.groups;
+      const actions = `<button class="btn primary" id="btnNewRule">New group (mock)</button>`;
+
+      const html = `
+        ${pageHeader('Rules Engine', 'Grouped rules with ordered evaluation. Great for fast, explainable categorization.', actions)}
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3><span>Rule groups</span><span class="badge purple">${groups.length}</span></h3>
+            <div class="list" id="ruleGroups">
+              ${groups.map(g => `
+                <div class="item" data-group="${g.id}">
+                  <div>
+                    <div class="title">${escapeHtml(g.name)}</div>
+                    <div class="sub">${escapeHtml(g.description)}</div>
+                  </div>
+                  <span class="badge">${g.rules.length} rules</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="card" id="ruleDetail">
+            <h3><span>Group details</span><span class="badge">select one</span></h3>
+            <div class="empty" style="margin-top:12px;">Click a rule group to preview ordered rules and a mock test run.</div>
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#btnNewRule')?.addEventListener('click', ()=>{
+        openDrawer({
+          title:'Create rule group (mock)',
+          sub:'UI-only — no persistence',
+          bodyHtml:`
+            <div class="section">
+              <h4>Example fields</h4>
+              <div class="kv">
+                <div class="k">Name</div><div class="v">"Expense Category"</div>
+                <div class="k">Strategy</div><div class="v">ordered rules, stop on match</div>
+                <div class="k">Scope</div><div class="v">entity: ${currentEntity().name}</div>
+              </div>
+              <div class="hr"></div>
+              <button class="btn primary" disabled>Save (disabled)</button>
+            </div>
+          `
+        });
+      });
+
+      $('#ruleGroups')?.addEventListener('click', (e)=>{
+        const row = e.target.closest('[data-group]');
+        if(!row) return;
+        const groupId = row.getAttribute('data-group');
+        const g = groups.find(x => x.id === groupId);
+        const detail = document.getElementById('ruleDetail');
+        if(!detail || !g) return;
+
+        const sampleTx = {
+          date:'2026-03-01',
+          description:'Uber trip',
+          account:'Banco Inter • Checking',
+          amount:-47.90,
+          currency:'BRL'
+        };
+
+        detail.innerHTML = `
+          <h3><span>${escapeHtml(g.name)}</span><span class="badge purple">ordered</span></h3>
+          <div class="small muted" style="margin-top:10px;">${escapeHtml(g.description)}</div>
+          <div class="hr"></div>
+
+          <div class="small muted2">Rules</div>
+          <table class="table" style="margin-top:8px;">
+            <thead><tr><th style="width:70px;">Order</th><th>When</th><th>Then</th><th style="width:120px;">Stop?</th></tr></thead>
+            <tbody>
+              ${g.rules.map(r => `
+                <tr>
+                  <td class="mono">${r.order}</td>
+                  <td>${escapeHtml(r.when)}</td>
+                  <td class="mono">${escapeHtml(r.then)}</td>
+                  <td>${r.stop ? '<span class="badge good">yes</span>' : '<span class="badge">no</span>'}</td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+
+          <div class="hr"></div>
+          <div class="row">
+            <div>
+              <div class="small muted2">Test against sample transaction (mock)</div>
+              <div class="mono small" style="margin-top:6px;">${escapeHtml(JSON.stringify(sampleTx))}</div>
+            </div>
+            <button class="btn" id="btnRunTest">Run</button>
+          </div>
+          <div id="testResult" style="margin-top:10px;"></div>
+        `;
+
+        $('#btnRunTest')?.addEventListener('click', ()=>{
+          $('#testResult').innerHTML = `
+            <div class="item">
+              <div>
+                <div class="title">Matched rule: ${escapeHtml(g.rules[0]?.id || 'r1')}</div>
+                <div class="sub">Proposed overlay: category=Transport, tags=[ride]</div>
+              </div>
+              <span class="badge good">confidence 0.93</span>
+            </div>
+          `;
+        });
+      });
+    }
+
+    function viewReconciliation(){
+      const ent = currentEntity();
+      const sessions = DATA.reconciliation.sessions.filter(s => s.entity === ent.id);
+      const s = sessions[0];
+
+      const actions = `<button class="btn primary" id="btnNewRec">New session (mock)</button>`;
+
+      const html = `
+        ${pageHeader('Reconciliation', 'Match statement lines to ledger postings. States: unreconciled → cleared → reconciled.', actions)}
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3><span>Sessions</span><span class="badge purple">${sessions.length}</span></h3>
+            <div class="list" id="recList">
+              ${sessions.map(x => `
+                <div class="item" data-rec="${x.id}">
+                  <div>
+                    <div class="title">${escapeHtml(x.account)} • ${escapeHtml(x.period)}</div>
+                    <div class="sub">Status: ${escapeHtml(x.status)}</div>
+                  </div>
+                  <span class="badge warn">in progress</span>
+                </div>
+              `).join('') || `<div class="empty">No sessions for this entity (mock).</div>`}
+            </div>
+          </div>
+
+          <div class="card" id="recDetail">
+            <h3><span>Session detail</span><span class="badge">mock</span></h3>
+            ${s ? renderRecDetail(s) : `<div class="empty" style="margin-top:12px;">Select a session.</div>`}
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#btnNewRec')?.addEventListener('click', ()=>{
+        openDrawer({
+          title:'Create reconciliation session (mock)',
+          sub:'UI-only — no persistence',
+          bodyHtml:`
+            <div class="section">
+              <h4>Inputs</h4>
+              <div class="kv">
+                <div class="k">Account</div><div class="v">Banco Inter • Checking</div>
+                <div class="k">Period</div><div class="v">2026-03</div>
+                <div class="k">Statement source</div><div class="v">import:inter-2026-03.csv</div>
+              </div>
+              <div class="hr"></div>
+              <div class="small muted">In the real system, reconciliation produces overlays (states, matches, discrepancies) without rewriting transaction facts.</div>
+            </div>
+          `
+        });
+      });
+
+      $('#recList')?.addEventListener('click', (e)=>{
+        const row = e.target.closest('[data-rec]');
+        if(!row) return;
+        const id = row.getAttribute('data-rec');
+        const sess = sessions.find(x => x.id === id);
+        const det = document.getElementById('recDetail');
+        if(det && sess) det.innerHTML = `<h3><span>Session detail</span><span class="badge">${escapeHtml(sess.period)}</span></h3>` + renderRecDetail(sess);
+      });
+
+      // click transaction links
+      elView.querySelectorAll('[data-open-tx]')?.forEach(el => {
+        el.addEventListener('click', ()=> openTxDrawer(el.getAttribute('data-open-tx')));
+      });
+    }
+
+    function renderRecDetail(sess){
+      const matchByStatement = Object.fromEntries(sess.matches.map(m => [m.statement, m]));
+
+      return `
+        <div class="small muted" style="margin-top:10px;">Account: <span class="pill">${escapeHtml(sess.account)}</span></div>
+        <div class="hr"></div>
+
+        <div class="small muted2">Statement lines</div>
+        <table class="table" style="margin-top:8px;">
+          <thead>
+            <tr>
+              <th style="width:110px;">Date</th>
+              <th>Description</th>
+              <th style="width:140px;">Amount</th>
+              <th style="width:120px;">State</th>
+              <th style="width:140px;">Match</th>
+            </tr>
+          </thead>
+          <tbody>
+            ${sess.statementLines.map(line => {
+              const m = matchByStatement[line.id];
+              const stateBadge = m ? statusBadge(m.state) : statusBadge('unreconciled');
+              const match = m?.tx
+                ? `<button class="btn" data-open-tx="${m.tx}">Open tx</button>`
+                : `<span class="badge bad">none</span>`;
+              return `
+                <tr>
+                  <td class="mono">${line.date}</td>
+                  <td>${escapeHtml(line.desc)}</td>
+                  <td class="mono">${formatMoney(line.amount, line.currency)}</td>
+                  <td>${stateBadge}</td>
+                  <td>${match} <span class="badge">${m ? Math.round(m.confidence*100)+'%' : '0%'}</span></td>
+                </tr>
+              `;
+            }).join('')}
+          </tbody>
+        </table>
+
+        <div class="hr"></div>
+        <div class="small muted2">Discrepancies</div>
+        <div class="list" style="margin-top:8px;">
+          ${(sess.discrepancies||[]).map(d => `
+            <div class="item">
+              <div>
+                <div class="title">${escapeHtml(d.msg)}</div>
+                <div class="sub">Type: ${escapeHtml(d.type)}</div>
+              </div>
+              <span class="badge ${d.severity==='warn'?'warn':'bad'}">${escapeHtml(d.severity)}</span>
+            </div>
+          `).join('') || `<div class="empty">No discrepancies.</div>`}
+        </div>
+      `;
+    }
+
+    function viewFx(){
+      const actions = `<button class="btn primary" id="btnAddSeries">Add rate series (mock)</button>`;
+      const series = DATA.fxSeries;
+
+      const selected = series.find(s => s.type === state.rateType && s.pair === 'USD/BRL') || series[0];
+      const history = makeFxHistory(selected.type);
+
+      const html = `
+        ${pageHeader('FX Rates', 'Named FX series (market / official_tax / ptax / mep). Used for reporting & tax snapshots.', actions)}
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3><span>Rate series</span><span class="badge purple">${series.length}</span></h3>
+            <div class="list" id="fxList">
+              ${series.map(s => `
+                <div class="item" data-series="${s.id}">
+                  <div>
+                    <div class="title">${escapeHtml(s.label)}</div>
+                    <div class="sub">Pair: ${escapeHtml(s.pair)} • Type: <span class="mono">${escapeHtml(s.type)}</span></div>
+                  </div>
+                  <span class="badge">${escapeHtml(s.type)}</span>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+
+          <div class="card" id="fxDetail">
+            <h3><span>${escapeHtml(selected.label)}</span><span class="badge">history</span></h3>
+            <div class="row" style="margin-top:10px;">
+              <div>
+                <div class="muted2 small">Latest (mock)</div>
+                <div class="big mono" style="font-size:20px;">${history[history.length-1].toFixed(4)}</div>
+              </div>
+              <div>${sparkline(history.map(x => x*1000))}</div>
+            </div>
+            <div class="hr"></div>
+            <div class="small muted">Tax snapshot concept: at event time, store the exact FX rate used (by series name) for auditability.</div>
+            <div class="hr"></div>
+            <table class="table">
+              <thead><tr><th style="width:140px;">Date</th><th class="right">Rate</th><th style="width:120px;">Type</th></tr></thead>
+              <tbody>
+                ${history.slice(-8).reverse().map((r,i) => `
+                  <tr>
+                    <td class="mono">2026-03-${String(5-i).padStart(2,'0')}</td>
+                    <td class="mono right">${r.toFixed(4)}</td>
+                    <td><span class="badge">${escapeHtml(selected.type)}</span></td>
+                  </tr>
+                `).join('')}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#btnAddSeries')?.addEventListener('click', ()=>{
+        openDrawer({
+          title:'Add FX rate series (mock)',
+          sub:'UI-only — operator-defined named series',
+          bodyHtml:`
+            <div class="section">
+              <h4>Example</h4>
+              <div class="kv">
+                <div class="k">Name</div><div class="v">"usd_brl_ptax"</div>
+                <div class="k">Pair</div><div class="v">USD/BRL</div>
+                <div class="k">Meaning</div><div class="v">Official PTAX reference series</div>
+              </div>
+              <div class="hr"></div>
+              <div class="small muted">In the real system, you can select which series is used for tax reporting per entity/jurisdiction.</div>
+            </div>
+          `
+        });
+      });
+
+      $('#fxList')?.addEventListener('click', (e)=>{
+        const row = e.target.closest('[data-series]');
+        if(!row) return;
+        const id = row.getAttribute('data-series');
+        const s = DATA.fxSeries.find(x => x.id === id);
+        if(!s) return;
+        const hist = makeFxHistory(s.type);
+        const det = document.getElementById('fxDetail');
+        det.innerHTML = `
+          <h3><span>${escapeHtml(s.label)}</span><span class="badge">history</span></h3>
+          <div class="row" style="margin-top:10px;">
+            <div>
+              <div class="muted2 small">Latest (mock)</div>
+              <div class="big mono" style="font-size:20px;">${hist[hist.length-1].toFixed(4)}</div>
+            </div>
+            <div>${sparkline(hist.map(x => x*1000))}</div>
+          </div>
+          <div class="hr"></div>
+          <div class="small muted">Tax snapshot concept: store the chosen rate series + exact rate at event time.</div>
+          <div class="hr"></div>
+          <table class="table">
+            <thead><tr><th style="width:140px;">Date</th><th class="right">Rate</th><th style="width:120px;">Type</th></tr></thead>
+            <tbody>
+              ${hist.slice(-8).reverse().map((r,i) => `
+                <tr>
+                  <td class="mono">2026-03-${String(5-i).padStart(2,'0')}</td>
+                  <td class="mono right">${r.toFixed(4)}</td>
+                  <td><span class="badge">${escapeHtml(s.type)}</span></td>
+                </tr>
+              `).join('')}
+            </tbody>
+          </table>
+        `;
+      });
+    }
+
+    function viewReports(){
+      const ent = currentEntity();
+      const series = DATA.series.netWorth[ent.id] || [0];
+      const cashflow = [
+        { cat:'Income', val: 4200 },
+        { cat:'Housing', val: -1500 },
+        { cat:'Food', val: -780 },
+        { cat:'Transport', val: -260 },
+        { cat:'Other', val: -400 }
+      ];
+
+      const actions = `<button class="btn primary" id="btnExport">Export PDF (mock)</button>`;
+
+      const html = `
+        ${pageHeader('Reports', 'Derived read models for explainable reporting. UI-only charts + drilldowns.', actions)}
+
+        <div class="grid cols-3">
+          <div class="card">
+            <h3><span>Net worth history</span><span class="badge">mock</span></h3>
+            <div style="margin-top:12px;">${sparkline(series)}</div>
+            <div class="kpi-foot"><span class="muted">Recomputed from facts + overlays</span><button class="btn" id="btnDrillNW">Drilldown</button></div>
+          </div>
+          <div class="card">
+            <h3><span>Cashflow (month)</span><span class="badge">mock</span></h3>
+            <div class="list">
+              ${cashflow.map(x => `
+                <div class="item">
+                  <div>
+                    <div class="title">${escapeHtml(x.cat)}</div>
+                    <div class="sub">category rollup</div>
+                  </div>
+                  <div class="mono">${formatMoney(x.val, state.displayCurrency)}</div>
+                </div>
+              `).join('')}
+            </div>
+          </div>
+          <div class="card">
+            <h3><span>Portfolio allocation</span><span class="badge">mock</span></h3>
+            <div class="small muted" style="margin-top:10px;">Holdings for selected entity</div>
+            <div class="list">
+              ${(ent.holdings||[]).map(h => `
+                <div class="item">
+                  <div>
+                    <div class="title">${escapeHtml(h.symbol)} — ${escapeHtml(h.name)}</div>
+                    <div class="sub">qty ${h.qty} • price ${formatMoney(h.price, h.currency)}</div>
+                  </div>
+                  <span class="badge ${h.changePct7d>=0?'good':'bad'}">7d ${h.changePct7d>=0?'+':''}${h.changePct7d.toFixed(1)}%</span>
+                </div>
+              `).join('') || `<div class="empty">No holdings</div>`}
+            </div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3><span>Drilldown (mock)</span><span class="badge">transactions</span></h3>
+          <div class="small muted" style="margin-top:10px;">Each report line links back to exact transactions and evidence.</div>
+          <div class="hr"></div>
+          <button class="btn" id="btnGoTx">Open transactions</button>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+
+      $('#btnExport')?.addEventListener('click', ()=>{
+        openDrawer({
+          title:'Export report (mock)',
+          sub:'UI-only — no PDF generation',
+          bodyHtml:`
+            <div class="section">
+              <h4>What would happen</h4>
+              <div class="small muted">A background job would generate a snapshot report from the read model. The UI would link every number back to ledger facts and overlays.</div>
+              <div class="hr"></div>
+              <button class="btn primary" disabled>Generate (disabled)</button>
+            </div>
+          `
+        });
+      });
+      $('#btnDrillNW')?.addEventListener('click', explainWeek);
+      $('#btnGoTx')?.addEventListener('click', ()=> setRoute('transactions'));
+    }
+
+    function viewSettings(){
+      const ent = currentEntity();
+      const html = `
+        ${pageHeader('Settings', 'Privacy-first, self-hosted posture. This page is informational in the UI prototype.')} 
+
+        <div class="grid cols-2">
+          <div class="card">
+            <h3><span>Instance posture</span><span class="badge purple">self-hosted</span></h3>
+            <div class="list">
+              <div class="item"><div><div class="title">No external data by default</div><div class="sub">AI integrations are opt-in (future).</div></div><span class="badge good">privacy-first</span></div>
+              <div class="item"><div><div class="title">Auditability</div><div class="sub">Immutable ledger facts + overlays + derived reports.</div></div><span class="badge">ledger</span></div>
+              <div class="item"><div><div class="title">Multi-entity ownership</div><div class="sub">Personal, company, trust, family profiles.</div></div><span class="badge">entities</span></div>
+            </div>
+          </div>
+
+          <div class="card">
+            <h3><span>Entity defaults</span><span class="badge">mock</span></h3>
+            <div class="kv" style="margin-top:12px;">
+              <div class="k">Entity</div><div class="v">${escapeHtml(ent.name)}</div>
+              <div class="k">Base currency</div><div class="v">${escapeHtml(ent.baseCurrency)}</div>
+              <div class="k">Jurisdiction</div><div class="v">${escapeHtml(ent.homeCountry)}</div>
+              <div class="k">Default rate type</div><div class="v">${escapeHtml(state.rateType)}</div>
+            </div>
+            <div class="hr"></div>
+            <div class="small muted">Real settings would control FX series selection, tax posture, import defaults, and data access scopes.</div>
+          </div>
+        </div>
+
+        <div class="card" style="margin-top:14px;">
+          <h3><span>Links</span><span class="badge">placeholders</span></h3>
+          <div class="list">
+            <div class="item"><div><div class="title">Docs</div><div class="sub">README, ADRs, architecture notes</div></div><span class="badge">repo</span></div>
+            <div class="item"><div><div class="title">Security</div><div class="sub">Boundaries, threat model, privacy posture</div></div><span class="badge warn">review</span></div>
+          </div>
+        </div>
+      `;
+
+      elView.innerHTML = html;
+    }
+
+    function viewPlaceholder(title, subtitle){
+      elView.innerHTML = `
+        ${pageHeader(title, subtitle)}
+        <div class="card">
+          <h3><span>${title}</span><span class="badge">coming soon</span></h3>
+          <div class="empty" style="margin-top:12px;">
+            This UI prototype includes the navigation and visual patterns, but this section is intentionally light.
+            <div class="hr"></div>
+            <div class="small muted">If you want, tell me which page you care about next and I’ll flesh it out (still UI-only).</div>
+          </div>
+        </div>
+      `;
+    }
+
+    // -----------------------------
+    // Router
+    // -----------------------------
+    function render(){
+      renderNav();
+      renderSelectors();
+      renderSnapshotCard();
+
+      const rid = routeId();
+      const ent = currentEntity();
+
+      if(rid === 'dashboard') viewDashboard();
+      else if(rid === 'accounts') viewAccounts();
+      else if(rid === 'transactions') viewTransactions();
+      else if(rid === 'import') viewImport();
+      else if(rid === 'rules') viewRules();
+      else if(rid === 'reconciliation') viewReconciliation();
+      else if(rid === 'fx') viewFx();
+      else if(rid === 'reports') viewReports();
+      else if(rid === 'settings') viewSettings();
+      else viewPlaceholder('Page', 'Not found');
+    }
+
+    // -----------------------------
+    // Wire global events
+    // -----------------------------
+    window.addEventListener('hashchange', ()=>{
+      state.route = location.hash || '#/dashboard';
+      render();
+    });
+
+    elEntitySelect.addEventListener('change', (e)=>{
+      state.entityId = e.target.value;
+      state.selectedAccountId = null;
+      render();
+    });
+
+    elCurrencySelect.addEventListener('change', (e)=>{
+      state.displayCurrency = e.target.value;
+      render();
+    });
+
+    elRateSelect.addEventListener('change', (e)=>{
+      state.rateType = e.target.value;
+      render();
+    });
+
+    elSearchInput.addEventListener('input', (e)=>{
+      state.search = e.target.value || '';
+      if(routeId() !== 'transactions') return; // only live-filter there
+      render();
+    });
+
+    document.getElementById('drawerClose').addEventListener('click', closeDrawer);
+    overlay.addEventListener('click', closeDrawer);
+    window.addEventListener('keydown', (e)=>{ if(e.key==='Escape') closeDrawer(); });
+
+    // -----------------------------
+    // Small utilities
+    // -----------------------------
+    function escapeHtml(s){
+      return String(s)
+        .replaceAll('&','&amp;')
+        .replaceAll('<','&lt;')
+        .replaceAll('>','&gt;')
+        .replaceAll('"','&quot;')
+        .replaceAll("'",'&#039;');
+    }
+
+    function groupBy(arr, fn){
+      return arr.reduce((acc, x)=>{
+        const k = fn(x);
+        (acc[k] ||= []).push(x);
+        return acc;
+      }, {});
+    }
+
+    function jitter(values, amount=0.06, invert=false){
+      // deterministic-ish jitter based on index
+      return values.map((v,i)=>{
+        const f = 1 + (Math.sin(i*1.7 + 0.8) * amount) * (invert?-1:1);
+        return v * f;
+      });
+    }
+
+    function mockBalance(account){
+      // deterministic mock per account id
+      const base = hashCode(account.id) % 10000;
+      const entFactor = hashCode(state.entityId) % 5000;
+      const sign = (account.type === 'liability' || account.type === 'expense') ? -1 : 1;
+      const v = (base + entFactor) * (account.type === 'income' ? 1.5 : 1.0);
+      return sign * Math.round(v);
+    }
+
+    function hashCode(str){
+      let h = 0;
+      for(let i=0;i<str.length;i++) h = (h<<5) - h + str.charCodeAt(i);
+      return Math.abs(h);
+    }
+
+    function statusBadge(status){
+      const s = String(status);
+      if(s === 'ready' || s === 'reconciled') return '<span class="badge good">' + s + '</span>';
+      if(s === 'cleared') return '<span class="badge warn">' + s + '</span>';
+      if(s === 'duplicate') return '<span class="badge">' + s + '</span>';
+      if(s === 'error' || s === 'unreconciled') return '<span class="badge bad">' + s + '</span>';
+      return '<span class="badge">' + escapeHtml(s) + '</span>';
+    }
+
+    function makeFxHistory(type){
+      // simple plausible rates
+      const base = {
+        market: 4.95,
+        ptax: 4.90,
+        official_tax: 920.0,
+        mep: 1100.0
+      }[type] || 5.0;
+      const n = 12;
+      const arr = [];
+      for(let i=0;i<n;i++){
+        const wobble = Math.sin(i*0.7 + (type.length)) * (type === 'mep' || type === 'official_tax' ? 0.018 : 0.008);
+        const drift = (i-n/2) * (type === 'mep' || type === 'official_tax' ? 0.0012 : 0.0006);
+        arr.push(base * (1 + wobble + drift));
+      }
+      return arr;
+    }
+
+    // -----------------------------
+    // Icons (inline SVG)
+    // -----------------------------
+    function iconGrid(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M4 4h7v7H4z"/><path d="M13 4h7v7h-7z"/><path d="M4 13h7v7H4z"/><path d="M13 13h7v7h-7z"/></svg>`;
+    }
+    function iconTree(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M7 4h10"/><path d="M12 4v6"/><path d="M5 10h14"/><path d="M8 10v10"/><path d="M16 10v10"/><path d="M6 20h4"/><path d="M14 20h4"/></svg>`;
+    }
+    function iconTable(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><rect x="3" y="4" width="18" height="16" rx="2"/><path d="M3 10h18"/><path d="M9 20V4"/><path d="M15 20V4"/></svg>`;
+    }
+    function iconUpload(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M12 3v12"/><path d="M7 8l5-5 5 5"/><path d="M4 15v4a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-4"/></svg>`;
+    }
+    function iconBolt(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M13 2L3 14h8l-1 8 11-14h-8z"/></svg>`;
+    }
+    function iconCheck(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M20 6L9 17l-5-5"/></svg>`;
+    }
+    function iconGlobe(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><circle cx="12" cy="12" r="10"/><path d="M2 12h20"/><path d="M12 2a15.3 15.3 0 0 1 0 20"/><path d="M12 2a15.3 15.3 0 0 0 0 20"/></svg>`;
+    }
+    function iconChart(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M4 19V5"/><path d="M4 19h16"/><path d="M8 15v-4"/><path d="M12 15V7"/><path d="M16 15v-6"/></svg>`;
+    }
+    function iconGear(){
+      return `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" xmlns="http://www.w3.org/2000/svg"><path d="M12 15.5a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/><path d="M19.4 15a7.8 7.8 0 0 0 .1-1l2-1.2-2-3.5-2.3.6a7.2 7.2 0 0 0-1.7-1l-.3-2.4H9.8l-.3 2.4a7.2 7.2 0 0 0-1.7 1L5.5 9.3l-2 3.5 2 1.2a7.8 7.8 0 0 0 0 2l-2 1.2 2 3.5 2.3-.6a7.2 7.2 0 0 0 1.7 1l.3 2.4h4.4l.3-2.4a7.2 7.2 0 0 0 1.7-1l2.3.6 2-3.5-2-1.2z"/></svg>`;
+    }
+
+    // initial render
+    render();
+  </script>
+</body>
+</html>

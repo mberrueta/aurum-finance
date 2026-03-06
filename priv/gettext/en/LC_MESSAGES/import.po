@@ -1,0 +1,165 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/import_live.ex:97
+#, elixir-autogen, elixir-format
+msgid "badge_facts_overlays"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:48
+#, elixir-autogen, elixir-format
+msgid "badge_mock_wizard"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:108
+#, elixir-autogen, elixir-format
+msgid "badge_ui_only"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:81
+#, elixir-autogen, elixir-format
+msgid "btn_accept_all"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:122
+#: lib/aurum_finance_web/live/import_live.ex:135
+#, elixir-autogen, elixir-format
+msgid "btn_go"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:39
+#, elixir-autogen, elixir-format
+msgid "btn_next"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:37
+#, elixir-autogen, elixir-format
+msgid "btn_prev"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:84
+#, elixir-autogen, elixir-format
+msgid "btn_skip_dupes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "col_amount"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "col_currency"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:66
+#, elixir-autogen, elixir-format
+msgid "col_date"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:67
+#, elixir-autogen, elixir-format
+msgid "col_description"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:71
+#, elixir-autogen, elixir-format
+msgid "col_hint"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:70
+#, elixir-autogen, elixir-format
+msgid "col_status"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:101
+#, elixir-autogen, elixir-format
+msgid "design_note_text"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:35
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr "Upload, parse, normalize, deduplicate, and commit"
+
+#: lib/aurum_finance_web/live/import_live.ex:12
+#: lib/aurum_finance_web/live/import_live.ex:34
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr "Import"
+
+#: lib/aurum_finance_web/live/import_live.ex:96
+#, elixir-autogen, elixir-format
+msgid "section_design_note"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:47
+#, elixir-autogen, elixir-format
+msgid "section_pipeline"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:107
+#, elixir-autogen, elixir-format
+msgid "section_shortcuts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:118
+#, elixir-autogen, elixir-format
+msgid "shortcut_preview_sub"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:115
+#, elixir-autogen, elixir-format
+msgid "shortcut_preview_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:131
+#, elixir-autogen, elixir-format
+msgid "shortcut_recon_sub"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:128
+#, elixir-autogen, elixir-format
+msgid "shortcut_recon_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:149
+#, elixir-autogen, elixir-format
+msgid "stage_commit"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "stage_deduplicate"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:147
+#, elixir-autogen, elixir-format
+msgid "stage_normalize"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:146
+#, elixir-autogen, elixir-format
+msgid "stage_parse"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_live.ex:145
+#, elixir-autogen, elixir-format
+msgid "stage_upload"
+msgstr ""
+
+#: lib/aurum_finance_web/components/import_components.ex:79
+#, elixir-autogen, elixir-format
+msgid "status_duplicate"
+msgstr ""
+
+#: lib/aurum_finance_web/components/import_components.ex:80
+#, elixir-autogen, elixir-format
+msgid "status_error"
+msgstr ""
+
+#: lib/aurum_finance_web/components/import_components.ex:78
+#, elixir-autogen, elixir-format
+msgid "status_ready"
+msgstr ""
