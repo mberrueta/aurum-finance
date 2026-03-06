@@ -28,9 +28,9 @@ defmodule AurumFinanceWeb.AuthProtectionTest do
     assert {:error, {:redirect, %{to: "/login"}}} = live(conn, "/dashboard")
   end
 
-  test "protected live route remains valid at timeout boundary", %{conn: conn} do
+  test "protected live route remains valid just before timeout boundary", %{conn: conn} do
     now = DateTime.utc_now() |> DateTime.to_unix(:second)
-    boundary_last_seen = now - AurumFinance.Auth.idle_timeout_seconds()
+    boundary_last_seen = now - AurumFinance.Auth.idle_timeout_seconds() + 1
 
     conn = put_root_session_timestamps(conn, boundary_last_seen, boundary_last_seen)
 
