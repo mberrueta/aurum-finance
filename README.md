@@ -126,6 +126,11 @@ Planned core components:
 * **AI layer (optional)** — categorization, anomaly detection, natural-language queries
 * **MCP data access layer (optional)** — scoped permissions, redaction, safe querying
 
+Internally, AurumFinance keeps a canonical ledger chart of accounts. For
+usability, the UI may present operational/institution-backed accounts,
+categories, and technical/system-managed accounts in separate views rather than
+one mixed flat list.
+
 ---
 
 ## Screenshots
