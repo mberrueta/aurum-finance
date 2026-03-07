@@ -33,6 +33,7 @@ defmodule AurumFinanceWeb.AccountsLive do
         active_tab: :institution,
         show_archived_by_tab: default_show_archived_by_tab(),
         editing_account: nil,
+        form_open?: false,
         selected_management_group: :institution,
         account_count: 0,
         tab_counts: %{institution: 0, category: 0, system_managed: 0}
@@ -51,9 +52,7 @@ defmodule AurumFinanceWeb.AccountsLive do
     {:noreply,
      socket
      |> assign(:current_entity, current_entity)
-     |> assign(:editing_account, nil)
-     |> assign(:selected_management_group, socket.assigns.active_tab)
-     |> assign_form(%Account{})
+     |> reset_form_state()
      |> load_accounts()}
   end
 
@@ -63,9 +62,7 @@ defmodule AurumFinanceWeb.AccountsLive do
     {:noreply,
      socket
      |> assign(:active_tab, active_tab)
-     |> assign(:editing_account, nil)
-     |> assign(:selected_management_group, active_tab)
-     |> assign_form(%Account{})
+     |> reset_form_state()
      |> load_accounts()}
   end
 
@@ -81,9 +78,8 @@ defmodule AurumFinanceWeb.AccountsLive do
   def handle_event("new_account", _params, socket) do
     {:noreply,
      socket
-     |> assign(:editing_account, nil)
-     |> assign(:selected_management_group, socket.assigns.active_tab)
-     |> assign_form(%Account{})}
+     |> reset_form_state()
+     |> assign(:form_open?, true)}
   end
 
   def handle_event("edit_account", %{"id" => id}, socket) do
@@ -92,8 +88,13 @@ defmodule AurumFinanceWeb.AccountsLive do
     {:noreply,
      socket
      |> assign(:editing_account, account)
+     |> assign(:form_open?, true)
      |> assign(:selected_management_group, account.management_group)
      |> assign_form(account)}
+  end
+
+  def handle_event("close_form", _params, socket) do
+    {:noreply, reset_form_state(socket)}
   end
 
   def handle_event("archive_account", %{"id" => id}, socket) do
@@ -150,9 +151,7 @@ defmodule AurumFinanceWeb.AccountsLive do
   defp handle_persist_result(socket, {:ok, _account}, success_message) do
     socket
     |> put_flash(:info, success_message)
-    |> assign(:editing_account, nil)
-    |> assign(:selected_management_group, socket.assigns.active_tab)
-    |> assign_form(%Account{})
+    |> reset_form_state()
     |> load_accounts()
   end
 
@@ -163,14 +162,13 @@ defmodule AurumFinanceWeb.AccountsLive do
        ) do
     socket
     |> put_flash(:error, dgettext("accounts", "flash_audit_logging_failed"))
-    |> assign(:editing_account, nil)
-    |> assign(:selected_management_group, socket.assigns.active_tab)
-    |> assign_form(%Account{})
+    |> reset_form_state()
     |> load_accounts()
   end
 
   defp handle_persist_result(socket, {:error, %Ecto.Changeset{} = changeset}, _success_message) do
     socket
+    |> assign(:form_open?, true)
     |> assign(:selected_management_group, changeset_selected_management_group(socket, changeset))
     |> assign(:form, to_form(changeset, as: :account))
   end
@@ -206,6 +204,14 @@ defmodule AurumFinanceWeb.AccountsLive do
     socket
     |> assign(:selected_management_group, account.management_group || socket.assigns.active_tab)
     |> assign(:form, to_form(changeset, as: :account))
+  end
+
+  defp reset_form_state(socket) do
+    socket
+    |> assign(:editing_account, nil)
+    |> assign(:form_open?, false)
+    |> assign(:selected_management_group, socket.assigns.active_tab)
+    |> assign_form(%Account{})
   end
 
   defp default_form_attrs(

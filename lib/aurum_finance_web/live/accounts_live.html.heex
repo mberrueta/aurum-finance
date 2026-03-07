@@ -24,7 +24,7 @@
     </.info_callout>
   </div>
 
-  <div class="grid gap-5 xl:grid-cols-[minmax(0,1.5fr)_minmax(22rem,0.9fr)]">
+  <div class="grid gap-5">
     <.section_panel
       title={dgettext("accounts", "section_accounts")}
       badge={Integer.to_string(@account_count)}
@@ -81,20 +81,6 @@
         </div>
       </div>
     </.section_panel>
-
-    <.section_panel
-      title={form_panel_title(@editing_account, @selected_management_group)}
-      badge={management_group_label(@selected_management_group)}
-      badge_variant={management_group_variant(@selected_management_group)}
-    >
-      <.account_form
-        form={@form}
-        current_entity={@current_entity}
-        entities={@entities}
-        editing_account={@editing_account}
-        selected_management_group={@selected_management_group}
-      />
-    </.section_panel>
   </div>
 
   <div id="accounts-guidance">
@@ -132,4 +118,20 @@
       </div>
     </.au_card>
   </div>
+
+  <.right_sidebar_panel
+    open={@form_open?}
+    title={form_panel_title(@editing_account, @selected_management_group)}
+    subtitle={dgettext("accounts", "page_subtitle")}
+    close_event="close_form"
+  >
+    <.account_form
+      form={@form}
+      current_entity={@current_entity}
+      entities={@entities}
+      editing_account={@editing_account}
+      selected_management_group={@selected_management_group}
+      close_event="close_form"
+    />
+  </.right_sidebar_panel>
 </div>

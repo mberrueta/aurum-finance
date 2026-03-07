@@ -33,7 +33,7 @@
     </.info_callout>
   </div>
 
-  <div class="grid grid-cols-1 xl:grid-cols-2 gap-[14px]">
+  <div class="grid grid-cols-1 gap-[14px]">
     <.au_card>
       <:header>
         <span>{dgettext("entities", "section_entities")}</span>
@@ -99,115 +99,6 @@
         </div>
       </div>
     </.au_card>
-
-    <.au_card>
-      <:header>
-        <span>
-          {if(
-            @editing_entity,
-            do: dgettext("entities", "form_title_edit"),
-            else: dgettext("entities", "form_title_create")
-          )}
-        </span>
-      </:header>
-
-      <.form
-        id="entity-form"
-        for={@form}
-        phx-change="validate"
-        phx-submit="save"
-        class="space-y-[10px]"
-      >
-        <.input
-          field={@form[:name]}
-          type="text"
-          label={dgettext("entities", "field_name")}
-          required
-        />
-
-        <.info_label
-          for={@form[:type].id}
-          text={dgettext("entities", "field_type")}
-          tooltip={dgettext("entities", "tooltip_field_type")}
-        />
-        <.input
-          field={@form[:type]}
-          type="select"
-          options={Entity.type_options()}
-          required
-        />
-
-        <.info_label
-          for={@form[:tax_identifier].id}
-          text={dgettext("entities", "field_tax_identifier")}
-          tooltip={dgettext("entities", "tooltip_field_tax_identifier")}
-        />
-        <.input
-          field={@form[:tax_identifier]}
-          type="text"
-        />
-
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-[10px]">
-          <div>
-            <.info_label
-              for={@form[:country_code].id}
-              text={dgettext("entities", "field_country_code")}
-              tooltip={dgettext("entities", "tooltip_field_country_code")}
-            />
-            <.input
-              field={@form[:country_code]}
-              type="select"
-              options={Entity.country_options()}
-              prompt=""
-              required
-            />
-          </div>
-          <div>
-            <.info_label
-              for={@form[:fiscal_residency_country_code].id}
-              text={dgettext("entities", "field_fiscal_residency_country_code")}
-              tooltip={dgettext("entities", "tooltip_field_fiscal_residency_country_code")}
-            />
-            <.input
-              field={@form[:fiscal_residency_country_code]}
-              type="select"
-              options={Entity.country_options()}
-              prompt=""
-            />
-          </div>
-        </div>
-
-        <.info_label
-          for={@form[:default_tax_rate_type].id}
-          text={dgettext("entities", "field_default_tax_rate_type")}
-          tooltip={dgettext("entities", "tooltip_field_default_tax_rate_type")}
-        />
-        <.input
-          field={@form[:default_tax_rate_type]}
-          type="select"
-          options={Entity.default_tax_rate_type_options(effective_tax_country_code(@form))}
-          prompt=""
-        />
-        <p class="text-[11px] text-white/60 -mt-1 mb-2">
-          {dgettext("entities", "hint_default_tax_rate_type_derived")}
-        </p>
-
-        <.input field={@form[:notes]} type="textarea" label={dgettext("entities", "field_notes")} />
-
-        <div class="flex items-center justify-end gap-[8px] pt-[6px]">
-          <button id="cancel-entity-btn" type="button" class="au-btn" phx-click="new_entity">
-            {dgettext("entities", "btn_clear")}
-          </button>
-          <button id="save-entity-btn" type="submit" class="au-btn au-btn-primary">
-            {if(
-              @editing_entity,
-              do: dgettext("entities", "btn_save_changes"),
-              else: dgettext("entities", "btn_create_entity")
-            )}
-          </button>
-        </div>
-      </.form>
-    </.au_card>
   </div>
 
   <div id="entities-guidance">
@@ -242,4 +133,110 @@
       </div>
     </.au_card>
   </div>
+
+  <.right_sidebar_panel
+    open={@form_open?}
+    title={
+      if(
+        @editing_entity,
+        do: dgettext("entities", "form_title_edit"),
+        else: dgettext("entities", "form_title_create")
+      )
+    }
+    close_event="close_form"
+  >
+    <.form
+      id="entity-form"
+      for={@form}
+      phx-change="validate"
+      phx-submit="save"
+      class="space-y-[10px]"
+    >
+      <.input
+        field={@form[:name]}
+        type="text"
+        label={dgettext("entities", "field_name")}
+        required
+      />
+
+      <.info_label
+        for={@form[:type].id}
+        text={dgettext("entities", "field_type")}
+        tooltip={dgettext("entities", "tooltip_field_type")}
+      />
+      <.input
+        field={@form[:type]}
+        type="select"
+        options={Entity.type_options()}
+        required
+      />
+
+      <.info_label
+        for={@form[:tax_identifier].id}
+        text={dgettext("entities", "field_tax_identifier")}
+        tooltip={dgettext("entities", "tooltip_field_tax_identifier")}
+      />
+      <.input field={@form[:tax_identifier]} type="text" />
+
+      <div class="grid grid-cols-1 gap-[10px] sm:grid-cols-2">
+        <div>
+          <.info_label
+            for={@form[:country_code].id}
+            text={dgettext("entities", "field_country_code")}
+            tooltip={dgettext("entities", "tooltip_field_country_code")}
+          />
+          <.input
+            field={@form[:country_code]}
+            type="select"
+            options={Entity.country_options()}
+            prompt=""
+            required
+          />
+        </div>
+        <div>
+          <.info_label
+            for={@form[:fiscal_residency_country_code].id}
+            text={dgettext("entities", "field_fiscal_residency_country_code")}
+            tooltip={dgettext("entities", "tooltip_field_fiscal_residency_country_code")}
+          />
+          <.input
+            field={@form[:fiscal_residency_country_code]}
+            type="select"
+            options={Entity.country_options()}
+            prompt=""
+          />
+        </div>
+      </div>
+
+      <.info_label
+        for={@form[:default_tax_rate_type].id}
+        text={dgettext("entities", "field_default_tax_rate_type")}
+        tooltip={dgettext("entities", "tooltip_field_default_tax_rate_type")}
+      />
+      <.input
+        field={@form[:default_tax_rate_type]}
+        type="select"
+        options={Entity.default_tax_rate_type_options(effective_tax_country_code(@form))}
+        prompt=""
+      />
+      <p class="mb-2 -mt-1 text-[11px] text-white/60">
+        {dgettext("entities", "hint_default_tax_rate_type_derived")}
+      </p>
+
+      <.input field={@form[:notes]} type="textarea" label={dgettext("entities", "field_notes")} />
+
+      <div class="flex items-center justify-end gap-[8px] pt-[6px]">
+        <button id="cancel-entity-btn" type="button" class="au-btn" phx-click="close_form">
+          {dgettext("entities", "btn_clear")}
+        </button>
+        <button id="save-entity-btn" type="submit" class="au-btn au-btn-primary">
+          {if(
+            @editing_entity,
+            do: dgettext("entities", "btn_save_changes"),
+            else: dgettext("entities", "btn_create_entity")
+          )}
+        </button>
+      </div>
+    </.form>
+  </.right_sidebar_panel>
 </div>

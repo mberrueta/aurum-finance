@@ -13,7 +13,8 @@ defmodule AurumFinanceWeb.EntitiesLive do
        active_nav: :entities,
        page_title: dgettext("entities", "page_title"),
        show_archived: false,
-       editing_entity: nil
+       editing_entity: nil,
+       form_open?: false
      )
      |> assign_form(%Entity{})
      |> load_entities()}
@@ -31,6 +32,7 @@ defmodule AurumFinanceWeb.EntitiesLive do
     {:noreply,
      socket
      |> assign(:editing_entity, nil)
+     |> assign(:form_open?, true)
      |> assign_form(%Entity{})}
   end
 
@@ -40,7 +42,12 @@ defmodule AurumFinanceWeb.EntitiesLive do
     {:noreply,
      socket
      |> assign(:editing_entity, entity)
+     |> assign(:form_open?, true)
      |> assign_form(entity)}
+  end
+
+  def handle_event("close_form", _params, socket) do
+    {:noreply, reset_form_state(socket)}
   end
 
   def handle_event("archive_entity", %{"id" => id}, socket) do
@@ -93,8 +100,7 @@ defmodule AurumFinanceWeb.EntitiesLive do
   defp handle_persist_result(socket, {:ok, _entity}, success_message) do
     socket
     |> put_flash(:info, success_message)
-    |> assign(:editing_entity, nil)
-    |> assign_form(%Entity{})
+    |> reset_form_state()
     |> load_entities()
   end
 
@@ -105,13 +111,14 @@ defmodule AurumFinanceWeb.EntitiesLive do
        ) do
     socket
     |> put_flash(:error, dgettext("entities", "flash_audit_logging_failed"))
-    |> assign(:editing_entity, nil)
-    |> assign_form(%Entity{})
+    |> reset_form_state()
     |> load_entities()
   end
 
   defp handle_persist_result(socket, {:error, %Ecto.Changeset{} = changeset}, _success_message) do
-    assign(socket, :form, to_form(changeset, as: :entity))
+    socket
+    |> assign(:form_open?, true)
+    |> assign(:form, to_form(changeset, as: :entity))
   end
 
   defp load_entities(socket) do
@@ -122,6 +129,13 @@ defmodule AurumFinanceWeb.EntitiesLive do
   defp assign_form(socket, %Entity{} = entity) do
     changeset = Entities.change_entity(entity)
     assign(socket, :form, to_form(changeset, as: :entity))
+  end
+
+  defp reset_form_state(socket) do
+    socket
+    |> assign(:editing_entity, nil)
+    |> assign(:form_open?, false)
+    |> assign_form(%Entity{})
   end
 
   defp effective_tax_country_code(form) do

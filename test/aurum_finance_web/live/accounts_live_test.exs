@@ -34,8 +34,54 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     assert has_element?(view, "#accounts-tab-institution")
     assert has_element?(view, "#accounts-tab-category")
     assert has_element?(view, "#accounts-tab-system_managed")
+    refute has_element?(view, "#account-form")
     assert has_element?(view, "#account-#{visible_account.id}")
     refute render(view) =~ "Hidden salary"
+  end
+
+  test "opens and closes the right sidebar for account forms", %{conn: conn} do
+    entity = entity_fixture(name: "Sidebar account entity")
+
+    account =
+      account_fixture(entity, %{
+        name: "Sidebar checking",
+        account_type: :asset,
+        operational_subtype: :bank_checking,
+        management_group: :institution,
+        currency_code: "USD"
+      })
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
+
+    refute has_element?(view, "#right-sidebar-panel")
+    refute has_element?(view, "#account-form")
+
+    view
+    |> element("#new-account-btn")
+    |> render_click()
+
+    assert has_element?(view, "#right-sidebar-panel")
+    assert has_element?(view, "#right-sidebar-overlay")
+    assert has_element?(view, "#close-sidebar-btn")
+    assert has_element?(view, "#account-form")
+
+    view
+    |> element("#cancel-account-btn")
+    |> render_click()
+
+    refute has_element?(view, "#right-sidebar-panel")
+    refute has_element?(view, "#account-form")
+
+    view
+    |> form("#accounts-entity-selector", entity_id: entity.id)
+    |> render_change()
+
+    view
+    |> element("#edit-account-#{account.id}")
+    |> render_click()
+
+    assert has_element?(view, "#right-sidebar-panel")
+    assert has_element?(view, "#account-form")
   end
 
   test "creates an institution account in the selected entity", %{conn: conn} do
@@ -46,6 +92,10 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     view
     |> form("#accounts-entity-selector", entity_id: entity.id)
     |> render_change()
+
+    view
+    |> element("#new-account-btn")
+    |> render_click()
 
     params = %{
       "name" => "Primary checking",
@@ -69,6 +119,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     assert account.account_type == :asset
     assert account.management_group == :institution
     assert has_element?(view, "#account-#{account.id}")
+    refute has_element?(view, "#account-form")
   end
 
   test "defaults currency select from selected entity country", %{conn: conn} do
@@ -79,6 +130,10 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     view
     |> form("#accounts-entity-selector", entity_id: entity.id)
     |> render_change()
+
+    view
+    |> element("#new-account-btn")
+    |> render_click()
 
     assert has_element?(view, "#account_currency_code option[selected][value='CLP']")
   end
@@ -94,6 +149,10 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
 
     view
     |> element("#accounts-tab-category")
+    |> render_click()
+
+    view
+    |> element("#new-account-btn")
     |> render_click()
 
     params = %{
@@ -118,6 +177,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     assert account.account_type == :income
     assert account.management_group == :category
     assert has_element?(view, "#account-#{account.id}")
+    refute has_element?(view, "#account-form")
   end
 
   test "edits, archives, and unarchives accounts from the list", %{conn: conn} do
@@ -156,6 +216,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     updated = Ledger.get_account!(account.id)
     assert updated.name == "Lifecycle checking updated"
     assert updated.notes == "edited"
+    refute has_element?(view, "#account-form")
 
     view
     |> element("#archive-account-#{account.id}")

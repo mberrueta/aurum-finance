@@ -178,6 +178,7 @@ defmodule AurumFinanceWeb.AccountsComponents do
   attr :entities, :list, default: []
   attr :editing_account, :any, default: nil
   attr :selected_management_group, :atom, required: true
+  attr :close_event, :string, default: "close_form"
 
   def account_form(assigns) do
     assigns =
@@ -349,7 +350,10 @@ defmodule AurumFinanceWeb.AccountsComponents do
         <p class="mt-1">{@current_entity.name}</p>
       </div>
 
-      <div class="flex flex-wrap gap-2">
+      <div class="flex flex-wrap justify-end gap-2">
+        <button id="cancel-account-btn" type="button" class="au-btn" phx-click={@close_event}>
+          {dgettext("accounts", "btn_clear")}
+        </button>
         <button id="save-account-btn" type="submit" class="au-btn au-btn-primary">
           {save_button_label(@editing?)}
         </button>

@@ -90,6 +90,8 @@ defmodule AurumFinanceWeb do
       import AurumFinanceWeb.UiComponents
       # Specialized badge renderers
       import AurumFinanceWeb.BadgeComponent
+      # Shared right-side form shell
+      import AurumFinanceWeb.SlideoverComponents
 
       # Common modules used in templates
       alias Phoenix.LiveView.JS
