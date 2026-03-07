@@ -184,17 +184,4 @@ defmodule AurumFinance.EntitiesTest do
       assert %DateTime{} = unarchived.occurred_at
     end
   end
-
-  defp entity_fixture(attrs) do
-    attrs = if Keyword.keyword?(attrs), do: Map.new(attrs), else: attrs
-
-    base = %{
-      name: "Entity #{System.unique_integer([:positive])}",
-      type: :individual,
-      country_code: "BR"
-    }
-
-    {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-    entity
-  end
 end

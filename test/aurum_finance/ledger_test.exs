@@ -2,7 +2,6 @@ defmodule AurumFinance.LedgerTest do
   use AurumFinance.DataCase, async: true
 
   alias AurumFinance.Audit
-  alias AurumFinance.Entities
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
 
@@ -336,30 +335,5 @@ defmodule AurumFinance.LedgerTest do
       refute is_nil(unarchived.before["archived_at"])
       assert unarchived.after["archived_at"] == nil
     end
-  end
-
-  defp entity_fixture(attrs) do
-    base = %{
-      name: "Entity #{System.unique_integer([:positive])}",
-      type: :individual,
-      country_code: "BR"
-    }
-
-    {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-    entity
-  end
-
-  defp account_fixture(entity, attrs \\ %{}) do
-    base = %{
-      entity_id: entity.id,
-      name: "Account #{System.unique_integer([:positive])}",
-      account_type: :asset,
-      operational_subtype: :bank_checking,
-      management_group: :institution,
-      currency_code: "USD"
-    }
-
-    {:ok, account} = base |> Map.merge(attrs) |> Ledger.create_account()
-    account
   end
 end

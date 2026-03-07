@@ -1,7 +1,7 @@
 # Task 03: Test Coverage
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01, Task 02
 - **Blocks**: Task 04, Task 05
@@ -200,33 +200,45 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+The coverage requested by Task 03 was already largely present in the repository. The execution work focused on finalizing the test infrastructure for those files by replacing ad hoc local fixture generation with shared `ExMachina` factories backed by `Faker`, then revalidating the full test and precommit gates.
 
 ### Work Performed
-- [What was actually done]
+- Added a shared `AurumFinance.Factory` with `entity_factory/0` and `account_factory/0`
+- Integrated the factory into `DataCase` and `ConnCase`
+- Replaced ad hoc local fixture construction in `EntitiesTest`, `LedgerTest`, `EntitiesLiveTest`, and `AccountsLiveTest` with `params_for/1`-based setup from the shared factory
+- Kept explicit per-test overrides where assertion values matter
+- Re-ran `mix test` and `mix precommit`
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `test/support/factory.ex`
+- Updates to `test/support/data_case.ex`
+- Updates to `test/support/conn_case.ex`
+- Updates to `test/aurum_finance/entities_test.exs`
+- Updates to `test/aurum_finance/ledger_test.exs`
+- Updates to `test/aurum_finance_web/live/entities_live_test.exs`
+- Updates to `test/aurum_finance_web/live/accounts_live_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| | |
+| Existing Ledger and AccountsLive coverage already satisfied the behavioral checklist | The current tests already exercised changesets, CRUD, archive lifecycle, audit events, grouping, and LiveView interactions |
+| Factory-based param generation is the right level of replacement for these tests | These tests mostly call contexts directly, so `params_for/1` keeps them explicit while removing repetitive local setup |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| | | |
+| Use shared ExMachina factories instead of inserting through bespoke helpers everywhere | Keep local inline fixtures, insert structs directly in every test | Shared factories reduce duplication and align the suite with the repository's declared test stack |
+| Use `params_for/1` for most context setup instead of `insert/1` | Insert entities/accounts unconditionally | Context tests should still exercise the real create/update APIs rather than bypassing them with direct inserts |
 
 ### Blockers Encountered
-- [Blocker] - Resolution: [How resolved or "Needs human input"]
+- Task file status was stale relative to repository state - Resolution: treated Task 03 as coverage-finalization rather than greenfield test authoring and documented that explicitly
 
 ### Questions for Human
-1. [Question needing human input]
+1. None
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
+- [x] All outputs complete
+- [x] Summary documented
 - [ ] Questions listed (if any)
 
 ---

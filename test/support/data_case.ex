@@ -24,6 +24,8 @@ defmodule AurumFinance.DataCase do
       import Ecto.Changeset
       import Ecto.Query
       import AurumFinance.DataCase
+      import AurumFinance.Factory
+      import AurumFinance.TestSupport.Fixtures
     end
   end
 

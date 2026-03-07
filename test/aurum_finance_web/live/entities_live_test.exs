@@ -133,17 +133,4 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     assert has_element?(view, "#entity-#{entity.id}")
     refute has_element?(view, "#unarchive-entity-#{entity.id}")
   end
-
-  defp entity_fixture(attrs) do
-    attrs = if Keyword.keyword?(attrs), do: Map.new(attrs), else: attrs
-
-    base = %{
-      name: "Entity #{System.unique_integer([:positive])}",
-      type: :individual,
-      country_code: "BR"
-    }
-
-    {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-    entity
-  end
 end
