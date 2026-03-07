@@ -90,37 +90,69 @@ defmodule AurumFinanceWeb.ComponentsSmokeTest do
   end
 
   test "accounts components render" do
-    assigns = %{}
+    account =
+      struct(AurumFinance.Ledger.Account,
+        id: Ecto.UUID.generate(),
+        name: "Broker",
+        management_group: :institution,
+        account_type: :asset,
+        operational_subtype: :brokerage_cash,
+        currency_code: "USD",
+        institution_name: "Broker LLC",
+        notes: "Long-term portfolio"
+      )
 
-    group_html =
+    entity =
+      struct(AurumFinance.Entities.Entity,
+        id: Ecto.UUID.generate(),
+        name: "Personal",
+        type: :individual,
+        country_code: "US"
+      )
+
+    form =
+      AurumFinance.Ledger.change_account(%AurumFinance.Ledger.Account{}, %{
+        entity_id: entity.id,
+        management_group: :institution,
+        account_type: :asset,
+        operational_subtype: :bank_checking,
+        currency_code: "USD"
+      })
+      |> to_form(as: :account)
+
+    assigns = %{account: account, entity: entity, form: form}
+
+    tabs_html =
       rendered_to_string(~H"""
-      <.account_group label="Assets" count={2} />
+      <.management_tabs
+        active_tab={:institution}
+        counts={%{institution: 2, category: 1, system_managed: 0}}
+      />
       """)
 
     row_html =
       rendered_to_string(~H"""
       <.account_row
-        account={
-          %{
-            name: "Broker",
-            subtype: "brokerage",
-            type: "asset",
-            currencies: ["USD"],
-            balance: 1200.0
-          }
-        }
-        display_currency="USD"
+        id={"account-#{@account.id}"}
+        account={@account}
+        editing_account_id={nil}
       />
       """)
 
-    tx_html =
+    form_html =
       rendered_to_string(~H"""
-      <.mini_tx_row tx={%{description: "Salary", date: "2026-01-01", amount: 100.0, currency: "USD"}} />
+      <.account_form
+        form={@form}
+        current_entity={@entity}
+        entities={[@entity]}
+        editing_account={nil}
+        selected_management_group={:institution}
+      />
       """)
 
-    assert group_html =~ "au-tree-group"
+    assert tabs_html =~ "Institution"
     assert row_html =~ "Broker"
-    assert tx_html =~ "Salary"
+    assert form_html =~ "Create account"
   end
 
   test "transactions component renders" do

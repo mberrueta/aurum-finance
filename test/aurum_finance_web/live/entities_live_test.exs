@@ -15,6 +15,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     assert has_element?(view, "#entities-list")
     assert has_element?(view, "#entities-ownership-boundary")
     assert has_element?(view, "#entities-guidance")
+    refute has_element?(view, "#entity-form")
     assert has_element?(view, "#entity-#{active.id}")
     refute has_element?(view, "#entity-#{archived.id}")
 
@@ -25,8 +26,44 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     assert has_element?(view, "#entity-#{archived.id}")
   end
 
-  test "creates and edits an entity from the form", %{conn: conn} do
+  test "opens and closes the right sidebar for entity forms", %{conn: conn} do
+    entity = entity_fixture(name: "Sidebar entity")
+
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
+
+    refute has_element?(view, "#right-sidebar-panel")
+    refute has_element?(view, "#entity-form")
+
+    view
+    |> element("#new-entity-btn")
+    |> render_click()
+
+    assert has_element?(view, "#right-sidebar-panel")
+    assert has_element?(view, "#right-sidebar-overlay")
+    assert has_element?(view, "#close-sidebar-btn")
+    assert has_element?(view, "#entity-form")
+
+    view
+    |> element("#cancel-entity-btn")
+    |> render_click()
+
+    refute has_element?(view, "#right-sidebar-panel")
+    refute has_element?(view, "#entity-form")
+
+    view
+    |> element("#edit-entity-#{entity.id}")
+    |> render_click()
+
+    assert has_element?(view, "#right-sidebar-panel")
+    assert has_element?(view, "#entity-form")
+  end
+
+  test "creates and edits an entity from the sidebar form", %{conn: conn} do
+    {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
+
+    view
+    |> element("#new-entity-btn")
+    |> render_click()
 
     params = %{
       "name" => "LiveView entity",
@@ -44,6 +81,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     assert created
     assert created.fiscal_residency_country_code == "UY"
     assert has_element?(view, "#entity-#{created.id}")
+    refute has_element?(view, "#entity-form")
 
     view
     |> element("#edit-entity-#{created.id}")
@@ -56,6 +94,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     updated = Entities.get_entity!(created.id)
     assert updated.name == "LiveView entity updated"
     assert has_element?(view, "#entity-#{created.id}")
+    refute has_element?(view, "#entity-form")
   end
 
   test "archives an entity from the list", %{conn: conn} do
@@ -93,18 +132,5 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
     assert is_nil(unarchived.archived_at)
     assert has_element?(view, "#entity-#{entity.id}")
     refute has_element?(view, "#unarchive-entity-#{entity.id}")
-  end
-
-  defp entity_fixture(attrs) do
-    attrs = if Keyword.keyword?(attrs), do: Map.new(attrs), else: attrs
-
-    base = %{
-      name: "Entity #{System.unique_integer([:positive])}",
-      type: :individual,
-      country_code: "BR"
-    }
-
-    {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-    entity
   end
 end

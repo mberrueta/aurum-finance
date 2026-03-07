@@ -2,38 +2,275 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/aurum_finance_web/components/accounts_components.ex:34
-#, elixir-autogen, elixir-format
-msgid "label_accounts"
-msgstr ""
+msgid "account_type_asset"
+msgstr "Asset"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:54
-#, elixir-autogen, elixir-format
-msgid "label_balance_note"
-msgstr ""
+msgid "account_type_equity"
+msgstr "Equity"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:60
-#, elixir-autogen, elixir-format
-msgid "label_currencies"
-msgstr ""
+msgid "account_type_expense"
+msgstr "Expense"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:69
-#, elixir-autogen, elixir-format
-msgid "label_recent_activity"
-msgstr ""
+msgid "account_type_income"
+msgstr "Income"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:20
-#, elixir-autogen, elixir-format
+msgid "account_type_liability"
+msgstr "Liability"
+
+msgid "callout_how_use_item_1"
+msgstr "Select the entity first so every account stays inside the correct ownership boundary."
+
+msgid "callout_how_use_item_2"
+msgstr "Use the Institution tab for bank, broker, wallet, credit card, and loan accounts."
+
+msgid "callout_how_use_item_3"
+msgstr "Use Category accounts for income and expense classification, even when they may be auto-created later."
+
+msgid "callout_how_use_title"
+msgstr "How to use accounts"
+
+msgid "callout_tips_item_1"
+msgstr "Keep names specific enough to distinguish real-world accounts, especially when multiple institutions share the same currency."
+
+msgid "callout_tips_item_2"
+msgstr "Archive accounts instead of deleting them so historical postings and audits remain consistent."
+
+msgid "callout_tips_title"
+msgstr "Tips"
+
+msgid "callout_warning_item_1"
+msgstr "Management group, account type, subtype, and currency are part of the canonical account shape and become immutable after creation."
+
+msgid "callout_warning_item_2"
+msgstr "System-managed accounts are real ledger accounts; keep them separate from day-to-day operational workflows."
+
+msgid "callout_warning_title"
+msgstr "Warnings"
+
+msgid "callout_what_is_body"
+msgstr "Accounts are the canonical ledger containers for balances, postings, categories, and technical system flows."
+
+msgid "callout_what_is_item_1"
+msgstr "Institution accounts represent operational containers such as bank, broker, wallet, credit, and loan accounts."
+
+msgid "callout_what_is_item_2"
+msgstr "Category accounts are still ledger accounts, typically income or expense, managed separately for clarity."
+
+msgid "callout_what_is_item_3"
+msgstr "System-managed accounts support technical ledger flows such as opening balances or FX-related mechanics."
+
+msgid "callout_what_is_title"
+msgstr "What accounts are"
+
+msgid "btn_archive"
+msgstr "Archive"
+
+msgid "btn_create_account"
+msgstr "Create account"
+
+msgid "btn_edit"
+msgstr "Edit"
+
+msgid "btn_hide_archived"
+msgstr "Hide archived"
+
+msgid "btn_new_account"
+msgstr "New account"
+
+msgid "btn_save_changes"
+msgstr "Save changes"
+
+msgid "btn_show_archived"
+msgstr "Show archived"
+
+msgid "btn_unarchive"
+msgstr "Unarchive"
+
+msgid "empty_category_accounts"
+msgstr "No category accounts for this entity yet."
+
+msgid "empty_category_accounts_archived"
+msgstr "No archived category accounts for this entity."
+
+msgid "empty_form_requires_entity"
+msgstr "Select an entity before managing accounts."
+
+msgid "empty_institution_accounts"
+msgstr "No institution accounts for this entity yet."
+
+msgid "empty_institution_accounts_archived"
+msgstr "No archived institution accounts for this entity."
+
+msgid "empty_no_entities"
+msgstr "Create an entity first to scope accounts correctly."
+
+msgid "empty_system_managed_accounts"
+msgstr "No system-managed accounts for this entity yet."
+
+msgid "empty_system_managed_accounts_archived"
+msgstr "No archived system-managed accounts for this entity."
+
+msgid "flash_account_archived"
+msgstr "Account archived"
+
+msgid "flash_account_created"
+msgstr "Account created"
+
+msgid "flash_account_unarchived"
+msgstr "Account unarchived"
+
+msgid "flash_account_updated"
+msgstr "Account updated"
+
+msgid "flash_audit_logging_failed"
+msgstr "The account changed, but audit logging failed."
+
+msgid "label_account_type"
+msgstr "Account type"
+
+msgid "label_category_type"
+msgstr "Category type"
+
+msgid "label_currency"
+msgstr "Currency"
+
+msgid "label_current_entity"
+msgstr "Current entity"
+
+msgid "label_entity"
+msgstr "Entity"
+
+msgid "label_entity_scope"
+msgstr "Entity scope"
+
+msgid "label_institution"
+msgstr "Institution"
+
+msgid "label_institution_account_ref"
+msgstr "Institution account reference"
+
+msgid "label_management_group"
+msgstr "Management group"
+
+msgid "label_name"
+msgstr "Name"
+
+msgid "label_normal_balance"
+msgstr "Normal balance"
+
+msgid "label_notes"
+msgstr "Notes"
+
+msgid "label_operational_subtype"
+msgstr "Operational subtype"
+
+msgid "management_group_category"
+msgstr "Category"
+
+msgid "management_group_category_hint"
+msgstr "Income and expense accounts kept as ledger categories."
+
+msgid "management_group_institution"
+msgstr "Institution"
+
+msgid "management_group_institution_hint"
+msgstr "Bank, broker, wallet, credit, and other operational accounts."
+
+msgid "management_group_system_managed"
+msgstr "System-managed"
+
+msgid "management_group_system_managed_hint"
+msgstr "Technical accounts such as opening balances and FX support."
+
+msgid "management_group_unknown"
+msgstr "Unknown"
+
+msgid "normal_balance_credit"
+msgstr "Credit"
+
+msgid "normal_balance_debit"
+msgstr "Debit"
+
+msgid "operational_subtype_bank_checking"
+msgstr "Bank checking"
+
+msgid "operational_subtype_bank_savings"
+msgstr "Bank savings"
+
+msgid "operational_subtype_brokerage_cash"
+msgstr "Brokerage cash"
+
+msgid "operational_subtype_brokerage_securities"
+msgstr "Brokerage securities"
+
+msgid "operational_subtype_cash"
+msgstr "Cash"
+
+msgid "operational_subtype_credit_card"
+msgstr "Credit card"
+
+msgid "operational_subtype_crypto_wallet"
+msgstr "Crypto wallet"
+
+msgid "operational_subtype_loan"
+msgstr "Loan"
+
+msgid "operational_subtype_other_asset"
+msgstr "Other asset"
+
+msgid "operational_subtype_other_liability"
+msgstr "Other liability"
+
+msgid "option_select_entity"
+msgstr "Select entity"
+
 msgid "page_subtitle"
-msgstr "Assets, liabilities, income, and expense accounts"
+msgstr "Canonical ledger accounts managed through institution, category, and system surfaces"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:12
-#: lib/aurum_finance_web/live/accounts_live.ex:19
-#, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr "Accounts"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:27
-#, elixir-autogen, elixir-format
+msgid "panel_edit_account"
+msgstr "Edit account"
+
+msgid "panel_new_account"
+msgstr "New %{group} account"
+
 msgid "section_accounts"
-msgstr ""
+msgstr "Accounts"
+
+msgid "section_guidance"
+msgstr "How to use accounts"
+
+msgid "status_archived"
+msgstr "Archived"
+
+msgid "tooltip_field_account_type"
+msgstr "Canonical ledger type used for balance behavior. For institution accounts it is derived automatically from the subtype and becomes immutable after creation."
+
+msgid "tooltip_field_category_type"
+msgstr "Choose whether this category account records income or expense activity. These remain real ledger accounts, not labels."
+
+msgid "tooltip_field_currency"
+msgstr "Native currency of the account. It defaults from the selected entity country and becomes immutable after creation, so choose the real operating currency."
+
+msgid "tooltip_field_institution"
+msgstr "Human-readable institution or platform name, such as Mercury, Fidelity, or Chase. Useful when multiple accounts share the same subtype."
+
+msgid "tooltip_field_institution_account_ref"
+msgstr "Non-sensitive account reference, usually the last 4 digits or an internal nickname. Avoid storing full account numbers here."
+
+msgid "tooltip_field_management_group"
+msgstr "Controls where the account is managed in the product: Institution, Category, or System-managed. It does not replace ledger semantics."
+
+msgid "tooltip_field_notes"
+msgstr "Optional operational context for humans, such as reconciliation guidance or intended usage. Keep secrets and full account numbers out of notes."
+
+msgid "tooltip_field_operational_subtype"
+msgstr "Operational shape of the account, such as checking, brokerage cash, or credit card. This drives the derived account type and later workflow behavior."
+
+msgid "value_not_applicable"
+msgstr "Not applicable"
+
+msgid "value_pending"
+msgstr "Pending"

@@ -88,7 +88,7 @@ graph TD
 | Context | Owns | Key Invariants | Entity Scope |
 |---------|------|---------------|--------------|
 | **Entities** | Entity | Tenant boundary for all financial data; fiscal residency fields are columns on Entity; no user model | N/A (defines the boundary) |
-| **Ledger** | Account, Transaction, Posting, BalanceSnapshot | Zero-sum per currency per transaction; immutable facts; original currency preserved | Entity-scoped |
+| **Ledger** | Account (implemented), Transaction/Posting/BalanceSnapshot (deferred) | Account ownership is entity-scoped; ledger semantics live in `account_type`; balances are derived from postings once posting model exists | Entity-scoped |
 | **ExchangeRates** | RateSeries, RateRecord, TaxRateSnapshot, Currency | Tax snapshots immutable; rate types are string keys; arbitrary jurisdictions | Mixed (rates global, snapshots entity-scoped) |
 | **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
 | **Ingestion** | ImportBatch, ImportRow | Fact/classification split at import; idempotent re-import; preview-before-commit | Entity-scoped |
@@ -172,7 +172,7 @@ financial positions. See ADR-0008 for the full design rationale.
 
 | Entity | Description | Key Fields |
 |--------|-------------|------------|
-| **Account** | A node in the chart of accounts. Forms a tree via adjacency list. | `entity_id`, `parent_account_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `name`, `currency_code`, `is_placeholder`, `is_active` |
+| **Account** | Canonical internal ledger account abstraction. Covers institution-backed accounts, category accounts, and system-managed accounts within one entity boundary. | `entity_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `operational_subtype`, `management_group`, `name`, `currency_code`, `institution_name`, `institution_account_ref`, `notes`, `archived_at` |
 | **Transaction** | A single real-world financial event grouping one or more postings. | `entity_id`, `date`, `description`, `memo`, `status` (posted/voided), `correlation_id`, `source_type` (import/manual/system) |
 | **Posting** | A single debit or credit line within a transaction, targeting one account. Immutable after creation. | `transaction_id`, `account_id`, `amount` (signed decimal; positive = debit, negative = credit), `currency_code` |
 | **BalanceSnapshot** | A cached, non-authoritative balance for an account at a point in time. Derived from postings. | `account_id`, `as_of_date`, `currency_code`, `balance`, `posting_count`, `computed_at` |
@@ -180,18 +180,51 @@ financial positions. See ADR-0008 for the full design rationale.
 #### Relationships
 
 - Entity 1--* Account (entity-scoped)
-- Account 1--* Account (parent-child tree; adjacency list)
 - Entity 1--* Transaction (entity-scoped)
 - Transaction 1--+ Posting (at least two per transaction)
 - Posting *--1 Account (each posting targets one account)
-- Account 1--* BalanceSnapshot (performance cache)
 
-#### Account Tree
+#### Current Implementation Scope
 
-Accounts use a five-type hierarchy (Asset, Liability, Equity, Income, Expense).
-Children inherit the type of their parent. The tree is typically 3-5 levels deep
-for personal finance. Placeholder accounts serve as organizational nodes that
-cannot receive postings.
+The current implemented Ledger scope is the `Account` model and account-management
+flows. Transaction, posting, balance snapshot, account tree, and trading-account
+automation remain deferred to follow-up issues.
+
+Accounts use the standard five accounting types:
+
+- Asset
+- Liability
+- Equity
+- Income
+- Expense
+
+Not every account corresponds to a bank, broker, or other institution-backed
+container. Income/expense categories are also accounts in the ledger model, and
+some accounts are system-managed for technical balancing and lifecycle support.
+Category accounts may be created manually or introduced automatically by later
+categorization workflows; in both cases they remain first-class ledger accounts.
+
+The current implementation does **not** yet include:
+
+- `parent_account_id`
+- `is_placeholder`
+- `BalanceSnapshot`
+- posting-backed balance computation
+- system-managed trading-account creation
+
+`management_group` is an explicit management/presentation classification used to
+support separate account-management surfaces. It does not replace ledger
+semantics: `account_type` still carries accounting meaning and
+`operational_subtype` still carries operational/institution meaning.
+
+Account lifecycle uses `archived_at` rather than a boolean active flag:
+
+- `archived_at == nil` means active
+- `archived_at != nil` means archived
+
+The public account retrieval/listing APIs are entity-scoped. Public list APIs
+require explicit `entity_id`, and public account retrieval uses the scoped form
+`get_account!(entity_id, account_id)`.
 
 #### Splits
 
@@ -200,13 +233,16 @@ than two postings. Example: a grocery receipt divided between "Groceries" and
 "Household" creates three postings (one credit to the source account, two debits
 to the expense categories).
 
-#### Trading Accounts (Cross-Currency Balancing)
+#### Deferred Ledger Features
 
-Cross-currency transactions use trading accounts (Equity type, system-managed)
-to maintain the zero-sum invariant per currency. A cross-currency transfer
-produces four postings — two in the source currency (source account and trading
-account) and two in the target currency (trading account and target account).
-Trading accounts are created automatically and hidden from normal UX views.
+The following Ledger concepts remain part of the target architecture but are not
+yet implemented in the current codebase:
+
+- transaction and posting writes
+- cross-currency trading-account balancing
+- balance snapshots
+- void/reversal correction flows
+- account tree / placeholder nodes
 
 #### Key Invariants
 
@@ -215,17 +251,19 @@ Trading accounts are created automatically and hidden from normal UX views.
    application level (primary) and database level (safety net).
 2. **Posting immutability:** Once created, a posting's amount, currency, and
    account cannot be changed. Corrections use void-and-reverse.
-3. **Account type inheritance:** A child account must have the same type as its
-   parent.
-4. **Fact immutability:** Transaction `date`, `description`, and posting
+3. **Fact immutability:** Transaction `date`, `description`, and posting
    `amount`/`currency_code` are write-once (ADR-0004).
 
 #### Balance Derivation
 
-Balances are computed on read by summing postings for an account up to a given
-date. Balance snapshots provide a performance optimization for accounts with
-long histories — queries start from the most recent snapshot and add subsequent
-postings. Snapshots are derived artifacts that can be recomputed at any time.
+The current `AurumFinance.Ledger.get_account_balance/2` function is an
+architectural placeholder and returns an empty map until postings exist.
+
+The intended balance model remains:
+
+- no denormalized balance field on accounts
+- balances derived from postings on read
+- grouped by currency code for multi-currency support
 
 #### Corrections and Voids
 
@@ -248,8 +286,14 @@ Users interact with five personal-finance concepts that map to posting patterns:
 | Credit card purchase | Liability | Expense |
 | Credit card payment | Asset | Liability |
 
-Cross-currency variants of any concept automatically include trading-account
-postings. The UX layer constructs the full posting set transparently.
+Cross-currency variants and trading-account postings are deferred until the
+transaction/posting implementation exists.
+
+The UI may expose different subsets of the same canonical `Account` model
+depending on workflow. Institution-backed accounts, category accounts, and
+technical/system-managed accounts can be presented in separate views without
+changing the ledger model. In implementation, these views are backed by the
+explicit `management_group` field rather than temporary query heuristics.
 
 ### Multi-Entity Ownership Model
 
@@ -295,7 +339,7 @@ access boundary.
 
 | Scope | Data | Rationale |
 |-------|------|-----------|
-| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportBatch, ImportFile, ImportRow, DeduplicationRecord, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity |
+| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportBatch, ImportFile, ImportRow, DeduplicationRecord, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity. In the current implementation, Account is the first delivered Ledger entity using this boundary. |
 | **Global** | Currency, RateSeries, RateRecord, RuleGroup, Rule, Condition, Action | Currencies, exchange rates, and classification rules are shared across entities |
 
 #### Cross-Entity Transfers

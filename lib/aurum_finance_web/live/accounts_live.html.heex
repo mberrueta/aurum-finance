@@ -1,0 +1,137 @@
+<div id="accounts-page" class="space-y-5">
+  <.page_header title={dgettext("accounts", "page_title")}>
+    <:subtitle>{dgettext("accounts", "page_subtitle")}</:subtitle>
+    <:actions>
+      <button
+        id="new-account-btn"
+        type="button"
+        class="au-btn au-btn-primary"
+        phx-click="new_account"
+      >
+        {dgettext("accounts", "btn_new_account")}
+      </button>
+    </:actions>
+  </.page_header>
+
+  <div id="accounts-what-is" class="mb-[14px]">
+    <.info_callout title={dgettext("accounts", "callout_what_is_title")} tone={:info}>
+      <p>{dgettext("accounts", "callout_what_is_body")}</p>
+      <ul class="list-disc pl-5 space-y-1 mt-2">
+        <li>{dgettext("accounts", "callout_what_is_item_1")}</li>
+        <li>{dgettext("accounts", "callout_what_is_item_2")}</li>
+        <li>{dgettext("accounts", "callout_what_is_item_3")}</li>
+      </ul>
+    </.info_callout>
+  </div>
+
+  <div class="grid gap-5">
+    <.section_panel
+      title={dgettext("accounts", "section_accounts")}
+      badge={Integer.to_string(@account_count)}
+      badge_variant={:purple}
+    >
+      <:actions>
+        <div class="flex flex-wrap items-center gap-3">
+          <.entity_selector entities={@entities} current_entity={@current_entity} />
+          <button
+            id="toggle-archived-btn"
+            type="button"
+            class="au-btn"
+            phx-click="toggle_archived"
+          >
+            {toggle_archived_label(@active_tab, @show_archived_by_tab)}
+          </button>
+        </div>
+      </:actions>
+
+      <div class="space-y-4">
+        <.management_tabs active_tab={@active_tab} counts={@tab_counts} />
+
+        <div :if={is_nil(@current_entity)} id="accounts-empty-entities">
+          <.empty_state text={dgettext("accounts", "empty_no_entities")} />
+        </div>
+
+        <div :if={!is_nil(@current_entity)} class="space-y-3">
+          <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+            <p class="text-xs uppercase tracking-[0.18em] text-white/45">
+              {dgettext("accounts", "label_current_entity")}
+            </p>
+            <div class="mt-2 flex flex-wrap items-center gap-2">
+              <span id="accounts-current-entity-name" class="text-sm font-medium text-white/90">
+                {@current_entity.name}
+              </span>
+              <.badge variant={:purple}>{management_group_label(@active_tab)}</.badge>
+            </div>
+          </div>
+
+          <div :if={@account_count == 0} id="accounts-empty-state">
+            <.empty_state text={
+              empty_state_text(@active_tab, archived_visible?(@active_tab, @show_archived_by_tab))
+            } />
+          </div>
+
+          <div id="accounts-list" phx-update="stream" class="space-y-3">
+            <.account_row
+              :for={{dom_id, account} <- @streams.accounts}
+              id={dom_id}
+              account={account}
+              editing_account_id={editing_account_id(@editing_account)}
+            />
+          </div>
+        </div>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div id="accounts-guidance">
+    <.au_card class="mt-[14px]">
+      <:header>
+        <span>{dgettext("accounts", "section_guidance")}</span>
+      </:header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]">
+        <div>
+          <.info_callout title={dgettext("accounts", "callout_how_use_title")} tone={:info}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("accounts", "callout_how_use_item_1")}</li>
+              <li>{dgettext("accounts", "callout_how_use_item_2")}</li>
+              <li>{dgettext("accounts", "callout_how_use_item_3")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+
+        <div class="space-y-[10px]">
+          <.info_callout title={dgettext("accounts", "callout_warning_title")} tone={:warn}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("accounts", "callout_warning_item_1")}</li>
+              <li>{dgettext("accounts", "callout_warning_item_2")}</li>
+            </ul>
+          </.info_callout>
+
+          <.info_callout title={dgettext("accounts", "callout_tips_title")} tone={:tip}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("accounts", "callout_tips_item_1")}</li>
+              <li>{dgettext("accounts", "callout_tips_item_2")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+      </div>
+    </.au_card>
+  </div>
+
+  <.right_sidebar_panel
+    open={@form_open?}
+    title={form_panel_title(@editing_account, @selected_management_group)}
+    subtitle={dgettext("accounts", "page_subtitle")}
+    close_event="close_form"
+  >
+    <.account_form
+      form={@form}
+      current_entity={@current_entity}
+      entities={@entities}
+      editing_account={@editing_account}
+      selected_management_group={@selected_management_group}
+      close_event="close_form"
+    />
+  </.right_sidebar_panel>
+</div>

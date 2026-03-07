@@ -38,3 +38,8 @@ AurumFinance is a self-hosted personal finance operating system focused on:
 - Follow `AGENTS.md` as the primary instruction source.
 - Use `Req` for HTTP integrations.
 - Run `mix precommit` before finishing tasks.
+- Public ledger/account query APIs should require explicit entity scope by default.
+- Accounts use a dual classification model:
+  - `account_type` for accounting semantics
+  - `operational_subtype` for operational meaning
+  - `management_group` for management/presentation grouping

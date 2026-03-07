@@ -29,6 +29,8 @@ defmodule AurumFinanceWeb.Layouts do
 
   attr :active_nav, :atom, default: nil, doc: "active nav item id, e.g. :dashboard"
   attr :page_title, :string, default: nil, doc: "current page title shown in the topbar"
+  attr :inner_content, :any, default: nil
+  slot :inner_block
 
   def app(assigns) do
     ~H"""
@@ -125,7 +127,7 @@ defmodule AurumFinanceWeb.Layouts do
         <%!-- Content --%>
         <main class="au-content">
           <.flash_group flash={@flash} />
-          {@inner_content}
+          {if @inner_block != [], do: render_slot(@inner_block), else: @inner_content}
         </main>
       </div>
     </div>

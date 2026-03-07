@@ -28,6 +28,8 @@ defmodule AurumFinanceWeb.ConnCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import AurumFinanceWeb.ConnCase
+      import AurumFinance.Factory
+      import AurumFinance.TestSupport.Fixtures
     end
   end
 

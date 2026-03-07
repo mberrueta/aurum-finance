@@ -116,3 +116,27 @@ msgstr "environment variable AURUM_ROOT_PASSWORD_HASH is missing."
 
 msgid "error_missing_root_password_hash_hint"
 msgstr "Generate one with: mix aurum.gen_password_hash <password>"
+
+msgid "error_account_currency_code_format_invalid"
+msgstr "Currency code must use uppercase ISO 4217 format."
+
+msgid "error_account_currency_code_length_invalid"
+msgstr "Currency code must be exactly 3 characters."
+
+msgid "error_account_immutable_field"
+msgstr "This field cannot be changed after the account is created."
+
+msgid "error_account_management_group_invalid"
+msgstr "Management group is inconsistent with account type and operational subtype."
+
+msgid "error_account_name_length_invalid"
+msgstr "Account name must be between 2 and 160 characters."
+
+msgid "error_account_operational_subtype_invalid_for_type"
+msgstr "Operational subtype is invalid for the selected account type."
+
+msgid "error_account_operational_subtype_not_allowed"
+msgstr "Operational subtype is not allowed for this account type."
+
+msgid "error_account_operational_subtype_required"
+msgstr "Operational subtype is required for asset and liability accounts."

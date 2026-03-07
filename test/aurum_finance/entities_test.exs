@@ -41,7 +41,7 @@ defmodule AurumFinance.EntitiesTest do
     test "defaults fiscal_residency_country_code from country_code when omitted" do
       assert {:ok, entity} =
                Entities.create_entity(%{
-                 name: "Personal",
+                 name: "Personal #{System.unique_integer([:positive])}",
                  type: :individual,
                  country_code: "cl"
                })
@@ -183,18 +183,5 @@ defmodule AurumFinance.EntitiesTest do
       assert unarchived.after["tax_identifier"] == "[REDACTED]"
       assert %DateTime{} = unarchived.occurred_at
     end
-  end
-
-  defp entity_fixture(attrs) do
-    attrs = if Keyword.keyword?(attrs), do: Map.new(attrs), else: attrs
-
-    base = %{
-      name: "Entity #{System.unique_integer([:positive])}",
-      type: :individual,
-      country_code: "BR"
-    }
-
-    {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-    entity
   end
 end
