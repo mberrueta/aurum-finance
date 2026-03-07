@@ -621,6 +621,77 @@ erDiagram
     }
 ```
 
+## Implementation Deviations (Issue #11)
+
+The first implemented Account slice in Issue #11 intentionally delivers a
+subset of this ADR and records a few naming/lifecycle deviations so the docs
+stay aligned with the running code.
+
+### 1. Archive lifecycle uses `archived_at`, not `is_active`
+
+Current implementation uses:
+
+- `archived_at :utc_datetime_usec`
+
+instead of:
+
+- `is_active :boolean`
+
+Reason:
+
+- consistent lifecycle posture with the `Entity` model
+- preserves the timestamp of archival for auditability and operator review
+
+Operational interpretation:
+
+- `archived_at == nil` => active
+- `archived_at != nil` => archived
+
+### 2. Institution identifier field is `institution_account_ref`
+
+Current implementation uses:
+
+- `institution_account_ref`
+
+instead of the issue shorthand `account_number_last4` and instead of the older
+ADR wording `institution_account_number`.
+
+Reason:
+
+- the stored value is a free institution reference, not necessarily four digits
+- supports last-4, IBAN fragments, broker references, wallet identifiers, or
+  other institution-provided reference strings
+
+### 3. `management_group` is explicit in the implemented model
+
+The implemented Account schema includes:
+
+- `management_group` as an `Ecto.Enum`
+- values: `institution`, `category`, `system_managed`
+
+Reason:
+
+- backend and UI code need an explicit management classification
+- avoids relying on temporary heuristics for account-management surfaces
+
+This field does not replace ledger semantics:
+
+- `account_type` remains the accounting meaning
+- `operational_subtype` remains the operational meaning
+
+### 4. Deferred items from this ADR remain deferred
+
+The current codebase does **not** yet implement:
+
+- `parent_account_id`
+- `is_placeholder`
+- Transaction/Postings write model
+- BalanceSnapshot persistence
+- trading-account automation
+
+Current `AurumFinance.Ledger.get_account_balance/2` is a placeholder returning
+an empty map until posting-backed balance derivation exists.
+
 ### Relationship to Other ADRs
 
 - **ADR-0002:** This ADR implements the double-entry model defined there.

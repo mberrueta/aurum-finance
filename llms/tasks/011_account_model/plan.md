@@ -4,8 +4,8 @@
 
 - **Issue**: `https://github.com/mberrueta/aurum-finance/issues/11`
 - **Created**: 2026-03-06
-- **Updated**: 2026-03-06
-- **Status**: PLANNED
+- **Updated**: 2026-03-07
+- **Status**: COMPLETED
 - **Depends on**: Issue #10 (Entity Model) — COMPLETED
 
 ---
@@ -163,7 +163,7 @@ UX implications:
   - `archived_at: nil` → active
   - `archived_at: <timestamp>` → archived
   - This preserves a temporal trace of when archiving occurred.
-  - ADR-0008 should be updated to reflect this decision (see Task 06 documentation sync).
+  - ADR-0008 should be updated to reflect this decision (see Task 05 documentation sync).
 - Unarchive (`archived_at` → nil) must be supported (consistent with entity unarchive pattern).
 - Archived accounts are hidden from default list views; explicit toggle to include them.
 
@@ -247,7 +247,7 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 |---|---|---|
 | Context module | `AurumFinance.Ledger` | ADR-0007 |
 | Schema module | `AurumFinance.Ledger.Account` | ADR-0007 |
-| Context functions | `list_accounts/1`, `get_account!/1`, `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `change_account/2` | Mirrors entities API |
+| Context functions | `list_accounts/1`, `get_account!/2`, `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `change_account/2` | Mirrors entities API with explicit entity scope |
 | LiveView module | `AurumFinanceWeb.AccountsLive` | Mirrors `EntitiesLive` |
 | Task 02.b | `llms/tasks/011_account_model/02.b_right_sidebar_form_panel_refactor.md` | Reusable right-sidebar/slideover form refactor for Entities + Accounts |
 | Route path | `/accounts` | To be placed in authenticated pipeline |
@@ -303,7 +303,7 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
     - `operational_subtypes_for_type/1` helper returning valid subtypes for an account_type
   - `AurumFinance.Ledger` context with:
     - `list_accounts/1` (entity-scoped, opts: `entity_id`, `include_archived`, `account_type`, `operational_subtype`)
-    - `get_account!/1`
+    - `get_account!/2`
     - `create_account/2` (attrs, opts) — with audit event
     - `update_account/3` (account, attrs, opts) — with audit event
     - `archive_account/2` (account, opts) — sets `archived_at`
@@ -402,11 +402,11 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 
 | # | Task | Status | Approved | Dependencies |
 |---|------|--------|----------|--------------|
-| 01 | Domain + Data Model Foundation | PENDING | [ ] | Issue #10 complete |
-| 02 | Accounts CRUD LiveView | PENDING | [ ] | Task 01 |
-| 03 | Test Coverage | PENDING | [ ] | Tasks 01, 02 |
-| 04 | Security/Architecture Review + Handoff | PENDING | [ ] | Task 03 |
-| 05 | Documentation and ADR Sync | PENDING | [ ] | Task 04 |
+| 01 | Domain + Data Model Foundation | COMPLETED | [ ] | Issue #10 complete |
+| 02 | Accounts CRUD LiveView | COMPLETED | [ ] | Task 01 |
+| 03 | Test Coverage | COMPLETED | [ ] | Tasks 01, 02 |
+| 04 | Security/Architecture Review + Handoff | COMPLETED | [ ] | Task 03 |
+| 05 | Documentation and ADR Sync | COMPLETED | [ ] | Task 04 |
 
 ---
 
@@ -449,3 +449,4 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 |---|---|---|---|
 | 2026-03-06 | Plan | Initial plan created via po-analyst agent | Start planning workflow for Issue #11 |
 | 2026-03-06 | Plan | Added composite index `[:entity_id, :archived_at]`; tightened `currency_code` validation to `validate_length(is: 3)` + `validate_format(~r/^[A-Z]{3}$/)` | Human review feedback |
+| 2026-03-07 | Plan | Synced task statuses, entity-scoped retrieval API (`get_account!/2`), and documentation task references with implementation | Keep Issue #11 execution artifacts coherent after delivery |

@@ -1,7 +1,7 @@
 # Task 05: Documentation and ADR Sync
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 04
 - **Blocks**: None
@@ -146,34 +146,53 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Updated documentation to match the implemented Account model rather than the broader conceptual target architecture. The main correction was in `docs/domain-model.md`, which still described account tree, placeholder accounts, active boolean lifecycle, and balance snapshots as if they were already implemented.
 
 ### Work Performed
-- [What was actually done]
+- Updated `docs/domain-model.md` to reflect the implemented Account slice:
+  - canonical fields
+  - `management_group`
+  - `archived_at`
+  - entity-scoped retrieval/listing
+  - placeholder balance behavior
+  - deferred transaction/posting/tree features
+- Added an implementation addendum to `docs/adr/0008-ledger-schema-design.md`
+  documenting:
+  - `archived_at` over `is_active`
+  - `institution_account_ref` naming
+  - explicit `management_group`
+  - deferred ADR items not yet implemented
+- Updated `llms/project_context.md` with conventions established by this issue
+- Reviewed `docs/adr/0015-account-model-and-instrument-types.md` and left it unchanged because it already matches the implemented model
+- Reviewed `llms/tasks/000_project_plan.md` and left it unchanged because it is an LLM workflow conventions file, not milestone tracking for M1 progress
 
 ### Outputs Created
-- [List of files/artifacts created]
+- Updates to `docs/domain-model.md`
+- Updates to `docs/adr/0008-ledger-schema-design.md`
+- Updates to `llms/project_context.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| | |
+| `docs/domain-model.md` should describe the implemented Ledger slice, not the full aspirational ledger roadmap | Task 05 explicitly requires matching the code, not future-state design |
+| `llms/tasks/000_project_plan.md` should not be repurposed as milestone tracking | Its content is issue-execution workflow guidance, not roadmap status |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| | | |
+| Add an implementation deviation section to ADR-0008 instead of rewriting earlier conceptual sections | Rewrite the ADR body to fully mirror the current code | The task explicitly asks for addenda/deviation notes rather than destructive ADR rewrites |
+| Leave ADR-0015 unchanged | Add redundant clarification churn | It is already consistent with `management_group`, canonical account semantics, and separated management surfaces |
 
 ### Blockers Encountered
-- [Blocker] - Resolution: [How resolved or "Needs human input"]
+- `docs/domain-model.md` mixed implemented behavior and deferred architecture in the same Ledger section - Resolution: documented current implementation scope explicitly and marked deferred concepts as deferred
 
 ### Questions for Human
-1. [Question needing human input]
+1. None
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
