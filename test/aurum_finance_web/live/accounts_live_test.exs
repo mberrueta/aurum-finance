@@ -212,7 +212,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     )
     |> render_submit()
 
-    updated = Ledger.get_account!(account.id)
+    updated = Ledger.get_account!(entity.id, account.id)
     assert updated.name == "Lifecycle checking updated"
     assert updated.notes == "edited"
     refute has_element?(view, "#account-form")
@@ -221,7 +221,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     |> element("#archive-account-#{account.id}")
     |> render_click()
 
-    archived = Ledger.get_account!(account.id)
+    archived = Ledger.get_account!(entity.id, account.id)
     assert %DateTime{} = archived.archived_at
     refute has_element?(view, "#account-#{account.id}")
 
@@ -235,8 +235,26 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
     |> element("#unarchive-account-#{account.id}")
     |> render_click()
 
-    unarchived = Ledger.get_account!(account.id)
+    unarchived = Ledger.get_account!(entity.id, account.id)
     assert is_nil(unarchived.archived_at)
     assert has_element?(view, "#account-#{account.id}")
+  end
+
+  test "rejects edit events for accounts outside the selected entity scope", %{conn: conn} do
+    selected_entity = entity_fixture(name: "Selected entity")
+    foreign_entity = entity_fixture(name: "Foreign entity")
+    foreign_account = account_fixture(foreign_entity, %{name: "Foreign checking"})
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
+
+    view
+    |> form("#accounts-entity-selector", entity_id: selected_entity.id)
+    |> render_change()
+
+    render_click(view, "edit_account", %{"id" => foreign_account.id})
+
+    refute has_element?(view, "#right-sidebar-panel")
+    refute has_element?(view, "#account-form")
+    refute render(view) =~ "Foreign checking"
   end
 end

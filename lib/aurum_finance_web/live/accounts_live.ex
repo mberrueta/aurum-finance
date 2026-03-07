@@ -83,14 +83,18 @@ defmodule AurumFinanceWeb.AccountsLive do
   end
 
   def handle_event("edit_account", %{"id" => id}, socket) do
-    account = Ledger.get_account!(id)
+    case get_account_in_scope(socket, id) do
+      nil ->
+        {:noreply, socket}
 
-    {:noreply,
-     socket
-     |> assign(:editing_account, account)
-     |> assign(:form_open?, true)
-     |> assign(:selected_management_group, account.management_group)
-     |> assign_form(account)}
+      account ->
+        {:noreply,
+         socket
+         |> assign(:editing_account, account)
+         |> assign(:form_open?, true)
+         |> assign(:selected_management_group, account.management_group)
+         |> assign_form(account)}
+    end
   end
 
   def handle_event("close_form", _params, socket) do
@@ -98,19 +102,29 @@ defmodule AurumFinanceWeb.AccountsLive do
   end
 
   def handle_event("archive_account", %{"id" => id}, socket) do
-    account = Ledger.get_account!(id)
-    result = Ledger.archive_account(account, actor: "root", channel: :web)
+    case get_account_in_scope(socket, id) do
+      nil ->
+        {:noreply, socket}
 
-    {:noreply,
-     handle_persist_result(socket, result, dgettext("accounts", "flash_account_archived"))}
+      account ->
+        result = Ledger.archive_account(account, actor: "root", channel: :web)
+
+        {:noreply,
+         handle_persist_result(socket, result, dgettext("accounts", "flash_account_archived"))}
+    end
   end
 
   def handle_event("unarchive_account", %{"id" => id}, socket) do
-    account = Ledger.get_account!(id)
-    result = Ledger.unarchive_account(account, actor: "root", channel: :web)
+    case get_account_in_scope(socket, id) do
+      nil ->
+        {:noreply, socket}
 
-    {:noreply,
-     handle_persist_result(socket, result, dgettext("accounts", "flash_account_unarchived"))}
+      account ->
+        result = Ledger.unarchive_account(account, actor: "root", channel: :web)
+
+        {:noreply,
+         handle_persist_result(socket, result, dgettext("accounts", "flash_account_unarchived"))}
+    end
   end
 
   def handle_event("validate", %{"account" => params}, socket) do
@@ -377,6 +391,12 @@ defmodule AurumFinanceWeb.AccountsLive do
       Atom.to_string(subtype) == value
     end)
   end
+
+  defp get_account_in_scope(%{assigns: %{current_entity: %Entity{id: entity_id}}}, account_id) do
+    Ledger.get_account(entity_id, account_id)
+  end
+
+  defp get_account_in_scope(%{assigns: %{current_entity: nil}}, _account_id), do: nil
 
   defp find_entity(entities, entity_id), do: Enum.find(entities, &(&1.id == entity_id))
 

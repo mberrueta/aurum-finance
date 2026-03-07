@@ -150,27 +150,38 @@ defmodule AurumFinance.Ledger do
   end
 
   @doc """
-  Fetches one account by id.
+  Fetches one account by id within an explicit entity scope.
 
-  Raises `Ecto.NoResultsError` when the id does not exist.
+  Raises `Ecto.NoResultsError` when the account does not exist inside that
+  entity boundary.
 
   ## Examples
 
   Happy path:
 
   ```elixir
-  account = AurumFinance.Ledger.get_account!(account_id)
+  account = AurumFinance.Ledger.get_account!(entity.id, account.id)
   ```
 
   Error path:
 
   ```elixir
-  AurumFinance.Ledger.get_account!(Ecto.UUID.generate())
+  AurumFinance.Ledger.get_account!(entity.id, Ecto.UUID.generate())
   # raises Ecto.NoResultsError
   ```
   """
-  @spec get_account!(Ecto.UUID.t()) :: Account.t()
-  def get_account!(id), do: Repo.get!(Account, id)
+  @spec get_account!(Ecto.UUID.t(), Ecto.UUID.t()) :: Account.t()
+  def get_account!(entity_id, account_id) do
+    get_account(entity_id, account_id) || raise Ecto.NoResultsError, queryable: Account
+  end
+
+  @doc false
+  @spec get_account(Ecto.UUID.t(), Ecto.UUID.t()) :: Account.t() | nil
+  def get_account(entity_id, account_id) do
+    Account
+    |> where([account], account.id == ^account_id and account.entity_id == ^entity_id)
+    |> Repo.one()
+  end
 
   @doc """
   Creates an account and emits an audit event.

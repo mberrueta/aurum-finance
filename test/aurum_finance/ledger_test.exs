@@ -234,6 +234,18 @@ defmodule AurumFinance.LedgerTest do
       end
     end
 
+    test "get_account!/2 enforces the ownership boundary" do
+      entity_a = entity_fixture(%{name: "Scoped entity A"})
+      entity_b = entity_fixture(%{name: "Scoped entity B"})
+      account = account_fixture(entity_a, %{name: "Scoped checking"})
+
+      assert Ledger.get_account!(entity_a.id, account.id).id == account.id
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Ledger.get_account!(entity_b.id, account.id)
+      end
+    end
+
     test "update_account/3 rejects immutable field changes" do
       entity = entity_fixture(%{name: "Immutability entity"})
       account = account_fixture(entity)
