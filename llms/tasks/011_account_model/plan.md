@@ -48,6 +48,8 @@ This plan is aligned with:
 - Deliver `AurumFinance.Ledger` context CRUD APIs for accounts.
 - Deliver Accounts management LiveView with separate management surfaces for
   institution-backed accounts, category accounts, and system-managed accounts.
+- Refactor Entities and Accounts create/edit flows into a reusable right-sidebar
+  form panel after the baseline CRUD screens are stable (Task 02.b).
 - Enforce the archive posture via `archived_at` (consistent with entity model, see §Terminology Alignment).
 - Balance computation is declared as derived-from-postings (no denormalized balance field).
   The actual posting model does not exist yet in M1; this issue establishes the architectural
@@ -247,6 +249,7 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 | Schema module | `AurumFinance.Ledger.Account` | ADR-0007 |
 | Context functions | `list_accounts/1`, `get_account!/1`, `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `change_account/2` | Mirrors entities API |
 | LiveView module | `AurumFinanceWeb.AccountsLive` | Mirrors `EntitiesLive` |
+| Task 02.b | `llms/tasks/011_account_model/02.b_right_sidebar_form_panel_refactor.md` | Reusable right-sidebar/slideover form refactor for Entities + Accounts |
 | Route path | `/accounts` | To be placed in authenticated pipeline |
 
 ---

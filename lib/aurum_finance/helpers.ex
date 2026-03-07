@@ -103,6 +103,23 @@ defmodule AurumFinance.Helpers do
   def blank?(_), do: false
 
   @doc """
+  Converts blank strings to nil while preserving non-blank values.
+
+  ## Examples
+
+      iex> AurumFinance.Helpers.blank_to_nil("  ")
+      nil
+
+      iex> AurumFinance.Helpers.blank_to_nil("USD")
+      "USD"
+  """
+  def blank_to_nil(value) when is_binary(value) do
+    if String.trim(value) == "", do: nil, else: value
+  end
+
+  def blank_to_nil(value), do: value
+
+  @doc """
   Safe indifferent map access for atom/string keys.
   """
   def map_get(map, key) when is_atom(key), do: Map.get(map, key) || Map.get(map, to_string(key))

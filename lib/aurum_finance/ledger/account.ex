@@ -424,21 +424,10 @@ defmodule AurumFinance.Ledger.Account do
     operational_subtype = get_field(changeset, :operational_subtype)
     management_group = get_field(changeset, :management_group)
 
-    cond do
-      management_group == :institution and
-          not (account_type in @institution_account_types and not is_nil(operational_subtype)) ->
-        add_management_group_error(changeset)
-
-      management_group == :category and
-          not (account_type in @category_account_types and is_nil(operational_subtype)) ->
-        add_management_group_error(changeset)
-
-      management_group == :system_managed and
-          not (account_type == :equity and is_nil(operational_subtype)) ->
-        add_management_group_error(changeset)
-
-      true ->
-        changeset
+    if valid_management_group?(management_group, account_type, operational_subtype) do
+      changeset
+    else
+      add_management_group_error(changeset)
     end
   end
 
@@ -453,6 +442,19 @@ defmodule AurumFinance.Ledger.Account do
       )
     )
   end
+
+  defp valid_management_group?(:institution, account_type, operational_subtype) do
+    account_type in @institution_account_types and not is_nil(operational_subtype)
+  end
+
+  defp valid_management_group?(:category, account_type, operational_subtype) do
+    account_type in @category_account_types and is_nil(operational_subtype)
+  end
+
+  defp valid_management_group?(:system_managed, :equity, nil), do: true
+  defp valid_management_group?(:system_managed, _account_type, _operational_subtype), do: false
+  defp valid_management_group?(nil, _account_type, _operational_subtype), do: true
+  defp valid_management_group?(_management_group, _account_type, _operational_subtype), do: false
 
   defp validate_immutable_fields(%Ecto.Changeset{data: %{id: nil}} = changeset), do: changeset
 

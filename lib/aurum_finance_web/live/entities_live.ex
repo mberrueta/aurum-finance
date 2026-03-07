@@ -3,6 +3,7 @@ defmodule AurumFinanceWeb.EntitiesLive do
 
   alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
+  alias AurumFinance.Helpers
 
   @impl true
   def mount(_params, _session, socket) do
@@ -126,18 +127,12 @@ defmodule AurumFinanceWeb.EntitiesLive do
   defp effective_tax_country_code(form) do
     fiscal_country_code =
       form[:fiscal_residency_country_code].value
-      |> blank_to_nil()
+      |> Helpers.blank_to_nil()
 
     country_code =
       form[:country_code].value
-      |> blank_to_nil()
+      |> Helpers.blank_to_nil()
 
     fiscal_country_code || country_code
   end
-
-  defp blank_to_nil(value) when is_binary(value) do
-    if String.trim(value) == "", do: nil, else: value
-  end
-
-  defp blank_to_nil(value), do: value
 end

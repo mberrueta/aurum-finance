@@ -11,38 +11,275 @@
 msgid ""
 msgstr ""
 
-#: lib/aurum_finance_web/components/accounts_components.ex:34
-#, elixir-autogen, elixir-format
-msgid "label_accounts"
+msgid "account_type_asset"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:54
-#, elixir-autogen, elixir-format
-msgid "label_balance_note"
+msgid "account_type_equity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:60
-#, elixir-autogen, elixir-format
-msgid "label_currencies"
+msgid "account_type_expense"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:69
-#, elixir-autogen, elixir-format
-msgid "label_recent_activity"
+msgid "account_type_income"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:20
-#, elixir-autogen, elixir-format
+msgid "account_type_liability"
+msgstr ""
+
+msgid "callout_how_use_item_1"
+msgstr ""
+
+msgid "callout_how_use_item_2"
+msgstr ""
+
+msgid "callout_how_use_item_3"
+msgstr ""
+
+msgid "callout_how_use_title"
+msgstr ""
+
+msgid "callout_tips_item_1"
+msgstr ""
+
+msgid "callout_tips_item_2"
+msgstr ""
+
+msgid "callout_tips_title"
+msgstr ""
+
+msgid "callout_warning_item_1"
+msgstr ""
+
+msgid "callout_warning_item_2"
+msgstr ""
+
+msgid "callout_warning_title"
+msgstr ""
+
+msgid "callout_what_is_body"
+msgstr ""
+
+msgid "callout_what_is_item_1"
+msgstr ""
+
+msgid "callout_what_is_item_2"
+msgstr ""
+
+msgid "callout_what_is_item_3"
+msgstr ""
+
+msgid "callout_what_is_title"
+msgstr ""
+
+msgid "btn_archive"
+msgstr ""
+
+msgid "btn_create_account"
+msgstr ""
+
+msgid "btn_edit"
+msgstr ""
+
+msgid "btn_hide_archived"
+msgstr ""
+
+msgid "btn_new_account"
+msgstr ""
+
+msgid "btn_save_changes"
+msgstr ""
+
+msgid "btn_show_archived"
+msgstr ""
+
+msgid "btn_unarchive"
+msgstr ""
+
+msgid "empty_category_accounts"
+msgstr ""
+
+msgid "empty_category_accounts_archived"
+msgstr ""
+
+msgid "empty_form_requires_entity"
+msgstr ""
+
+msgid "empty_institution_accounts"
+msgstr ""
+
+msgid "empty_institution_accounts_archived"
+msgstr ""
+
+msgid "empty_no_entities"
+msgstr ""
+
+msgid "empty_system_managed_accounts"
+msgstr ""
+
+msgid "empty_system_managed_accounts_archived"
+msgstr ""
+
+msgid "flash_account_archived"
+msgstr ""
+
+msgid "flash_account_created"
+msgstr ""
+
+msgid "flash_account_unarchived"
+msgstr ""
+
+msgid "flash_account_updated"
+msgstr ""
+
+msgid "flash_audit_logging_failed"
+msgstr ""
+
+msgid "label_account_type"
+msgstr ""
+
+msgid "label_category_type"
+msgstr ""
+
+msgid "label_currency"
+msgstr ""
+
+msgid "label_current_entity"
+msgstr ""
+
+msgid "label_entity"
+msgstr ""
+
+msgid "label_entity_scope"
+msgstr ""
+
+msgid "label_institution"
+msgstr ""
+
+msgid "label_institution_account_ref"
+msgstr ""
+
+msgid "label_management_group"
+msgstr ""
+
+msgid "label_name"
+msgstr ""
+
+msgid "label_normal_balance"
+msgstr ""
+
+msgid "label_notes"
+msgstr ""
+
+msgid "label_operational_subtype"
+msgstr ""
+
+msgid "management_group_category"
+msgstr ""
+
+msgid "management_group_category_hint"
+msgstr ""
+
+msgid "management_group_institution"
+msgstr ""
+
+msgid "management_group_institution_hint"
+msgstr ""
+
+msgid "management_group_system_managed"
+msgstr ""
+
+msgid "management_group_system_managed_hint"
+msgstr ""
+
+msgid "management_group_unknown"
+msgstr ""
+
+msgid "normal_balance_credit"
+msgstr ""
+
+msgid "normal_balance_debit"
+msgstr ""
+
+msgid "operational_subtype_bank_checking"
+msgstr ""
+
+msgid "operational_subtype_bank_savings"
+msgstr ""
+
+msgid "operational_subtype_brokerage_cash"
+msgstr ""
+
+msgid "operational_subtype_brokerage_securities"
+msgstr ""
+
+msgid "operational_subtype_cash"
+msgstr ""
+
+msgid "operational_subtype_credit_card"
+msgstr ""
+
+msgid "operational_subtype_crypto_wallet"
+msgstr ""
+
+msgid "operational_subtype_loan"
+msgstr ""
+
+msgid "operational_subtype_other_asset"
+msgstr ""
+
+msgid "operational_subtype_other_liability"
+msgstr ""
+
+msgid "option_select_entity"
+msgstr ""
+
 msgid "page_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:12
-#: lib/aurum_finance_web/live/accounts_live.ex:19
-#, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/accounts_live.ex:27
-#, elixir-autogen, elixir-format
+msgid "panel_edit_account"
+msgstr ""
+
+msgid "panel_new_account"
+msgstr ""
+
 msgid "section_accounts"
+msgstr ""
+
+msgid "section_guidance"
+msgstr ""
+
+msgid "status_archived"
+msgstr ""
+
+msgid "tooltip_field_account_type"
+msgstr ""
+
+msgid "tooltip_field_category_type"
+msgstr ""
+
+msgid "tooltip_field_currency"
+msgstr ""
+
+msgid "tooltip_field_institution"
+msgstr ""
+
+msgid "tooltip_field_institution_account_ref"
+msgstr ""
+
+msgid "tooltip_field_management_group"
+msgstr ""
+
+msgid "tooltip_field_notes"
+msgstr ""
+
+msgid "tooltip_field_operational_subtype"
+msgstr ""
+
+msgid "value_not_applicable"
+msgstr ""
+
+msgid "value_pending"
 msgstr ""
