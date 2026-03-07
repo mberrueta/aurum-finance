@@ -172,7 +172,7 @@ financial positions. See ADR-0008 for the full design rationale.
 
 | Entity | Description | Key Fields |
 |--------|-------------|------------|
-| **Account** | A node in the chart of accounts. Forms a tree via adjacency list. This is the canonical internal ledger account abstraction, covering institution-backed accounts, category accounts, and system-managed accounts. | `entity_id`, `parent_account_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `name`, `currency_code`, `is_placeholder`, `is_active` |
+| **Account** | A node in the chart of accounts. Forms a tree via adjacency list. This is the canonical internal ledger account abstraction, covering institution-backed accounts, category accounts, and system-managed accounts. | `entity_id`, `parent_account_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `operational_subtype`, `management_group`, `name`, `currency_code`, `is_placeholder`, `is_active` |
 | **Transaction** | A single real-world financial event grouping one or more postings. | `entity_id`, `date`, `description`, `memo`, `status` (posted/voided), `correlation_id`, `source_type` (import/manual/system) |
 | **Posting** | A single debit or credit line within a transaction, targeting one account. Immutable after creation. | `transaction_id`, `account_id`, `amount` (signed decimal; positive = debit, negative = credit), `currency_code` |
 | **BalanceSnapshot** | A cached, non-authoritative balance for an account at a point in time. Derived from postings. | `account_id`, `as_of_date`, `currency_code`, `balance`, `posting_count`, `computed_at` |
@@ -198,6 +198,11 @@ container. Income/expense categories are also accounts in the ledger model, and
 some accounts are system-managed for technical balancing and lifecycle support.
 Category accounts may be created manually or introduced automatically by later
 categorization workflows; in both cases they remain first-class ledger accounts.
+
+`management_group` is an explicit management/presentation classification used to
+support separate account-management surfaces. It does not replace ledger
+semantics: `account_type` still carries accounting meaning and
+`operational_subtype` still carries operational/institution meaning.
 
 #### Splits
 
@@ -260,7 +265,8 @@ postings. The UX layer constructs the full posting set transparently.
 The UI may expose different subsets of the same canonical `Account` model
 depending on workflow. Institution-backed accounts, category accounts, and
 technical/system-managed accounts can be presented in separate views without
-changing the ledger model.
+changing the ledger model. In implementation, these views are backed by the
+explicit `management_group` field rather than temporary query heuristics.
 
 ### Multi-Entity Ownership Model
 

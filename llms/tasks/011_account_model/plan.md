@@ -26,6 +26,10 @@ The product/UI layer may present these subsets in separate views so the web
 experience matches personal-finance mental models without changing ledger
 semantics.
 
+The implementation also introduces an explicit `management_group` field
+(`institution`, `category`, `system_managed`) so backend code and UI flows can
+query these management surfaces directly without relying on heuristics.
+
 This plan is aligned with:
 
 - **ADR-0008**: Ledger schema design (accounts, transactions, postings, balances)
@@ -128,6 +132,7 @@ UX implications:
 | `name` | string | Yes | Mutable | 2–160 chars |
 | `account_type` | enum | Yes | Immutable | asset/liability/equity/income/expense |
 | `operational_subtype` | enum | Conditional | Immutable | Required for asset/liability; nil for income/expense/equity |
+| `management_group` | enum | Yes | Immutable | institution/category/system_managed; drives management/query grouping only |
 | `currency_code` | string | Yes | Immutable | ISO 4217, stored uppercase |
 | `institution_name` | string | No | Mutable | Optional; aids import cross-checking |
 | `institution_account_ref` | string | No | Mutable | Free string (last 4, IBAN, code); replaces `account_number_last4` in issue text |
@@ -141,6 +146,9 @@ UX implications:
   but ADR-0008 specifies `institution_account_number` as a free string — it is not always
   last-4 digits (may be IBAN, code, full account number). The field stores whatever reference
   the user provides for identification. Implementation should use `institution_account_ref`.
+- `management_group` is an explicit management/presentation classification. It does
+  not replace `account_type` or `operational_subtype`; it must remain consistent
+  with them through schema validation.
 - `account_type` and `operational_subtype` are `Ecto.Enum` fields.
 - `currency_code` is immutable once set (changing currency would invalidate all existing postings).
 - `account_type` is immutable once set (changing type would violate double-entry invariants).
@@ -193,6 +201,8 @@ UX implications:
   - system-managed accounts (opening balance, trading/FX, and similar technical accounts)
 - This separation is a presentation concern only. It does not introduce a new
   domain entity and does not weaken ledger-first or double-entry semantics.
+- Backend code uses the explicit `management_group` field to support these
+  separated management surfaces without changing the core account model.
 
 ---
 

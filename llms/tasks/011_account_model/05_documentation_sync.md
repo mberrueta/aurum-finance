@@ -60,7 +60,8 @@ Update project documentation to accurately reflect the Account model implementat
 - [ ] `docs/domain-model.md` includes Account entity with:
   - All canonical fields from plan.md
   - Relationship to Entity (via entity_id)
-  - Dual classification explanation (account_type + operational_subtype)
+  - Dual ledger classification explanation (`account_type` + `operational_subtype`)
+  - Explicit management grouping explanation (`management_group`)
   - Archive lifecycle description
   - Balance derivation note (placeholder until postings exist)
 - [ ] `docs/adr/0008-ledger-schema-design.md` documents the `archived_at` deviation from `is_active`
@@ -112,6 +113,7 @@ When updating documentation, use the canonical terms:
 | `institution` | `institution_name` | ADR-0008 canonical name |
 | `account_number_last4` | `institution_account_ref` | Free string, not always last 4 |
 | `currency` | `currency_code` | ADR-0008 canonical name |
+| heuristic management grouping | `management_group` | Explicit management/presentation classification in implementation |
 
 ### Constraints
 - Only modify documentation files (under `docs/` and `llms/`)

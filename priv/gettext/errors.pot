@@ -113,3 +113,27 @@ msgstr ""
 
 msgid "error_missing_root_password_hash_hint"
 msgstr ""
+
+msgid "error_account_currency_code_format_invalid"
+msgstr ""
+
+msgid "error_account_currency_code_length_invalid"
+msgstr ""
+
+msgid "error_account_immutable_field"
+msgstr ""
+
+msgid "error_account_management_group_invalid"
+msgstr ""
+
+msgid "error_account_name_length_invalid"
+msgstr ""
+
+msgid "error_account_operational_subtype_invalid_for_type"
+msgstr ""
+
+msgid "error_account_operational_subtype_not_allowed"
+msgstr ""
+
+msgid "error_account_operational_subtype_required"
+msgstr ""

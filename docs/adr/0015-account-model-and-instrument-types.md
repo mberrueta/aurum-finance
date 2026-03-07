@@ -66,6 +66,21 @@ Two orthogonal dimensions are defined:
 Operational subtypes do not change accounting semantics; they drive workflow,
 integration, and reporting behavior.
 
+### 2b. Management Group
+
+Accounts also carry an explicit `management_group` used for account-management
+surfaces and query simplification:
+
+- `institution`
+- `category`
+- `system_managed`
+
+This field is not a ledger semantic replacement. It complements the canonical
+ledger fields:
+- `account_type` keeps accounting meaning
+- `operational_subtype` keeps operational meaning
+- `management_group` keeps management/presentation grouping
+
 ### 2a. Presentation Model Clarification
 
 The canonical internal model remains a single `Account` entity and taxonomy.

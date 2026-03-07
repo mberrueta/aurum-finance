@@ -41,7 +41,7 @@ defmodule AurumFinance.EntitiesTest do
     test "defaults fiscal_residency_country_code from country_code when omitted" do
       assert {:ok, entity} =
                Entities.create_entity(%{
-                 name: "Personal",
+                 name: "Personal #{System.unique_integer([:positive])}",
                  type: :individual,
                  country_code: "cl"
                })

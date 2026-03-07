@@ -56,7 +56,7 @@ Deliver comprehensive test coverage for the Account schema, Ledger context, and 
 
 - [ ] All tests use `async: true` and DB sandbox
 - [ ] Tests use `errors_on(changeset)` helper for changeset validation assertions
-- [ ] Tests use local `entity_fixture/1` and `account_fixture/2` helpers (not shared factories yet)
+- [ ] Tests use `ExMachina` factories and `Faker` data instead of ad hoc local fixtures where practical
 
 ### Changeset Validation Tests
 - [ ] Required fields test: `name`, `account_type`, `currency_code`, `entity_id` are required
@@ -158,26 +158,11 @@ lib/aurum_finance_web/live/accounts_live.ex            # LiveView under test
 - `element(view, "#dom-id") |> render_click()` for click events
 - `form(view, "#form-id", params) |> render_submit()` for form submission
 
-**Fixture helpers** (local to test file, not shared factory):
-```elixir
-defp entity_fixture(attrs \\ %{}) do
-  base = %{name: "Entity #{System.unique_integer([:positive])}", type: :individual, country_code: "BR"}
-  {:ok, entity} = base |> Map.merge(attrs) |> Entities.create_entity()
-  entity
-end
-
-defp account_fixture(entity, attrs \\ %{}) do
-  base = %{
-    name: "Account #{System.unique_integer([:positive])}",
-    account_type: :asset,
-    operational_subtype: :bank_checking,
-    currency_code: "USD",
-    entity_id: entity.id
-  }
-  {:ok, account} = base |> Map.merge(attrs) |> Ledger.create_account()
-  account
-end
-```
+**Factories and test data**:
+- Prefer `ExMachina` factories for `Entity` and `Account` over ad hoc local fixtures
+- Prefer `Faker` (or ExMachina sequences backed by Faker) for unique names and realistic values
+- If temporary local helpers are introduced while bootstrapping tests, Task 03 must replace them with factory-based setup as part of finalizing coverage
+- Keep generated values deterministic enough for assertions: use explicit overrides in each test when a specific value matters
 
 ### Constraints
 - All tests must be deterministic and independent (no ordering dependence)
@@ -194,10 +179,11 @@ end
 3. Create `test/aurum_finance_web/live/accounts_live_test.exs` with all LiveView tests
 4. Use `describe` blocks to organize test groups logically
 5. Ensure entity scoping tests create multiple entities and verify no leakage
-6. Run `mix test` to verify all tests pass
-7. Run `mix precommit` to verify quality gates
-8. Document all assumptions in "Execution Summary"
-9. List any blockers or questions
+6. Replace any temporary local fixtures/helpers with `ExMachina` factories and `Faker`-based data generation
+7. Run `mix test` to verify all tests pass
+8. Run `mix precommit` to verify quality gates
+9. Document all assumptions in "Execution Summary"
+10. List any blockers or questions
 
 ### For the Human Reviewer
 After agent completes:

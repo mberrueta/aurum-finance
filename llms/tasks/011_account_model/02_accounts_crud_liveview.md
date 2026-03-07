@@ -57,10 +57,9 @@ Replace the existing mock-data `AccountsLive` with a fully functional entity-sco
 
 - [ ] `/accounts` route renders the accounts management page when authenticated
 - [ ] Page shows three distinct sections/tabs: Institution, Category, System-managed
-- [ ] Institution tab lists accounts where `operational_subtype` is one of: `bank_checking`, `bank_savings`, `cash`, `brokerage_cash`, `brokerage_securities`, `crypto_wallet`, `credit_card`, `loan`, `other_asset`, `other_liability`
-- [ ] Category tab lists accounts where `account_type` is `income` or `expense` (no operational_subtype)
-- [ ] System-managed tab lists accounts where `account_type` is `equity` and `operational_subtype` is nil
-  > **Implementation note (temporary heuristic):** In this first implementation, the System-managed tab is operationally approximated as equity accounts without `operational_subtype`. This is a heuristic, not a domain definition. Not all equity accounts are necessarily system-managed forever, and future issues may introduce an explicit `is_system` marker to replace this approximation. Document this assumption in the Execution Summary.
+- [ ] Institution tab lists accounts where `management_group` is `institution`
+- [ ] Category tab lists accounts where `management_group` is `category`
+- [ ] System-managed tab lists accounts where `management_group` is `system_managed`
 - [ ] Create form shows `operational_subtype` dropdown as primary type selector for institution-backed accounts
 - [ ] Create form shows `account_type` dropdown (income/expense only) for category accounts
 - [ ] `account_type` is auto-derived from `operational_subtype` selection and displayed as read-only
@@ -117,7 +116,8 @@ priv/gettext/en/LC_MESSAGES/accounts.po              # English translations
 
 **Tab/section approach**:
 - Tabs can be implemented as assigns-based state (`@active_tab` with values like `:institution`, `:category`, `:system`)
-- Each tab filters the account list differently when calling `Ledger.list_accounts/1`
+- Each tab filters the account list via `management_group` using the specialized
+  Ledger list helpers
 - The create form adapts based on the active tab (different field visibility)
 
 **Operational subtype to account_type derivation** (from plan.md):

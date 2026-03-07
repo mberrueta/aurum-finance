@@ -129,7 +129,8 @@ Planned core components:
 Internally, AurumFinance keeps a canonical ledger chart of accounts. For
 usability, the UI may present operational/institution-backed accounts,
 categories, and technical/system-managed accounts in separate views rather than
-one mixed flat list.
+one mixed flat list. The `Account` model remains canonical; `management_group`
+exists only to support those management surfaces explicitly.
 
 ---
 

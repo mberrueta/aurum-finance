@@ -43,6 +43,7 @@ Introduce the `AurumFinance.Ledger` context and `AurumFinance.Ledger.Account` sc
   - FK constraint to `entities` table
 - [ ] **Schema file**: `lib/aurum_finance/ledger/account.ex`
   - `AurumFinance.Ledger.Account` with Ecto.Enum for `account_type` and `operational_subtype`
+  - `management_group` field using `Ecto.Enum`
   - `@required` / `@optional` field lists
   - `changeset/2` with i18n validation messages
   - `normal_balance/1` helper (`:debit` for asset/expense, `:credit` for liability/equity/income)
@@ -69,8 +70,10 @@ Introduce the `AurumFinance.Ledger` context and `AurumFinance.Ledger.Account` sc
 - [ ] `account_type` enum includes exactly: `asset`, `liability`, `equity`, `income`, `expense`
 - [ ] `operational_subtype` enum includes exactly: `bank_checking`, `bank_savings`, `cash`, `brokerage_cash`, `brokerage_securities`, `crypto_wallet`, `credit_card`, `loan`, `other_asset`, `other_liability`
 - [ ] `currency_code` validated with `validate_length(is: 3)` AND `validate_format(~r/^[A-Z]{3}$/)`
+- [ ] `management_group` enum includes exactly: `institution`, `category`, `system_managed`
 - [ ] `account_type`, `operational_subtype`, and `currency_code` are immutable after creation (changeset guards on update)
 - [ ] `operational_subtype` is required for asset/liability accounts, nil for income/expense/equity
+- [ ] `management_group` stays consistent with `account_type` and `operational_subtype`
 - [ ] `list_accounts/1` requires `entity_id` in opts and never returns cross-entity data
 - [ ] `list_accounts/1` excludes archived accounts by default; `include_archived: true` includes them
 - [ ] All create/update/archive/unarchive operations emit audit events via `Audit.with_event/3`
@@ -169,34 +172,52 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Completed on 2026-03-07.
 
 ### Work Performed
-- [What was actually done]
+- Added the `accounts` migration with canonical account fields, entity foreign key,
+  and the required `[:entity_id]` and `[:entity_id, :archived_at]` indexes.
+- Implemented `AurumFinance.Ledger.Account` with `Ecto.Enum` fields,
+  i18n-backed validations, currency normalization, operational subtype rules,
+  explicit `management_group`, immutability guards for post-create updates, and
+  helpers for backend management surfaces.
+- Implemented `AurumFinance.Ledger` with entity-scoped account listing,
+  audit-backed create/update/archive/unarchive flows, `change_account/2`,
+  `management_group`-based list helpers, and placeholder `get_account_balance/2`.
+- Added account-specific gettext error keys and English translations.
+- Verified the implementation with `mix test` and `mix precommit`.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `priv/repo/migrations/20260307120000_create_accounts.exs`
+- `lib/aurum_finance/ledger/account.ex`
+- `lib/aurum_finance/ledger.ex`
+- Updated `priv/gettext/errors.pot`
+- Updated `priv/gettext/en/LC_MESSAGES/errors.po`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| | |
+| `create_account/2` receives `entity_id` in attrs rather than as a separate first argument | The approved task signature explicitly required `create_account/2` and the schema already treats `entity_id` as a required immutable field |
+| `get_account!/1` remains id-only for now | The task specified `get_account!/1`; entity scoping is enforced on list/query APIs where the acceptance criteria required it |
+| DB-level enum/check constraints were not added in this step | The task and accepted plan required the table fields, FK, and indexes, but did not specify additional database check constraints |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| | | |
+| Added `entity_id` to the immutability guard alongside `account_type`, `operational_subtype`, and `currency_code` | Guard only the three acceptance-criteria fields | `entity_id` is also defined as immutable in the canonical field model and should not drift on updates |
+| `list_accounts/1` raises `ArgumentError` when `:entity_id` is missing | Returning all accounts or silently returning `[]` | Missing entity scope is a caller bug and should fail loudly to reduce leakage risk |
+| Audit redaction is handled through `Audit.with_event/3` using `@audit_redact_fields` | Omitting `institution_account_ref` from snapshots entirely | Keeping the field in snapshots but redacted preserves audit shape while meeting the sensitivity requirement |
 
 ### Blockers Encountered
-- [Blocker] - Resolution: [How resolved or "Needs human input"]
+- Credo flagged nested control flow in the immutability validator - Resolution: extracted the branch into `maybe_add_immutable_error/3`
 
 ### Questions for Human
-1. [Question needing human input]
+1. No open questions.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

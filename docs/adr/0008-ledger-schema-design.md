@@ -131,6 +131,7 @@ Expenses (root, type: Expense)
 | entity_id | Owning entity | Immutable |
 | parent_account_id | Parent in tree (null for roots) | Mutable (re-parenting) |
 | account_type | Asset, Liability, Equity, Income, Expense | Immutable |
+| management_group | Institution, Category, System-managed management surface | Immutable |
 | name | Display name | Mutable |
 | currency_code | Primary currency (e.g., "USD", "CLP") | Immutable |
 | institution_name | Name of the bank or broker holding this account (e.g., "Bank X"). Optional; strongly recommended for accounts that receive imports. Used to cross-check institution metadata extracted from OFX/PDF files. | Mutable |
@@ -249,6 +250,11 @@ over time tracks cumulative FX gain/loss.
   reports.
 - The UX layer constructs trading-account postings transparently — the user only
   specifies source account, target account, and amounts.
+
+**Management grouping note:** The implementation may store an explicit
+`management_group` on accounts to support separate management surfaces
+(`institution`, `category`, `system_managed`) without changing ledger semantics.
+`account_type` and posting rules remain authoritative for accounting behavior.
 
 #### Enforcement strategy
 
