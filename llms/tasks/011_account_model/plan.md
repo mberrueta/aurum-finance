@@ -78,7 +78,6 @@ This plan is aligned with:
 | Currency is ISO 4217 code | `currency_code` field, string, validated format; stored as uppercase ISO 4217 (e.g. `"USD"`, `"BRL"`) |
 | Accounts CRUD LiveView (list, new, edit, archive) | `AurumFinanceWeb.AccountsLive` with entity-scoped management flows presented in separate sections/tabs for institution-backed, category, and system-managed accounts |
 | Account balance computed from postings (no denormalized balance field) | No `balance` column; `Ledger.get_account_balance/2` derived from postings; returns empty map until postings exist |
-| Multi-currency accounts supported | `currency_code` per account; balance derivation is multi-currency-aware (map of currency → amount) |
 
 ---
 
@@ -359,7 +358,7 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
     - required fields (name, account_type, currency_code, entity_id)
     - valid `account_type` enum values
     - valid `operational_subtype` values per account_type
-    - `currency_code`: `validate_length(is: 3)` + `validate_format(~r/^[A-Z]{3}$/)`
+    - `currency_code`: `validate_length(is: 3)` + `validate_format(~r/^[A-Z]{3}/)`
     - name length constraints
   - `archive_account/2` sets `archived_at` and does not delete.
   - `unarchive_account/2` clears `archived_at`.
@@ -420,8 +419,9 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 4. `operational_subtype` is immutable after creation for the same reason (it influences
    posting interpretation and reporting category derivation).
 5. `institution_account_ref` is a free string (not validated as last-4 digits or any specific format).
-6. Balance computation returns a multi-currency map `%{String.t() => Decimal.t()}`, never a
-   single scalar — aligned with ADR-0008's per-currency balance model.
+6. Balance computation returns `%{String.t() => Decimal.t()}` — a map of currency code to balance,
+   aligned with ADR-0008's per-currency balance model. Because every account has exactly one
+   canonical `currency_code`, this map will always contain at most one key for a given account.
 7. The `AurumFinance.Ledger` context is introduced by this issue and will expand iteratively.
    No pre-emptive scaffolding for future ledger entities (transactions, postings) in this issue.
 
@@ -450,3 +450,4 @@ From `AurumFinanceWeb` LiveViews (entities CRUD):
 | 2026-03-06 | Plan | Initial plan created via po-analyst agent | Start planning workflow for Issue #11 |
 | 2026-03-06 | Plan | Added composite index `[:entity_id, :archived_at]`; tightened `currency_code` validation to `validate_length(is: 3)` + `validate_format(~r/^[A-Z]{3}$/)` | Human review feedback |
 | 2026-03-07 | Plan | Synced task statuses, entity-scoped retrieval API (`get_account!/2`), and documentation task references with implementation | Keep Issue #11 execution artifacts coherent after delivery |
+| 2026-03-07 | Plan | Clarified Schema Assumption #6: balance map always contains at most one key per account (account has exactly one currency_code) | Consistency with Issue #12 canonical currency rule |

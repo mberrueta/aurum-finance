@@ -131,6 +131,7 @@ All spec modifications MUST be written to files in `llms/`.
 - Test files in `test/`
 - Configuration files
 - Any file outside `llms/`
+- Plans for issues with status **COMPLETED** — those are closed artifacts. If a completed plan contains something that a new issue's design supersedes or clarifies, add a note or cross-reference in the **new issue's plan** only. Doc/ADR updates happen at the end of the new issue, not by rewriting closed plans.
 
 **Involved roles:**
 - When recommending involved roles for a spec, reference `llms/agents/agent_catalog.md`.

@@ -2,88 +2,183 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:20
-#, elixir-autogen, elixir-format
-msgid "btn_add_manual"
-msgstr ""
+#: lib/aurum_finance_web/components/transactions_components.ex:130
+#: lib/aurum_finance_web/live/transactions_live.ex:156
+#, elixir-autogen
+msgid "badge_import"
+msgstr "Import"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:21
-#, elixir-autogen, elixir-format
-msgid "btn_import"
-msgstr ""
+#: lib/aurum_finance_web/components/transactions_components.ex:129
+#: lib/aurum_finance_web/live/transactions_live.ex:155
+#, elixir-autogen
+msgid "badge_manual"
+msgstr "Manual"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:40
-#, elixir-autogen, elixir-format
-msgid "col_amount"
-msgstr ""
+#: lib/aurum_finance_web/components/transactions_components.ex:131
+#: lib/aurum_finance_web/live/transactions_live.ex:157
+#, elixir-autogen
+msgid "badge_system"
+msgstr "System"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:42
-#, elixir-autogen, elixir-format
-msgid "col_category"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:41
-#, elixir-autogen, elixir-format
-msgid "col_currency"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:38
-#, elixir-autogen, elixir-format
-msgid "col_date"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:39
-#, elixir-autogen, elixir-format
-msgid "col_description"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:43
-#, elixir-autogen, elixir-format
-msgid "col_source"
-msgstr ""
-
-#: lib/aurum_finance_web/components/transactions_components.ex:43
-#, elixir-autogen, elixir-format
-msgid "col_tags"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:29
-#, elixir-autogen, elixir-format
-msgid "filter_account"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:30
-#, elixir-autogen, elixir-format
-msgid "filter_category"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:27
-#, elixir-autogen, elixir-format
-msgid "filter_date"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:28
-#, elixir-autogen, elixir-format
-msgid "filter_source"
-msgstr ""
-
+#: lib/aurum_finance_web/components/transactions_components.ex:44
 #: lib/aurum_finance_web/components/transactions_components.ex:70
-#, elixir-autogen, elixir-format
-msgid "overlay_manual"
-msgstr ""
+#, elixir-autogen
+msgid "badge_voided"
+msgstr "Voided"
 
-#: lib/aurum_finance_web/components/transactions_components.ex:71
-#, elixir-autogen, elixir-format
-msgid "overlay_rule"
-msgstr ""
+#: lib/aurum_finance_web/components/transactions_components.ex:99
+#, elixir-autogen
+msgid "col_account"
+msgstr "Account"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:100
+#, elixir-autogen
+msgid "col_account_type"
+msgstr "Account Type"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:101
+#, elixir-autogen
+msgid "col_amount"
+msgstr "Amount"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:102
+#, elixir-autogen
+msgid "col_currency"
+msgstr "Currency"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:77
+#: lib/aurum_finance_web/live/transactions_live.html.heex:135
+#, elixir-autogen
+msgid "col_date"
+msgstr "Date"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:83
+#: lib/aurum_finance_web/live/transactions_live.html.heex:136
+#, elixir-autogen
+msgid "col_description"
+msgstr "Description"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:138
+#, elixir-autogen
+msgid "col_postings"
+msgstr "Postings"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:137
+#, elixir-autogen
+msgid "col_source"
+msgstr "Source Type"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:139
+#, elixir-autogen
+msgid "col_status"
+msgstr "Status"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:124
+#, elixir-autogen
+msgid "empty_select_entity"
+msgstr "Select an entity to explore its ledger."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:128
+#, elixir-autogen
+msgid "empty_transactions"
+msgstr "No transactions found for the selected filters."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:83
+#, elixir-autogen
+msgid "filter_account"
+msgstr "Account"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:149
+#, elixir-autogen
+msgid "filter_account_all"
+msgstr "All accounts"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:42
+#, elixir-autogen
+msgid "filter_date"
+msgstr "Date"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:166
+#, elixir-autogen
+msgid "filter_date_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:164
+#, elixir-autogen
+msgid "filter_date_this_month"
+msgstr "This month"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:163
+#, elixir-autogen
+msgid "filter_date_this_week"
+msgstr "This week"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:165
+#, elixir-autogen
+msgid "filter_date_this_year"
+msgstr "This year"
+
+msgid "filter_entity"
+msgstr "Entity Scope"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:112
+#, elixir-autogen
+msgid "filter_include_voided"
+msgstr "Include voided"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:94
+#, elixir-autogen
+msgid "filter_source"
+msgstr "Source"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:154
+#, elixir-autogen
+msgid "filter_source_all"
+msgstr "All sources"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:263
+#, elixir-autogen
+msgid "filters_hide"
+msgstr "Hide filters"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:264
+#, elixir-autogen
+msgid "filters_show"
+msgstr "More filters"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:31
+#, elixir-autogen
+msgid "label_correlation_id"
+msgstr "Correlation"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:22
+#, elixir-autogen
+msgid "label_entity"
+msgstr "Entity"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:89
+#, elixir-autogen
+msgid "label_voided_at"
+msgstr "Voided At"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:29
+#, elixir-autogen
+msgid "option_select_entity"
+msgstr "Select an entity"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:3
+#, elixir-autogen
+msgid "page_subtitle"
+msgstr "Read-only explorer for ledger transactions and their postings"
 
 #: lib/aurum_finance_web/live/transactions_live.ex:18
-#, elixir-autogen, elixir-format
-msgid "page_subtitle"
-msgstr "Immutable facts + mutable overlays (classification, reconciliation)"
-
-#: lib/aurum_finance_web/live/transactions_live.ex:10
-#: lib/aurum_finance_web/live/transactions_live.ex:17
-#, elixir-autogen, elixir-format
+#: lib/aurum_finance_web/live/transactions_live.html.heex:2
+#: lib/aurum_finance_web/live/transactions_live.html.heex:120
+#, elixir-autogen
 msgid "page_title"
 msgstr "Transactions"
+
+#: lib/aurum_finance_web/components/transactions_components.ex:64
+#, elixir-autogen
+msgid "posting_detail_title"
+msgstr "Postings"

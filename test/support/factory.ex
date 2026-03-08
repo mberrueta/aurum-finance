@@ -7,6 +7,8 @@ defmodule AurumFinance.Factory do
 
   alias AurumFinance.Entities.Entity
   alias AurumFinance.Ledger.Account
+  alias AurumFinance.Ledger.Posting
+  alias AurumFinance.Ledger.Transaction
 
   def entity_factory do
     %Entity{
@@ -33,6 +35,34 @@ defmodule AurumFinance.Factory do
       institution_name: Faker.Company.name(),
       institution_account_ref: sequence(:account_ref, fn n -> Integer.to_string(1000 + n) end),
       notes: Faker.Lorem.sentence()
+    }
+  end
+
+  def transaction_factory do
+    entity = insert(:entity)
+
+    %Transaction{
+      entity: entity,
+      entity_id: entity.id,
+      date: Date.utc_today(),
+      description: sequence(:transaction_description, fn n -> "Transaction #{n}" end),
+      source_type: :manual,
+      correlation_id: nil,
+      voided_at: nil
+    }
+  end
+
+  def posting_factory do
+    entity = insert(:entity)
+    transaction = insert(:transaction, entity: entity, entity_id: entity.id)
+    account = insert(:account, entity: entity, entity_id: entity.id)
+
+    %Posting{
+      transaction: transaction,
+      transaction_id: transaction.id,
+      account: account,
+      account_id: account.id,
+      amount: Decimal.new("10.00")
     }
   end
 end

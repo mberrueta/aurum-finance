@@ -621,11 +621,12 @@ erDiagram
     }
 ```
 
-## Implementation Deviations (Issue #11)
+## Implementation Deviations (Issue #11 and Issue #12)
 
-The first implemented Account slice in Issue #11 intentionally delivers a
-subset of this ADR and records a few naming/lifecycle deviations so the docs
-stay aligned with the running code.
+The implemented Ledger slice now includes Accounts, Transactions, Postings,
+posting-backed balance derivation, and the void-and-reverse workflow. The code
+still intentionally diverges from the original conceptual ADR in several places
+so the docs stay aligned with the running system.
 
 ### 1. Archive lifecycle uses `archived_at`, not `is_active`
 
@@ -679,18 +680,92 @@ This field does not replace ledger semantics:
 - `account_type` remains the accounting meaning
 - `operational_subtype` remains the operational meaning
 
-### 4. Deferred items from this ADR remain deferred
+### 4. Transaction lifecycle uses `voided_at`, not `status`
+
+Current implementation uses:
+
+- `voided_at :utc_datetime_usec`
+
+instead of:
+
+- `status :posted | :voided`
+
+Reason:
+
+- keeps transaction facts immutable except for one set-once lifecycle marker
+- aligns with the `archived_at` pattern already used elsewhere
+- captures when the void happened without a second field
+
+Operational interpretation:
+
+- `voided_at == nil` => active
+- `voided_at != nil` => voided
+
+### 5. `Transaction` omits `memo`
+
+Current implementation does not include:
+
+- `memo`
+
+Reason:
+
+- annotations and user notes are treated as overlay/classification concerns
+- keeps the ledger write model focused on immutable financial facts
+
+### 6. `Posting` omits `currency_code`
+
+Current implementation does not include:
+
+- `currency_code`
+
+Reason:
+
+- posting currency is structural and always derived from `account.currency_code`
+- avoids storing redundant currency state that could drift from the account
+
+### 7. `Posting` omits `entity_id`
+
+Current implementation does not include:
+
+- `entity_id`
+
+Reason:
+
+- posting scope is structural and always derived from `transaction.entity_id`
+- avoids duplicating ownership state across child rows
+
+### 8. `transactions` and `postings` omit `updated_at`
+
+Current implementation uses:
+
+- `timestamps(..., updated_at: false)` on both schemas
+
+Reason:
+
+- postings are fully immutable
+- transactions are immutable facts except for the set-once `voided_at` mutation
+
+### 9. Zero-sum is currently enforced in the application layer only
+
+Current implementation enforces zero-sum by:
+
+- loading all referenced accounts in one query
+- grouping posting amounts by `account.currency_code`
+- rejecting unbalanced transactions before any write commits
+
+The original ADR described a DB-side safety net as well. That second layer is
+not currently implemented in the migration.
+
+### 10. Deferred items from this ADR remain deferred
 
 The current codebase does **not** yet implement:
 
 - `parent_account_id`
 - `is_placeholder`
-- Transaction/Postings write model
 - BalanceSnapshot persistence
 - trading-account automation
-
-Current `AurumFinance.Ledger.get_account_balance/2` is a placeholder returning
-an empty map until posting-backed balance derivation exists.
+- annotation overlay model
+- write UI for transaction creation/voiding
 
 ### Relationship to Other ADRs
 
@@ -699,9 +774,9 @@ an empty map until posting-backed balance derivation exists.
   Posting carry immutable facts only. Classification fields (category, tags,
   etc.) are owned by `AurumFinance.Classification` (ADR-0007), not by the
   Ledger context.
-- **ADR-0005:** Postings carry `currency_code` and `amount` as immutable facts.
-  The `ExchangeRates` context handles conversions on read. Trading accounts
-  complement the FX model by maintaining per-currency zero-sum invariants.
+- **ADR-0005:** Postings do not store `currency_code`; effective currency is
+  derived from the target account. The `ExchangeRates` context still handles
+  conversions on read. Trading-account UX abstractions remain deferred.
 - **ADR-0007:** All entities defined here live within `AurumFinance.Ledger`.
   The Ledger depends on `AurumFinance.Entities` (Tier 0) for entity scoping.
   Upper-tier contexts (`Classification`, `Ingestion`, `Reconciliation`) depend

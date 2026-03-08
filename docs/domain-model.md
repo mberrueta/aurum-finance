@@ -88,7 +88,7 @@ graph TD
 | Context | Owns | Key Invariants | Entity Scope |
 |---------|------|---------------|--------------|
 | **Entities** | Entity | Tenant boundary for all financial data; fiscal residency fields are columns on Entity; no user model | N/A (defines the boundary) |
-| **Ledger** | Account (implemented), Transaction/Posting/BalanceSnapshot (deferred) | Account ownership is entity-scoped; ledger semantics live in `account_type`; balances are derived from postings once posting model exists | Entity-scoped |
+| **Ledger** | Account, Transaction, Posting (implemented), BalanceSnapshot (deferred) | Account and transaction reads require explicit entity scope; posting currency is derived from the joined account; balances are derived from postings on read | Entity-scoped |
 | **ExchangeRates** | RateSeries, RateRecord, TaxRateSnapshot, Currency | Tax snapshots immutable; rate types are string keys; arbitrary jurisdictions | Mixed (rates global, snapshots entity-scoped) |
 | **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
 | **Ingestion** | ImportBatch, ImportRow | Fact/classification split at import; idempotent re-import; preview-before-commit | Entity-scoped |
@@ -173,9 +173,9 @@ financial positions. See ADR-0008 for the full design rationale.
 | Entity | Description | Key Fields |
 |--------|-------------|------------|
 | **Account** | Canonical internal ledger account abstraction. Covers institution-backed accounts, category accounts, and system-managed accounts within one entity boundary. | `entity_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `operational_subtype`, `management_group`, `name`, `currency_code`, `institution_name`, `institution_account_ref`, `notes`, `archived_at` |
-| **Transaction** | A single real-world financial event grouping one or more postings. | `entity_id`, `date`, `description`, `memo`, `status` (posted/voided), `correlation_id`, `source_type` (import/manual/system) |
-| **Posting** | A single debit or credit line within a transaction, targeting one account. Immutable after creation. | `transaction_id`, `account_id`, `amount` (signed decimal; positive = debit, negative = credit), `currency_code` |
-| **BalanceSnapshot** | A cached, non-authoritative balance for an account at a point in time. Derived from postings. | `account_id`, `as_of_date`, `currency_code`, `balance`, `posting_count`, `computed_at` |
+| **Transaction** | A single real-world financial event grouping one or more postings. Immutable after creation except for the set-once void marker. | `id`, `entity_id`, `date`, `description`, `source_type` (`manual` / `import` / `system`), `correlation_id`, `voided_at`, `inserted_at` |
+| **Posting** | A single debit or credit line within a transaction, targeting one account. Fully immutable after creation. | `id`, `transaction_id`, `account_id`, `amount` (signed decimal; positive = debit, negative = credit), `inserted_at` |
+| **BalanceSnapshot** | Deferred optimization for cached non-authoritative balances. Not implemented. | `account_id`, `as_of_date`, `currency_code`, `balance`, `posting_count`, `computed_at` |
 
 #### Relationships
 
@@ -186,9 +186,22 @@ financial positions. See ADR-0008 for the full design rationale.
 
 #### Current Implementation Scope
 
-The current implemented Ledger scope is the `Account` model and account-management
-flows. Transaction, posting, balance snapshot, account tree, and trading-account
-automation remain deferred to follow-up issues.
+The current implemented Ledger scope includes:
+
+- account CRUD and account lifecycle
+- transaction creation with nested postings
+- entity-scoped transaction reads and filtering
+- posting-backed balance derivation
+- void-and-reverse correction flow
+- read-only Transactions LiveView
+
+The following Ledger concepts remain deferred:
+
+- `parent_account_id`
+- `is_placeholder`
+- `BalanceSnapshot`
+- automatic trading-account workflows for FX abstractions
+- write UI for manual transaction entry/voiding
 
 Accounts use the standard five accounting types:
 
@@ -204,14 +217,6 @@ some accounts are system-managed for technical balancing and lifecycle support.
 Category accounts may be created manually or introduced automatically by later
 categorization workflows; in both cases they remain first-class ledger accounts.
 
-The current implementation does **not** yet include:
-
-- `parent_account_id`
-- `is_placeholder`
-- `BalanceSnapshot`
-- posting-backed balance computation
-- system-managed trading-account creation
-
 `management_group` is an explicit management/presentation classification used to
 support separate account-management surfaces. It does not replace ledger
 semantics: `account_type` still carries accounting meaning and
@@ -222,9 +227,10 @@ Account lifecycle uses `archived_at` rather than a boolean active flag:
 - `archived_at == nil` means active
 - `archived_at != nil` means archived
 
-The public account retrieval/listing APIs are entity-scoped. Public list APIs
-require explicit `entity_id`, and public account retrieval uses the scoped form
-`get_account!(entity_id, account_id)`.
+The public account and transaction retrieval/listing APIs are entity-scoped.
+Public list APIs require explicit `entity_id`, and public retrieval uses the
+scoped forms `get_account!(entity_id, account_id)` and
+`get_transaction!(entity_id, transaction_id)`.
 
 #### Splits
 
@@ -233,46 +239,59 @@ than two postings. Example: a grocery receipt divided between "Groceries" and
 "Household" creates three postings (one credit to the source account, two debits
 to the expense categories).
 
-#### Deferred Ledger Features
+#### Transaction and Posting Notes
 
-The following Ledger concepts remain part of the target architecture but are not
-yet implemented in the current codebase:
-
-- transaction and posting writes
-- cross-currency trading-account balancing
-- balance snapshots
-- void/reversal correction flows
-- account tree / placeholder nodes
+- `Transaction` has **no** `memo` field.
+  Notes and annotations belong in a future overlay/classification layer.
+- `Transaction` has **no** `status` field.
+  `voided_at == nil` means active; `voided_at != nil` means voided.
+- `Transaction` has **no** `updated_at`.
+  Core facts are immutable and the only allowed mutation is setting `voided_at`
+  once through the void workflow.
+- `Posting` has **no** `currency_code`.
+  Currency is structural and always derived from `posting.account.currency_code`.
+- `Posting` has **no** `entity_id`.
+  Entity scope is structural and always derived from the parent transaction.
+- `Posting` has **no** `updated_at`.
+  Postings are append-only immutable facts.
 
 #### Key Invariants
 
 1. **Zero-sum per currency per transaction:** The sum of all posting amounts
-   grouped by currency within a transaction must equal zero. Enforced at
-   application level (primary) and database level (safety net).
-2. **Posting immutability:** Once created, a posting's amount, currency, and
+   grouped by effective currency within a transaction must equal zero. Effective
+   currency is `account.currency_code`, obtained through the posting's account
+   join. Enforced in the application layer during transaction creation.
+2. **Posting immutability:** Once created, a posting's amount and
    account cannot be changed. Corrections use void-and-reverse.
-3. **Fact immutability:** Transaction `date`, `description`, and posting
-   `amount`/`currency_code` are write-once (ADR-0004).
+3. **Fact immutability:** Transaction `entity_id`, `date`, `description`, and
+   `source_type` are write-once; postings are fully immutable (ADR-0004).
+4. **Entity isolation:** All posting accounts referenced by a transaction must
+   belong to the same entity as `transaction.entity_id`.
+5. **Minimum posting count:** A transaction must contain at least two postings.
 
 #### Balance Derivation
 
-The current `AurumFinance.Ledger.get_account_balance/2` function is an
-architectural placeholder and returns an empty map until postings exist.
+`AurumFinance.Ledger.get_account_balance/2` is now implemented as a read-time
+aggregation over postings joined to accounts and transactions.
 
-The intended balance model remains:
+Current behavior:
 
 - no denormalized balance field on accounts
-- balances derived from postings on read
-- grouped by currency code for multi-currency support
+- balances are derived from postings on read
+- supports `as_of_date` filtering via `transaction.date`
+- returns `%{}` when an account has no postings
+- returns exactly one currency key for a single account because an account has
+  exactly one `currency_code`
+- performs no FX conversion
 
 #### Corrections and Voids
 
 The ledger never modifies or deletes existing transactions or postings. A
-**void** sets the original transaction's status to `voided` and creates a
-reversing transaction with equal-and-opposite postings. A **correction** is a
-void followed by a new transaction with corrected postings, linked by
-`correlation_id`. Both the original and reversal remain in the ledger
-permanently for audit purposes.
+**void** sets the original transaction's `voided_at` timestamp and creates a
+reversing transaction with equal-and-opposite postings. The original and
+reversal share a `correlation_id`. A **correction** is a void followed by a new
+transaction with corrected postings. Both the original and reversal remain in
+the ledger permanently for audit purposes.
 
 #### UX Mapping
 
@@ -286,8 +305,8 @@ Users interact with five personal-finance concepts that map to posting patterns:
 | Credit card purchase | Liability | Expense |
 | Credit card payment | Asset | Liability |
 
-Cross-currency variants and trading-account postings are deferred until the
-transaction/posting implementation exists.
+Cross-currency transactions are supported when each currency group balances
+independently. Higher-level FX/trading-account UX abstractions remain deferred.
 
 The UI may expose different subsets of the same canonical `Account` model
 depending on workflow. Institution-backed accounts, category accounts, and
@@ -339,7 +358,7 @@ access boundary.
 
 | Scope | Data | Rationale |
 |-------|------|-----------|
-| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportBatch, ImportFile, ImportRow, DeduplicationRecord, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity. In the current implementation, Account is the first delivered Ledger entity using this boundary. |
+| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportBatch, ImportFile, ImportRow, DeduplicationRecord, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity. In the current implementation, Account, Transaction, and Posting already use this boundary. |
 | **Global** | Currency, RateSeries, RateRecord, RuleGroup, Rule, Condition, Action | Currencies, exchange rates, and classification rules are shared across entities |
 
 #### Cross-Entity Transfers
@@ -401,8 +420,9 @@ Upload & Detect --> Parse & Extract --> Normalize & Validate --> Deduplicate
 ```
 
 The **fact/classification split** occurs at the Normalize stage: normalized
-values (amount, date, description, currency, institution reference) become
-immutable Transaction and Posting fields. Classification is applied after
+values (amount, date, description, account reference, effective currency,
+institution reference) become immutable Transaction and Posting facts or are
+derivable from them. Classification is applied after
 fact creation and stored separately in ClassificationRecord (ADR-0004).
 
 #### Domain Objects
@@ -515,9 +535,9 @@ a group, rules are evaluated in priority order — the first matching rule wins
 
 #### Condition Operators
 
-Conditions reference transaction/posting fact fields (`description`, `memo`,
-`amount`, `abs_amount`, `currency_code`, `date`, `source_type`,
-`account_name`, `account_type`) and entity/account attributes
+Conditions reference transaction/posting fact fields (`description`, `amount`,
+`abs_amount`, `date`, `source_type`, joined account currency, `account_name`,
+`account_type`) and entity/account attributes
 (`entity_name`, `entity_slug`, `entity_type`, `entity_country_code`,
 `institution_name`).
 

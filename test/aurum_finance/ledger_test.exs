@@ -4,6 +4,7 @@ defmodule AurumFinance.LedgerTest do
   alias AurumFinance.Audit
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
+  alias AurumFinance.Ledger.Transaction
 
   describe "change_account/2" do
     test "requires canonical fields" do
@@ -275,9 +276,425 @@ defmodule AurumFinance.LedgerTest do
       assert :credit == Account.normal_balance(:income)
     end
 
-    test "get_account_balance/2 returns an empty map placeholder" do
+    test "get_account_balance/2 returns an empty map for accounts with no postings" do
       assert %{} == Ledger.get_account_balance(Ecto.UUID.generate())
       assert %{} == Ledger.get_account_balance(Ecto.UUID.generate(), as_of_date: ~D[2026-03-07])
+    end
+  end
+
+  describe "create_transaction/2" do
+    test "creates a balanced transaction with preloaded postings and audit event" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(
+                 %{
+                   entity_id: entity.id,
+                   date: ~D[2026-03-01],
+                   description: "Lunch",
+                   source_type: :manual,
+                   postings: [
+                     %{account_id: checking.id, amount: Decimal.new("-12.50")},
+                     %{account_id: groceries.id, amount: Decimal.new("12.50")}
+                   ]
+                 },
+                 actor: "person",
+                 channel: :web
+               )
+
+      assert %Transaction{} = transaction
+      assert is_nil(transaction.voided_at)
+      assert Enum.count(transaction.postings) == 2
+      refute Enum.any?(transaction.postings, &Ecto.assoc_loaded?(&1.account))
+
+      [event] = Audit.list_audit_events(entity_id: transaction.id)
+      assert event.entity_type == "transaction"
+      assert event.action == "created"
+      assert event.actor == "person"
+      assert event.channel == :web
+      assert event.after["description"] == "Lunch"
+    end
+
+    test "creates a split transaction with three postings" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      household =
+        account_fixture(entity, %{
+          name: "Household",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Superstore",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-30.00")},
+                   %{account_id: groceries.id, amount: Decimal.new("12.50")},
+                   %{account_id: household.id, amount: Decimal.new("17.50")}
+                 ]
+               })
+
+      assert Enum.count(transaction.postings) == 3
+    end
+
+    test "creates a multi-currency transaction when each currency group balances" do
+      entity = entity_fixture(%{name: "FX Entity"})
+      usd_checking = account_fixture(entity, %{name: "USD Checking", currency_code: "USD"})
+
+      usd_trading =
+        account_fixture(entity, %{
+          name: "USD Trading",
+          account_type: :equity,
+          operational_subtype: nil,
+          management_group: :system_managed,
+          currency_code: "USD"
+        })
+
+      eur_trading =
+        account_fixture(entity, %{
+          name: "EUR Trading",
+          account_type: :equity,
+          operational_subtype: nil,
+          management_group: :system_managed,
+          currency_code: "EUR"
+        })
+
+      eur_savings =
+        account_fixture(entity, %{
+          name: "EUR Savings",
+          operational_subtype: :bank_savings,
+          currency_code: "EUR"
+        })
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-03],
+                 description: "FX rebalance",
+                 source_type: :system,
+                 postings: [
+                   %{account_id: usd_checking.id, amount: Decimal.new("-100.00")},
+                   %{account_id: usd_trading.id, amount: Decimal.new("100.00")},
+                   %{account_id: eur_trading.id, amount: Decimal.new("-92.00")},
+                   %{account_id: eur_savings.id, amount: Decimal.new("92.00")}
+                 ]
+               })
+
+      assert Enum.count(transaction.postings) == 4
+      assert Ledger.get_account_balance(usd_checking.id) == %{"USD" => Decimal.new("-100.00")}
+      assert Ledger.get_account_balance(eur_savings.id) == %{"EUR" => Decimal.new("92.00")}
+    end
+
+    test "rejects unbalanced postings" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Broken lunch",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-12.50")},
+                   %{account_id: groceries.id, amount: Decimal.new("10.00")}
+                 ]
+               })
+
+      assert "Transaction postings must balance to zero within each currency." in errors_on(
+               changeset
+             ).postings
+    end
+
+    test "rejects fewer than two postings" do
+      %{entity: entity, checking: checking} = transaction_accounts_fixture()
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Too small",
+                 source_type: :manual,
+                 postings: [%{account_id: checking.id, amount: Decimal.new("10.00")}]
+               })
+
+      assert "A transaction must contain at least two postings." in errors_on(changeset).postings
+    end
+
+    test "rejects empty postings list" do
+      entity = entity_fixture()
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Empty",
+                 source_type: :manual,
+                 postings: []
+               })
+
+      assert "A transaction must contain at least two postings." in errors_on(changeset).postings
+    end
+
+    test "rejects posting accounts from another entity" do
+      %{entity: entity, checking: checking} = transaction_accounts_fixture()
+      other_entity = entity_fixture(%{name: "Foreign Entity"})
+
+      foreign_expense =
+        account_fixture(other_entity, %{
+          name: "Foreign expense",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Cross entity",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-12.50")},
+                   %{account_id: foreign_expense.id, amount: Decimal.new("12.50")}
+                 ]
+               })
+
+      assert "All posting accounts must belong to the same entity as the transaction." in errors_on(
+               changeset
+             ).postings
+    end
+
+    test "rejects unknown account ids and leaves no partial writes" do
+      %{entity: entity, checking: checking} = transaction_accounts_fixture()
+
+      assert {:error, changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Unknown account",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-12.50")},
+                   %{account_id: Ecto.UUID.generate(), amount: Decimal.new("12.50")}
+                 ]
+               })
+
+      assert "All postings must reference existing accounts." in errors_on(changeset).postings
+      assert [] == Ledger.list_transactions(entity_id: entity.id, include_voided: true)
+    end
+
+    test "allows zero-amount postings when the transaction still balances" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-02],
+                 description: "Memo split",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-10.00")},
+                   %{account_id: groceries.id, amount: Decimal.new("10.00")},
+                   %{account_id: groceries.id, amount: Decimal.new("0.00")}
+                 ]
+               })
+
+      assert Enum.any?(transaction.postings, &Decimal.eq?(&1.amount, Decimal.new("0.00")))
+    end
+  end
+
+  describe "get_transaction!/2" do
+    test "returns the transaction with postings preloaded" do
+      %{entity: entity} = transaction_accounts_fixture()
+      transaction = create_balanced_transaction(entity, %{description: "Visible Tx"})
+
+      fetched = Ledger.get_transaction!(entity.id, transaction.id)
+
+      assert fetched.id == transaction.id
+      assert Enum.count(fetched.postings) == 2
+      assert Enum.all?(fetched.postings, &match?(%Account{}, &1.account))
+    end
+
+    test "raises when the entity scope is wrong" do
+      %{entity: entity} = transaction_accounts_fixture()
+      other_entity = entity_fixture()
+      transaction = create_balanced_transaction(entity, %{description: "Scoped"})
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Ledger.get_transaction!(other_entity.id, transaction.id)
+      end
+    end
+
+    test "raises when the transaction does not exist" do
+      entity = entity_fixture()
+
+      assert_raise Ecto.NoResultsError, fn ->
+        Ledger.get_transaction!(entity.id, Ecto.UUID.generate())
+      end
+    end
+  end
+
+  describe "list_transactions/1" do
+    test "requires entity_id" do
+      assert_raise ArgumentError, "list_transactions/1 requires :entity_id", fn ->
+        Ledger.list_transactions()
+      end
+    end
+
+    test "is entity scoped and excludes voided rows by default" do
+      entity = entity_fixture(%{name: "Listing Entity"})
+      other_entity = entity_fixture(%{name: "Other Listing Entity"})
+      transaction = create_balanced_transaction(entity, %{description: "Visible Tx"})
+      _other = create_balanced_transaction(other_entity, %{description: "Hidden Tx"})
+
+      assert [listed] = Ledger.list_transactions(entity_id: entity.id)
+      assert listed.id == transaction.id
+
+      assert {:ok, %{voided: _voided, reversal: reversal}} = Ledger.void_transaction(transaction)
+
+      [active_reversal] = Ledger.list_transactions(entity_id: entity.id)
+      assert active_reversal.id == reversal.id
+
+      assert 2 == Enum.count(Ledger.list_transactions(entity_id: entity.id, include_voided: true))
+      assert Enum.all?(Ledger.list_transactions(entity_id: entity.id), &is_nil(&1.voided_at))
+    end
+
+    test "filters by source_type, account_id, and date range" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      savings =
+        account_fixture(entity, %{name: "Savings Filter", operational_subtype: :bank_savings})
+
+      {:ok, import_tx} =
+        Ledger.create_transaction(%{
+          entity_id: entity.id,
+          date: ~D[2026-03-10],
+          description: "Imported groceries",
+          source_type: :import,
+          postings: [
+            %{account_id: checking.id, amount: Decimal.new("-20.00")},
+            %{account_id: groceries.id, amount: Decimal.new("20.00")}
+          ]
+        })
+
+      {:ok, manual_tx} =
+        Ledger.create_transaction(%{
+          entity_id: entity.id,
+          date: ~D[2026-03-11],
+          description: "Savings transfer",
+          source_type: :manual,
+          postings: [
+            %{account_id: checking.id, amount: Decimal.new("-50.00")},
+            %{account_id: savings.id, amount: Decimal.new("50.00")}
+          ]
+        })
+
+      assert [result] = Ledger.list_transactions(entity_id: entity.id, source_type: :import)
+      assert result.id == import_tx.id
+
+      assert [result] = Ledger.list_transactions(entity_id: entity.id, account_id: groceries.id)
+      assert result.id == import_tx.id
+
+      results =
+        Ledger.list_transactions(
+          entity_id: entity.id,
+          date_from: ~D[2026-03-11],
+          date_to: ~D[2026-03-11]
+        )
+
+      assert Enum.map(results, & &1.id) == [manual_tx.id]
+
+      assert Enum.all?(
+               results,
+               &(Ecto.assoc_loaded?(&1.postings) and
+                   Enum.all?(&1.postings, fn posting -> Ecto.assoc_loaded?(posting.account) end))
+             )
+    end
+
+    test "orders by date desc then inserted_at desc" do
+      %{entity: entity} = transaction_accounts_fixture()
+      older = create_balanced_transaction(entity, %{description: "Older", date: ~D[2026-03-10]})
+      newer = create_balanced_transaction(entity, %{description: "Newer", date: ~D[2026-03-11]})
+
+      assert [first, second] = Ledger.list_transactions(entity_id: entity.id)
+      assert [first.id, second.id] == [newer.id, older.id]
+    end
+  end
+
+  describe "void_transaction/2" do
+    test "marks the original voided, creates a reversal, and emits audit events" do
+      %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
+      transaction = create_balanced_transaction(checking, groceries, %{description: "Dinner"})
+
+      assert {:ok, %{voided: voided, reversal: reversal}} =
+               Ledger.void_transaction(transaction, actor: "person", channel: :web)
+
+      assert voided.id == transaction.id
+      assert %DateTime{} = voided.voided_at
+      assert is_nil(reversal.voided_at)
+      assert reversal.source_type == :system
+      assert voided.correlation_id == reversal.correlation_id
+
+      assert Enum.map(reversal.postings, &{&1.account_id, &1.amount}) ==
+               Enum.map(transaction.postings, &{&1.account_id, Decimal.negate(&1.amount)})
+
+      actions =
+        Audit.list_audit_events(entity_id: transaction.id)
+        |> Enum.map(& &1.action)
+
+      assert "voided" in actions
+      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("0.00")}
+    end
+
+    test "rejects double void" do
+      %{entity: entity} = transaction_accounts_fixture()
+      transaction = create_balanced_transaction(entity, %{description: "Void once"})
+
+      assert {:ok, %{voided: _voided, reversal: _reversal}} = Ledger.void_transaction(transaction)
+      voided = Ledger.get_transaction!(entity.id, transaction.id)
+
+      assert {:error, changeset} = Ledger.void_transaction(voided)
+      assert "This transaction has already been voided." in errors_on(changeset).voided_at
+    end
+  end
+
+  describe "get_account_balance/2" do
+    test "derives balances from postings and filters by as_of_date" do
+      %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      _first =
+        create_balanced_transaction(checking, groceries, %{
+          description: "First",
+          date: ~D[2026-03-01]
+        })
+
+      _second =
+        create_balanced_transaction(checking, groceries, %{
+          description: "Second",
+          date: ~D[2026-03-05]
+        })
+
+      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("-20.00")}
+
+      assert Ledger.get_account_balance(checking.id, as_of_date: ~D[2026-03-01]) == %{
+               "USD" => Decimal.new("-10.00")
+             }
+    end
+
+    test "returns exactly one currency key for a populated account" do
+      %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      _transaction =
+        create_balanced_transaction(checking, groceries, %{description: "Single currency"})
+
+      assert %{"USD" => balance} = Ledger.get_account_balance(checking.id)
+      assert Decimal.eq?(balance, Decimal.new("-10.00"))
+      assert map_size(Ledger.get_account_balance(checking.id)) == 1
     end
   end
 
@@ -347,5 +764,58 @@ defmodule AurumFinance.LedgerTest do
       refute is_nil(unarchived.before["archived_at"])
       assert unarchived.after["archived_at"] == nil
     end
+  end
+
+  defp transaction_accounts_fixture do
+    entity = entity_fixture()
+    checking = account_fixture(entity, %{name: "Checking #{System.unique_integer([:positive])}"})
+
+    groceries =
+      account_fixture(entity, %{
+        name: "Groceries #{System.unique_integer([:positive])}",
+        account_type: :expense,
+        operational_subtype: nil,
+        management_group: :category
+      })
+
+    %{entity: entity, checking: checking, groceries: groceries}
+  end
+
+  defp create_balanced_transaction(entity, attrs) when is_map(entity) do
+    checking =
+      account_fixture(entity, %{
+        name: "Test Checking #{System.unique_integer([:positive])}",
+        account_type: :asset,
+        operational_subtype: :bank_checking,
+        management_group: :institution
+      })
+
+    expense =
+      account_fixture(entity, %{
+        name: "Test Expense #{System.unique_integer([:positive])}",
+        account_type: :expense,
+        operational_subtype: nil,
+        management_group: :category
+      })
+
+    create_balanced_transaction(checking, expense, attrs)
+  end
+
+  defp create_balanced_transaction(checking, expense, attrs) do
+    params =
+      %{
+        entity_id: checking.entity_id,
+        date: Date.utc_today(),
+        description: "Fixture transaction",
+        source_type: :manual,
+        postings: [
+          %{account_id: checking.id, amount: Decimal.new("-10.00")},
+          %{account_id: expense.id, amount: Decimal.new("10.00")}
+        ]
+      }
+      |> Map.merge(attrs)
+
+    {:ok, transaction} = Ledger.create_transaction(params)
+    transaction
   end
 end
