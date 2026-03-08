@@ -373,7 +373,7 @@ defmodule AurumFinance.Ledger do
       [transaction],
       transaction.entity_id == ^entity_id and transaction.id == ^transaction_id
     )
-    |> preload(:postings)
+    |> preload(postings: :account)
     |> Repo.one!()
   end
 
@@ -400,7 +400,7 @@ defmodule AurumFinance.Ledger do
 
     Transaction
     |> filter_query(opts)
-    |> preload(:postings)
+    |> preload(postings: :account)
     |> order_by([transaction], desc: transaction.date, desc: transaction.inserted_at)
     |> Repo.all()
   end

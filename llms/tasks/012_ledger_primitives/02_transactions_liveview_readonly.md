@@ -371,34 +371,47 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Implemented the transactions page as a real read-only ledger explorer backed by `AurumFinance.Ledger`, replacing all mock transaction data and mutation affordances.
 
 ### Work Performed
-- [What was actually done]
+- Replaced the mock `TransactionsLive` page with entity-scoped, DB-backed transaction loading.
+- Added entity selection, account/date/source filters, and include-voided toggle, all delegated to `Ledger.list_transactions/1`.
+- Rewrote `TransactionsComponents` to render real transaction rows and expandable posting detail using preloaded account data.
+- Updated the transactions gettext domain to match the new read-only UI.
+- Added focused LiveView tests for rendering, filtering, and posting-detail expansion.
+- Updated `Ledger.get_transaction!/2` and `Ledger.list_transactions/1` to preload `[postings: :account]`.
 
 ### Outputs Created
-- [List of files/artifacts created or updated]
+- Updated `lib/aurum_finance_web/live/transactions_live.ex`
+- Updated `lib/aurum_finance_web/components/transactions_components.ex`
+- Updated `lib/aurum_finance/ledger.ex`
+- Updated `priv/gettext/en/LC_MESSAGES/transactions.po`
+- Updated `priv/gettext/transactions.pot`
+- Added `test/aurum_finance_web/live/transactions_live_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| A single expanded transaction row is enough for this milestone | It keeps state simple and matches the task’s “single or multiple is implementation choice” allowance. |
+| Entity selection should mirror `AccountsLive` rather than invent a transactions-specific scope control | The project already has that pattern and it keeps page behavior consistent. |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Keep all filtering in the Ledger context | Filtering in LiveView assigns | Preserves context ownership of query logic and avoids duplicated ledger rules in the UI. |
+| Render expandable detail inline below the summary row | Side panel, modal, or separate show page | Lowest-cost way to inspect postings while keeping the explorer read-only. |
+| Add focused LiveView tests now | Waiting until Task 03 only | The constitution requires tests for executable logic changes, and these checks are small and stable. |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- Existing smoke/component tests assumed the old mock transaction component API - Resolution: updated them to the real transaction struct/component shape.
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

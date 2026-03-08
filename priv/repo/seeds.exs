@@ -252,97 +252,119 @@ Enum.each(entities, fn entity ->
   |> Enum.each(&ensure_account.(entity, &1))
 end)
 
-if Repo.aggregate(Transaction, :count, :id) == 0 do
-  personal = Repo.get_by!(Entity, name: "Personal")
+personal = Repo.get_by!(Entity, name: "Personal")
 
-  account =
-    fn name ->
-      Repo.get_by!(Account, entity_id: personal.id, name: name)
+account =
+  fn name ->
+    Repo.get_by!(Account, entity_id: personal.id, name: name)
+  end
+
+checking = account.("Mercury Checking")
+savings = account.("High Yield Savings")
+credit_card = account.("Chase Sapphire")
+food = account.("Food")
+household = account.("Household")
+opening_balances = account.("Opening Balances")
+
+ensure_transaction =
+  fn attrs ->
+    lookup_attrs = Map.take(attrs, [:entity_id, :date, :description, :source_type])
+
+    case Repo.get_by(Transaction, lookup_attrs) do
+      nil ->
+        {:ok, transaction} = Ledger.create_transaction(attrs)
+        IO.puts("seeded transaction: #{attrs.description}")
+        transaction
+
+      transaction ->
+        IO.puts("transaction already exists, skipping: #{attrs.description}")
+        transaction
     end
+  end
 
-  checking = account.("Mercury Checking")
-  savings = account.("High Yield Savings")
-  credit_card = account.("Chase Sapphire")
-  food = account.("Food")
-  household = account.("Household")
-  opening_balances = account.("Opening Balances")
+ensure_voided_transaction =
+  fn attrs ->
+    transaction = ensure_transaction.(attrs)
 
-  {:ok, _opening_balance} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -12),
-      description: "Initial checking balance",
-      source_type: :system,
-      postings: [
-        %{account_id: opening_balances.id, amount: Decimal.new("-2500.00")},
-        %{account_id: checking.id, amount: Decimal.new("2500.00")}
-      ]
-    })
+    if transaction.voided_at do
+      IO.puts("transaction already voided, skipping void workflow: #{attrs.description}")
+      transaction
+    else
+      {:ok, %{voided: voided}} = Ledger.void_transaction(transaction)
+      IO.puts("voided seeded transaction: #{attrs.description}")
+      voided
+    end
+  end
 
-  {:ok, voided_source} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -10),
-      description: "Corner market groceries",
-      source_type: :manual,
-      postings: [
-        %{account_id: checking.id, amount: Decimal.new("-45.00")},
-        %{account_id: food.id, amount: Decimal.new("45.00")}
-      ]
-    })
+_opening_balance =
+  ensure_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -12),
+    description: "Initial checking balance",
+    source_type: :system,
+    postings: [
+      %{account_id: opening_balances.id, amount: Decimal.new("-2500.00")},
+      %{account_id: checking.id, amount: Decimal.new("2500.00")}
+    ]
+  })
 
-  {:ok, _void_pair} = Ledger.void_transaction(voided_source)
+_voided_source =
+  ensure_voided_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -10),
+    description: "Corner market groceries",
+    source_type: :manual,
+    postings: [
+      %{account_id: checking.id, amount: Decimal.new("-45.00")},
+      %{account_id: food.id, amount: Decimal.new("45.00")}
+    ]
+  })
 
-  {:ok, _transfer} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -8),
-      description: "Move cash to savings",
-      source_type: :manual,
-      postings: [
-        %{account_id: checking.id, amount: Decimal.new("-1000.00")},
-        %{account_id: savings.id, amount: Decimal.new("1000.00")}
-      ]
-    })
+_transfer =
+  ensure_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -8),
+    description: "Move cash to savings",
+    source_type: :manual,
+    postings: [
+      %{account_id: checking.id, amount: Decimal.new("-1000.00")},
+      %{account_id: savings.id, amount: Decimal.new("1000.00")}
+    ]
+  })
 
-  {:ok, _card_purchase} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -6),
-      description: "Restaurant dinner",
-      source_type: :manual,
-      postings: [
-        %{account_id: food.id, amount: Decimal.new("85.00")},
-        %{account_id: credit_card.id, amount: Decimal.new("-85.00")}
-      ]
-    })
+_card_purchase =
+  ensure_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -6),
+    description: "Restaurant dinner",
+    source_type: :manual,
+    postings: [
+      %{account_id: food.id, amount: Decimal.new("85.00")},
+      %{account_id: credit_card.id, amount: Decimal.new("-85.00")}
+    ]
+  })
 
-  {:ok, _card_payment} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -4),
-      description: "Credit card payment",
-      source_type: :manual,
-      postings: [
-        %{account_id: credit_card.id, amount: Decimal.new("500.00")},
-        %{account_id: checking.id, amount: Decimal.new("-500.00")}
-      ]
-    })
+_card_payment =
+  ensure_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -4),
+    description: "Credit card payment",
+    source_type: :manual,
+    postings: [
+      %{account_id: credit_card.id, amount: Decimal.new("500.00")},
+      %{account_id: checking.id, amount: Decimal.new("-500.00")}
+    ]
+  })
 
-  {:ok, _split_purchase} =
-    Ledger.create_transaction(%{
-      entity_id: personal.id,
-      date: Date.add(Date.utc_today(), -2),
-      description: "Superstore run",
-      source_type: :manual,
-      postings: [
-        %{account_id: checking.id, amount: Decimal.new("-150.00")},
-        %{account_id: food.id, amount: Decimal.new("80.00")},
-        %{account_id: household.id, amount: Decimal.new("70.00")}
-      ]
-    })
-
-  IO.puts("seeded transactions for Personal")
-else
-  IO.puts("transactions already exist, skipping transaction seeds")
-end
+_split_purchase =
+  ensure_transaction.(%{
+    entity_id: personal.id,
+    date: Date.add(Date.utc_today(), -2),
+    description: "Superstore run",
+    source_type: :manual,
+    postings: [
+      %{account_id: checking.id, amount: Decimal.new("-150.00")},
+      %{account_id: food.id, amount: Decimal.new("80.00")},
+      %{account_id: household.id, amount: Decimal.new("70.00")}
+    ]
+  })

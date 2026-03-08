@@ -2,275 +2,469 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
+#: lib/aurum_finance_web/components/badge_component.ex:128
+#, elixir-autogen
 msgid "account_type_asset"
 msgstr "Asset"
 
+#: lib/aurum_finance_web/components/badge_component.ex:130
+#, elixir-autogen
 msgid "account_type_equity"
 msgstr "Equity"
 
+#: lib/aurum_finance_web/components/badge_component.ex:132
+#, elixir-autogen
 msgid "account_type_expense"
 msgstr "Expense"
 
+#: lib/aurum_finance_web/components/badge_component.ex:131
+#, elixir-autogen
 msgid "account_type_income"
 msgstr "Income"
 
+#: lib/aurum_finance_web/components/badge_component.ex:129
+#, elixir-autogen
 msgid "account_type_liability"
 msgstr "Liability"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:96
+#, elixir-autogen
 msgid "callout_how_use_item_1"
 msgstr "Select the entity first so every account stays inside the correct ownership boundary."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:97
+#, elixir-autogen
 msgid "callout_how_use_item_2"
 msgstr "Use the Institution tab for bank, broker, wallet, credit card, and loan accounts."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:98
+#, elixir-autogen
 msgid "callout_how_use_item_3"
 msgstr "Use Category accounts for income and expense classification, even when they may be auto-created later."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:94
+#, elixir-autogen
 msgid "callout_how_use_title"
 msgstr "How to use accounts"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:113
+#, elixir-autogen
 msgid "callout_tips_item_1"
 msgstr "Keep names specific enough to distinguish real-world accounts, especially when multiple institutions share the same currency."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:114
+#, elixir-autogen
 msgid "callout_tips_item_2"
 msgstr "Archive accounts instead of deleting them so historical postings and audits remain consistent."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:111
+#, elixir-autogen
 msgid "callout_tips_title"
 msgstr "Tips"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:106
+#, elixir-autogen
 msgid "callout_warning_item_1"
 msgstr "Management group, account type, subtype, and currency are part of the canonical account shape and become immutable after creation."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:107
+#, elixir-autogen
 msgid "callout_warning_item_2"
 msgstr "System-managed accounts are real ledger accounts; keep them separate from day-to-day operational workflows."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:104
+#, elixir-autogen
 msgid "callout_warning_title"
 msgstr "Warnings"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:18
+#, elixir-autogen
 msgid "callout_what_is_body"
 msgstr "Accounts are the canonical ledger containers for balances, postings, categories, and technical system flows."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:20
+#, elixir-autogen
 msgid "callout_what_is_item_1"
 msgstr "Institution accounts represent operational containers such as bank, broker, wallet, credit, and loan accounts."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:21
+#, elixir-autogen
 msgid "callout_what_is_item_2"
 msgstr "Category accounts are still ledger accounts, typically income or expense, managed separately for clarity."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:22
+#, elixir-autogen
 msgid "callout_what_is_item_3"
 msgstr "System-managed accounts support technical ledger flows such as opening balances or FX-related mechanics."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:17
+#, elixir-autogen
 msgid "callout_what_is_title"
 msgstr "What accounts are"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:158
+#, elixir-autogen
 msgid "btn_archive"
 msgstr "Archive"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:415
+#, elixir-autogen
 msgid "btn_create_account"
 msgstr "Create account"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:148
+#, elixir-autogen
 msgid "btn_edit"
 msgstr "Edit"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:323
+#, elixir-autogen
 msgid "btn_hide_archived"
 msgstr "Hide archived"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:11
+#, elixir-autogen
 msgid "btn_new_account"
 msgstr "New account"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:414
+#, elixir-autogen
 msgid "btn_save_changes"
 msgstr "Save changes"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:325
+#, elixir-autogen
 msgid "btn_show_archived"
 msgstr "Show archived"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:168
+#, elixir-autogen
 msgid "btn_unarchive"
 msgstr "Unarchive"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:357
+#, elixir-autogen
 msgid "empty_category_accounts"
 msgstr "No category accounts for this entity yet."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:360
+#, elixir-autogen
 msgid "empty_category_accounts_archived"
 msgstr "No archived category accounts for this entity."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:193
+#, elixir-autogen
 msgid "empty_form_requires_entity"
 msgstr "Select an entity before managing accounts."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:352
+#, elixir-autogen
 msgid "empty_institution_accounts"
 msgstr "No institution accounts for this entity yet."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:355
+#, elixir-autogen
 msgid "empty_institution_accounts_archived"
 msgstr "No archived institution accounts for this entity."
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:51
+#, elixir-autogen
 msgid "empty_no_entities"
 msgstr "Create an entity first to scope accounts correctly."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:363
+#, elixir-autogen
 msgid "empty_system_managed_accounts"
 msgstr "No system-managed accounts for this entity yet."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:366
+#, elixir-autogen
 msgid "empty_system_managed_accounts_archived"
 msgstr "No archived system-managed accounts for this entity."
 
+#: lib/aurum_finance_web/live/accounts_live.ex:113
+#, elixir-autogen
 msgid "flash_account_archived"
 msgstr "Account archived"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:160
+#, elixir-autogen
 msgid "flash_account_created"
 msgstr "Account created"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:126
+#, elixir-autogen
 msgid "flash_account_unarchived"
 msgstr "Account unarchived"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:159
+#, elixir-autogen
 msgid "flash_account_updated"
 msgstr "Account updated"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:178
+#, elixir-autogen
 msgid "flash_audit_logging_failed"
 msgstr "The account changed, but audit logging failed."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:291
+#: lib/aurum_finance_web/components/accounts_components.ex:308
+#, elixir-autogen
 msgid "label_account_type"
 msgstr "Account type"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:275
+#, elixir-autogen
 msgid "label_category_type"
 msgstr "Category type"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:102
+#: lib/aurum_finance_web/components/accounts_components.ex:246
+#, elixir-autogen
 msgid "label_currency"
 msgstr "Currency"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:57
+#, elixir-autogen
 msgid "label_current_entity"
 msgstr "Current entity"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:29
+#, elixir-autogen
 msgid "label_entity"
 msgstr "Entity"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:349
+#, elixir-autogen
 msgid "label_entity_scope"
 msgstr "Entity scope"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:118
+#: lib/aurum_finance_web/components/accounts_components.ex:323
+#, elixir-autogen
 msgid "label_institution"
 msgstr "Institution"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:333
+#, elixir-autogen
 msgid "label_institution_account_ref"
 msgstr "Institution account reference"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:229
+#, elixir-autogen
 msgid "label_management_group"
 msgstr "Management group"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:239
+#, elixir-autogen
 msgid "label_name"
 msgstr "Name"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:127
+#, elixir-autogen
 msgid "label_normal_balance"
 msgstr "Normal balance"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:342
+#, elixir-autogen
 msgid "label_notes"
 msgstr "Notes"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:109
+#: lib/aurum_finance_web/components/accounts_components.ex:261
+#, elixir-autogen
 msgid "label_operational_subtype"
 msgstr "Operational subtype"
 
+#: lib/aurum_finance_web/components/badge_component.ex:89
+#, elixir-autogen
 msgid "management_group_category"
 msgstr "Category"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:424
+#, elixir-autogen
 msgid "management_group_category_hint"
 msgstr "Income and expense accounts kept as ledger categories."
 
+#: lib/aurum_finance_web/components/badge_component.ex:87
+#, elixir-autogen
 msgid "management_group_institution"
 msgstr "Institution"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:421
+#, elixir-autogen
 msgid "management_group_institution_hint"
 msgstr "Bank, broker, wallet, credit, and other operational accounts."
 
+#: lib/aurum_finance_web/components/badge_component.ex:92
+#, elixir-autogen
 msgid "management_group_system_managed"
 msgstr "System-managed"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:427
+#, elixir-autogen
 msgid "management_group_system_managed_hint"
 msgstr "Technical accounts such as opening balances and FX support."
 
+#: lib/aurum_finance_web/components/badge_component.ex:94
+#, elixir-autogen
 msgid "management_group_unknown"
 msgstr "Unknown"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:437
+#, elixir-autogen
 msgid "normal_balance_credit"
 msgstr "Credit"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:436
+#, elixir-autogen
 msgid "normal_balance_debit"
 msgstr "Debit"
 
+#: lib/aurum_finance_web/components/badge_component.ex:152
+#, elixir-autogen
 msgid "operational_subtype_bank_checking"
 msgstr "Bank checking"
 
+#: lib/aurum_finance_web/components/badge_component.ex:155
+#, elixir-autogen
 msgid "operational_subtype_bank_savings"
 msgstr "Bank savings"
 
+#: lib/aurum_finance_web/components/badge_component.ex:160
+#, elixir-autogen
 msgid "operational_subtype_brokerage_cash"
 msgstr "Brokerage cash"
 
+#: lib/aurum_finance_web/components/badge_component.ex:163
+#, elixir-autogen
 msgid "operational_subtype_brokerage_securities"
 msgstr "Brokerage securities"
 
+#: lib/aurum_finance_web/components/badge_component.ex:157
+#, elixir-autogen
 msgid "operational_subtype_cash"
 msgstr "Cash"
 
+#: lib/aurum_finance_web/components/badge_component.ex:169
+#, elixir-autogen
 msgid "operational_subtype_credit_card"
 msgstr "Credit card"
 
+#: lib/aurum_finance_web/components/badge_component.ex:166
+#, elixir-autogen
 msgid "operational_subtype_crypto_wallet"
 msgstr "Crypto wallet"
 
+#: lib/aurum_finance_web/components/badge_component.ex:171
+#, elixir-autogen
 msgid "operational_subtype_loan"
 msgstr "Loan"
 
+#: lib/aurum_finance_web/components/badge_component.ex:174
+#, elixir-autogen
 msgid "operational_subtype_other_asset"
 msgstr "Other asset"
 
+#: lib/aurum_finance_web/components/badge_component.ex:177
+#, elixir-autogen
 msgid "operational_subtype_other_liability"
 msgstr "Other liability"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:36
+#, elixir-autogen
 msgid "option_select_entity"
 msgstr "Select entity"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:3
+#: lib/aurum_finance_web/live/accounts_live.html.heex:125
+#, elixir-autogen
 msgid "page_subtitle"
 msgstr "Canonical ledger accounts managed through institution, category, and system surfaces"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:30
+#: lib/aurum_finance_web/live/accounts_live.html.heex:2
+#, elixir-autogen
 msgid "page_title"
 msgstr "Accounts"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:349
+#, elixir-autogen
 msgid "panel_edit_account"
 msgstr "Edit account"
 
+#: lib/aurum_finance_web/live/accounts_live.ex:346
+#, elixir-autogen
 msgid "panel_new_account"
 msgstr "New %{group} account"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:29
+#, elixir-autogen
 msgid "section_accounts"
 msgstr "Accounts"
 
+#: lib/aurum_finance_web/live/accounts_live.html.heex:89
+#, elixir-autogen
 msgid "section_guidance"
 msgstr "How to use accounts"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:95
+#, elixir-autogen
 msgid "status_archived"
 msgstr "Archived"
 
+#: lib/aurum_finance_web/components/accounts_components.ex:309
+#, elixir-autogen
 msgid "tooltip_field_account_type"
 msgstr "Canonical ledger type used for balance behavior. For institution accounts it is derived automatically from the subtype and becomes immutable after creation."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:276
+#, elixir-autogen
 msgid "tooltip_field_category_type"
 msgstr "Choose whether this category account records income or expense activity. These remain real ledger accounts, not labels."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:247
+#, elixir-autogen
 msgid "tooltip_field_currency"
 msgstr "Native currency of the account. It defaults from the selected entity country and becomes immutable after creation, so choose the real operating currency."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:324
+#, elixir-autogen
 msgid "tooltip_field_institution"
 msgstr "Human-readable institution or platform name, such as Mercury, Fidelity, or Chase. Useful when multiple accounts share the same subtype."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:334
+#, elixir-autogen
 msgid "tooltip_field_institution_account_ref"
 msgstr "Non-sensitive account reference, usually the last 4 digits or an internal nickname. Avoid storing full account numbers here."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:230
+#, elixir-autogen
 msgid "tooltip_field_management_group"
 msgstr "Controls where the account is managed in the product: Institution, Category, or System-managed. It does not replace ledger semantics."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:343
+#, elixir-autogen
 msgid "tooltip_field_notes"
 msgstr "Optional operational context for humans, such as reconciliation guidance or intended usage. Keep secrets and full account numbers out of notes."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:262
+#, elixir-autogen
 msgid "tooltip_field_operational_subtype"
 msgstr "Operational shape of the account, such as checking, brokerage cash, or credit card. This drives the derived account type and later workflow behavior."
 
+#: lib/aurum_finance_web/components/accounts_components.ex:121
+#: lib/aurum_finance_web/components/badge_component.ex:146
+#, elixir-autogen
 msgid "value_not_applicable"
 msgstr "Not applicable"
 
+#: lib/aurum_finance_web/components/badge_component.ex:126
+#, elixir-autogen
 msgid "value_pending"
 msgstr "Pending"
+
+#: lib/aurum_finance_web/components/accounts_components.ex:355
+#, elixir-autogen, elixir-format
+msgid "btn_clear"
+msgstr ""

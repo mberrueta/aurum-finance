@@ -1,0 +1,152 @@
+<div id="transactions-page">
+  <.page_header title={dgettext("transactions", "page_title")}>
+    <:subtitle>{dgettext("transactions", "page_subtitle")}</:subtitle>
+  </.page_header>
+
+  <div class="space-y-4">
+    <.au_card>
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+          <div class="flex flex-1 flex-col gap-3 lg:flex-row lg:items-center">
+            <.form
+              for={%{}}
+              as={:entity_scope}
+              id="transactions-entity-selector"
+              phx-change="select_entity"
+              class="min-w-0 lg:w-72"
+            >
+              <label
+                for="transactions-entity-id"
+                class="text-[11px] uppercase tracking-[0.18em] text-white/45"
+              >
+                {dgettext("transactions", "label_entity")}
+              </label>
+              <select
+                id="transactions-entity-id"
+                name="entity_id"
+                class="mt-2 w-full rounded-xl border border-white/10 bg-[#0b1020] px-3 py-2 text-sm text-white/90 outline-none transition focus:border-white/30"
+              >
+                <option value="">{dgettext("transactions", "option_select_entity")}</option>
+                <option
+                  :for={entity <- @entities}
+                  value={entity.id}
+                  selected={!is_nil(@current_entity) and @current_entity.id == entity.id}
+                >
+                  {entity.name}
+                </option>
+              </select>
+            </.form>
+
+            <div class="min-w-0 flex-1">
+              <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+                {dgettext("transactions", "filter_date")}
+              </div>
+              <div class="mt-2 flex flex-wrap gap-2">
+                <button
+                  :for={{label, value} <- date_preset_options()}
+                  id={"transactions-date-preset-#{value}"}
+                  type="button"
+                  phx-click="set_date_preset"
+                  phx-value-preset={value}
+                  class={date_preset_button_class(@filters.date_preset == value)}
+                >
+                  {label}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 self-start xl:self-center">
+            <.badge variant={:purple}>{length(@transactions)}</.badge>
+            <button
+              id="transactions-toggle-filters"
+              type="button"
+              phx-click="toggle_filters"
+              class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/[0.06]"
+            >
+              {filters_toggle_label(@filters_expanded)}
+            </button>
+          </div>
+        </div>
+
+        <.form
+          :if={@filters_expanded}
+          for={@filters_form}
+          id="transactions-filter-form"
+          phx-change="filter"
+          class="grid gap-4 rounded-2xl border border-white/8 bg-white/[0.025] p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+        >
+          <input type="hidden" name="filters[date_preset]" value={@filters.date_preset} />
+
+          <div>
+            <label for="filters_account_id" class="block text-sm font-medium text-white/88">
+              {dgettext("transactions", "filter_account")}
+            </label>
+            <.input
+              field={@filters_form[:account_id]}
+              type="select"
+              options={account_filter_options(@accounts)}
+            />
+          </div>
+
+          <div>
+            <label for="filters_source_type" class="block text-sm font-medium text-white/88">
+              {dgettext("transactions", "filter_source")}
+            </label>
+            <.input
+              field={@filters_form[:source_type]}
+              type="select"
+              options={source_type_filter_options()}
+            />
+          </div>
+
+          <label class="flex items-center gap-3 pt-7 text-sm text-white/80">
+            <input
+              id="filters-include-voided"
+              type="checkbox"
+              name="filters[include_voided]"
+              value="true"
+              checked={@filters.include_voided}
+              class="size-4 rounded border border-white/15 bg-[#0b1020]"
+            />
+            <span>{dgettext("transactions", "filter_include_voided")}</span>
+          </label>
+        </.form>
+      </div>
+    </.au_card>
+
+    <.au_card>
+      <:header>
+        <span>{dgettext("transactions", "page_title")}</span>
+      </:header>
+
+      <div :if={@current_entity == nil}>
+        <.empty_state text={dgettext("transactions", "empty_select_entity")} />
+      </div>
+
+      <div :if={@current_entity != nil and @transactions == []}>
+        <.empty_state text={dgettext("transactions", "empty_transactions")} />
+      </div>
+
+      <div :if={@transactions != []} class="overflow-x-auto">
+        <table class="au-table">
+          <thead>
+            <tr>
+              <th>{dgettext("transactions", "col_date")}</th>
+              <th>{dgettext("transactions", "col_description")}</th>
+              <th>{dgettext("transactions", "col_source")}</th>
+              <th>{dgettext("transactions", "col_postings")}</th>
+              <th>{dgettext("transactions", "col_status")}</th>
+            </tr>
+          </thead>
+          <.tx_row
+            :for={transaction <- @transactions}
+            id={"transaction-#{transaction.id}"}
+            transaction={transaction}
+            expanded_transaction_id={@expanded_transaction_id}
+          />
+        </table>
+      </div>
+    </.au_card>
+  </div>
+</div>

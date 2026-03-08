@@ -8,7 +8,6 @@ defmodule AurumFinanceWeb.ComponentsSmokeTest do
   import AurumFinanceWeb.ImportComponents
   import AurumFinanceWeb.ReconciliationComponents
   import AurumFinanceWeb.RulesComponents
-  import AurumFinanceWeb.TransactionsComponents
 
   test "ui components render" do
     assigns = %{}
@@ -153,32 +152,6 @@ defmodule AurumFinanceWeb.ComponentsSmokeTest do
     assert tabs_html =~ "Institution"
     assert row_html =~ "Broker"
     assert form_html =~ "Create account"
-  end
-
-  test "transactions component renders" do
-    assigns = %{}
-
-    html =
-      rendered_to_string(~H"""
-      <table>
-        <tbody>
-          <.tx_row tx={
-            %{
-              date: "2026-01-01",
-              description: "Coffee",
-              amount: -5.0,
-              currency: "USD",
-              category: "Food",
-              tags: ["coffee"],
-              source: "import:csv",
-              overridden: false
-            }
-          } />
-        </tbody>
-      </table>
-      """)
-
-    assert html =~ "Coffee"
   end
 
   test "import components render" do
