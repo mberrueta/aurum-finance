@@ -139,7 +139,7 @@ You MUST:
 ```bash
 cat llms/tasks/[NNN]_[feature]/[NN]_[task].md
 # or
-cat llms/specs/[NNN]_[feature].md
+cat llms/tasks/[NNN]_[feature].md
 ```
 
 **1.2 Discover Existing Patterns**

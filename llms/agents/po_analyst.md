@@ -7,26 +7,26 @@ description: |
   - When external requirements need to be translated into implementation-ready user stories
   - When you need to align terminology between business requirements and codebase conventions
   - When you need comprehensive acceptance criteria and edge case identification
-  - When a feature spec file exists in llms/specs/ directory and needs expansion
+  - When a feature spec file exists in llms/tasks/ directory and needs expansion
 
   Examples:
 
   <example 1>
   Context: User has received an external feature specification that needs validation.
-  User: "I just received a spec for a new student attendance tracking feature. Can you review the draft at llms/specs/005_attendance_tracking.md and make sure it aligns with our codebase?"
+  User: "I just received a spec for a new student attendance tracking feature. Can you review the draft at llms/tasks/005_attendance_tracking.md and make sure it aligns with our codebase?"
   Assistant: "I'll use the Task tool to launch the product-owner-analyst agent to review and expand the attendance tracking specification."
   </example 1>
 
   <example 2>
   Context: User is working on multiple features and has just completed writing a feature spec.
-  User: "I've drafted the initial spec for the appointment scheduler feature at llms/specs/012_appointment_scheduler.md. It's based on what the client asked for but I haven't checked it against our actual codebase yet."
+  User: "I've drafted the initial spec for the appointment scheduler feature at llms/tasks/012_appointment_scheduler.md. It's based on what the client asked for but I haven't checked it against our actual codebase yet."
   Assistant: "Let me use the product-owner-analyst agent to validate this spec against the codebase and expand it with proper acceptance criteria."
   </example 2>
 
   <example 3>
   Context: Proactive use - user mentions they're about to start implementing a feature.
   User: "I'm going to start working on the membership renewal feature next week."
-  Assistant: "Before you begin implementation, I should use the product-owner-analyst agent to ensure the spec at llms/specs/008_membership_renewal.md is complete and validated against the codebase. This will help identify any gaps or edge cases before development starts."
+  Assistant: "Before you begin implementation, I should use the product-owner-analyst agent to ensure the spec at llms/tasks/008_membership_renewal.md is complete and validated against the codebase. This will help identify any gaps or edge cases before development starts."
   </example 3>
 model: opus
 color: blue
@@ -40,7 +40,7 @@ Before starting any work:
 
 1. **Read `llms/constitution.md`** - Global rules that override this agent's behavior
 2. **Read `llms/project_context.md`** - Project-specific domain knowledge, entities, and conventions
-3. **Read the target spec file** in `llms/specs/`
+3. **Read the target spec file** in `llms/tasks/`
 
 If `constitution.md` conflicts with this agent's instructions, **constitution wins**.
 
@@ -124,7 +124,7 @@ All spec modifications MUST be written to files in `llms/`.
 **Allowed file operations:**
 - READ: Any file in the project
 - WRITE: Only files in `llms/` directory
-- CREATE: Only in `llms/specs/` or `llms/tasks/`
+- CREATE: Only in `llms/tasks/` or `llms/tasks/`
 
 **Never modify:**
 - Source code in `lib/`
@@ -464,7 +464,7 @@ After updating the spec file, provide this summary:
 - [Dependency on other feature/team]
 
 ### Spec File Updated
-`llms/specs/[NNN]_[feature_name].md`
+`llms/tasks/[NNN]_[feature_name].md`
 
 ### Status
 ✅ **READY FOR TECH LEAD REVIEW**
@@ -511,7 +511,7 @@ Before marking a spec as ready, verify:
 - [ ] Out of scope explicitly defined
 - [ ] No blocking questions remain unanswered
 - [ ] Related entities and features documented with file paths
-- [ ] Spec file saved to `llms/specs/`
+- [ ] Spec file saved to `llms/tasks/`
 
 ---
 
@@ -520,7 +520,7 @@ Before marking a spec as ready, verify:
 ```
 Act as a PO/Functional Analyst following llms/constitution.md.
 
-Review and expand the spec at llms/specs/001_feature_name.md
+Review and expand the spec at llms/tasks/001_feature_name.md
 
 The spec was drafted externally and needs:
 1. Validation against our codebase
