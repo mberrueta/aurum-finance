@@ -248,34 +248,41 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
-- [What was actually done]
+- Added schema unit tests for `AurumFinance.Ledger.Transaction` and `AurumFinance.Ledger.Posting`.
+- Consolidated transaction context coverage into `test/aurum_finance/ledger_test.exs` and removed the temporary `ledger_transactions_test.exs`.
+- Expanded `TransactionsLive` coverage for empty state, compact URL hydration, source filtering, include-voided behavior, and the read-only invariant.
+- Added `docs/qa/test_plan.md` to map scenario groups to concrete test files.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `test/aurum_finance/ledger/transaction_test.exs`
+- `test/aurum_finance/ledger/posting_test.exs`
+- `docs/qa/test_plan.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| DB-level zero-sum trigger coverage is no longer applicable | The trigger was intentionally removed earlier in this PR and the invariant now lives in the app layer only |
+| Transactions LiveView date filtering should be tested through URL presets instead of `from/to` inputs | The implemented UI uses compact `q=` filters plus `this_week` / `this_month` / `this_year` / `all` presets |
+| Validation assertions should follow the app's current mix of gettext keys and translated strings | Existing schemas are not fully uniform yet, so tests must lock the real current contract |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Moved transaction integration coverage into `ledger_test.exs` and deleted `ledger_transactions_test.exs` | Keeping the extra file | The task explicitly asked for context-level coverage in `ledger_test.exs`; consolidating reduces duplication |
+| Added `docs/qa/test_plan.md` with scenario-group mapping instead of a line-by-line user-story matrix | No plan file | The QA agent instructions explicitly require a test plan artifact |
+| Tested read-only invariant by checking absence of transaction mutation affordances, not every `delete` attribute in the DOM | Broad HTML substring blocking | The app shell includes a logout link with `data-method="delete"`, so broad delete assertions are noisy and incorrect |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- Task spec still referenced a DB trigger and old LiveView date-range UI. Resolution: covered the implemented behavior and documented the divergence in `docs/qa/test_plan.md`.
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
