@@ -39,6 +39,13 @@ AurumFinance is a self-hosted personal finance operating system focused on:
 - Use `Req` for HTTP integrations.
 - Run `mix precommit` before finishing tasks.
 - Public ledger/account query APIs should require explicit entity scope by default.
+- Ledger posting sign convention is internal and fixed:
+  - positive amount = debit
+  - negative amount = credit
+- Postings do not store `currency_code` or `entity_id`:
+  - effective currency comes from `posting.account.currency_code`
+  - entity scope comes from `transaction.entity_id`
+- Ledger balances are derived on read from postings; there is no cached balance field in the write model today.
 - Accounts use a dual classification model:
   - `account_type` for accounting semantics
   - `operational_subtype` for operational meaning

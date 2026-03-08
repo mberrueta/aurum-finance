@@ -205,34 +205,87 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
-- [What was actually done]
+- Reviewed the ledger primitives implementation against the 7 requested security/architecture categories.
+- Verified migration shape, schema shape, Ledger context behavior, and test coverage.
+- Compared the implemented model with ADR-0008, ADR-0009, and ADR-0018.
+- Created downstream handoff notes in `llms/tasks/012_ledger_primitives/04_handoff_notes.md`.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `llms/tasks/012_ledger_primitives/04_handoff_notes.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| The current implementation is the review target even where it intentionally diverges from the original task plan | This PR already removed the DB trigger by product direction; the review must assess the code that actually exists |
+| A missing DB trigger is a Medium issue, not High | Application-level validation, transactional writes, and test coverage still protect normal app paths; the gap is in defense-in-depth against direct DB writes |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Recorded one Medium FAIL for the missing DB trigger instead of forcing PASS against the outdated plan | Mark everything PASS, or reopen implementation here | The task explicitly asks for PASS/FAIL findings with evidence; the code no longer matches the original two-layer invariant requirement |
+| Treated the rest of the review as PASS when enforced by application code + tests | Requiring DB-only enforcement for all integrity checks | The implemented architecture clearly centralizes writes in the Ledger context and the current tests verify those invariants |
+
+### Security / Architecture Findings
+
+#### 1. Entity Scoping Discipline
+- PASS: `get_transaction!/2` requires `entity_id` and scopes by `transaction.entity_id` in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L369).
+- PASS: `list_transactions/1` requires explicit entity scope via `require_entity_scope!/2` in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L395) and [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L570).
+- PASS: `create_transaction/2` validates that all posting accounts belong to the same entity in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L784).
+- PASS: FK on `transactions.entity_id` exists in [20260307203018_create_transactions_and_postings.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/priv/repo/migrations/20260307203018_create_transactions_and_postings.exs#L6).
+- PASS: entity-scoped indexes exist in [20260307203018_create_transactions_and_postings.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/priv/repo/migrations/20260307203018_create_transactions_and_postings.exs#L17).
+
+#### 2. Zero-Sum Invariant Integrity
+- PASS: application-level zero-sum validation groups by `account.currency_code` loaded in one query in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L743) and [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L803).
+- PASS: account loading is batched with `WHERE id IN ^account_ids` in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L743).
+- FAIL, Medium: there is no DB-level trigger anymore, so direct SQL writes are no longer protected by a second enforcement layer. Evidence: the migration only defines tables/indexes in [20260307203018_create_transactions_and_postings.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/priv/repo/migrations/20260307203018_create_transactions_and_postings.exs).
+  Recommended fix: add a deferred DB constraint trigger or an equivalent DB-side invariant if defense-in-depth against direct SQL manipulation is still required.
+
+#### 3. Posting Immutability
+- PASS: no update/delete API for postings exists in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex).
+- PASS: `postings` schema has no `updated_at`, `currency_code`, or `entity_id` in [posting.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/posting.ex#L21).
+- PASS: `transactions` schema has no `updated_at`, `memo`, or `status` in [transaction.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/transaction.ex#L24).
+- PASS: no `Repo.update` or `Repo.delete` targets postings; inserts happen in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L848).
+
+#### 4. Transaction Lifecycle Integrity
+- PASS: there is no hard-delete path for transactions in the Ledger context.
+- PASS: `voided_at` is the only void marker and immutable fields are guarded in [transaction.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/transaction.ex#L84).
+- PASS: double-void is rejected in [transaction.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/transaction.ex#L154) and exercised in [ledger_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ledger_test.exs#L655).
+- PASS: void-and-reverse runs atomically through `Repo.transaction` in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L888).
+
+#### 5. Audit Completeness
+- PASS: create emits `entity_type: "transaction"` and `action: "created"` in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L920).
+- PASS: void emits `voided` for the original and `created` for the reversal in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L932) and [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L981).
+- PASS: audit snapshots include posting summaries in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L504).
+- PASS: posting snapshots contain account ids and amounts only; no obvious PII is included.
+
+#### 6. Input Validation
+- PASS: transaction description length is constrained in [transaction.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/transaction.ex#L91).
+- PASS: `source_type` is restricted by `Ecto.Enum` in [transaction.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/transaction.ex#L14).
+- PASS: posting amounts use `:decimal` in [posting.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger/posting.ex#L22).
+- PASS: queries are parameterized through Ecto; no raw SQL or string interpolation path was found in the Ledger context.
+- PASS: FK constraints exist on posting references in [20260307203018_create_transactions_and_postings.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/priv/repo/migrations/20260307203018_create_transactions_and_postings.exs#L25).
+
+#### 7. Balance Derivation Correctness
+- PASS: `get_account_balance/2` joins accounts for currency and transactions for `as_of_date` filtering in [ledger.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ledger.ex#L451).
+- PASS: it returns `%{}` when no postings exist, covered in [ledger_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ledger_test.exs#L279).
+- PASS: there is no FX conversion logic in the Ledger context.
+- PASS: the query is read-only and side-effect free.
+
+### Overall Decision
+- PASS with 1 Medium finding.
+- No Critical or High findings remain unresolved.
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- The task document still assumes a DB trigger that was intentionally removed earlier in the PR. Resolution: recorded as a Medium FAIL in the review instead of forcing the implementation back in this task.
 
 ### Questions for Human
-1. [Question needing human input]
+1. Do you want to keep the current app-only zero-sum enforcement as the final architecture, or should a future issue restore a DB-side safety net?
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

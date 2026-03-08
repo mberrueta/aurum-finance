@@ -180,34 +180,41 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
-- [What was actually done]
+- Updated `docs/domain-model.md` so the Ledger section now matches the implemented Transaction and Posting model.
+- Updated `docs/adr/0008-ledger-schema-design.md` with additive implementation deviations for Issue #12.
+- Updated `llms/project_context.md` with the transaction/posting conventions now established in code.
+- Reviewed ADR-0002 and ADR-0004 for consistency with the implemented ledger model; no changes were required.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- No new standalone docs files were created.
+- Updated:
+  - `docs/domain-model.md`
+  - `docs/adr/0008-ledger-schema-design.md`
+  - `llms/project_context.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| ADR-0008 should remain mostly conceptual and be corrected through additive deviation notes instead of a rewrite | The task explicitly asked for additive implementation notes, not a replacement of the original ADR |
+| ADR-0002 and ADR-0004 only needed review, not edits | Their core decisions still align with the implemented model once the Ledger-specific docs are corrected elsewhere |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Corrected `docs/domain-model.md` to describe the actual running ledger model, including app-level zero-sum enforcement and `voided_at` semantics | Leaving deferred/aspirational text in place | Downstream tasks need docs they can trust as implementation truth |
+| Documented the missing DB trigger in ADR-0008 deviations instead of pretending the original ADR is fully implemented | Updating ADR text as if the trigger exists | The repository currently enforces the invariant in the app layer only |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- None.
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
