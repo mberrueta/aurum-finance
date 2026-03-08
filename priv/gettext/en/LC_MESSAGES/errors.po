@@ -140,3 +140,30 @@ msgstr "Operational subtype is not allowed for this account type."
 
 msgid "error_account_operational_subtype_required"
 msgstr "Operational subtype is required for asset and liability accounts."
+
+msgid "error_posting_amount_invalid"
+msgstr "Posting amount must be a valid decimal value."
+
+msgid "error_transaction_account_not_found"
+msgstr "All postings must reference existing accounts."
+
+msgid "error_transaction_already_voided"
+msgstr "This transaction has already been voided."
+
+msgid "error_transaction_cross_entity_account"
+msgstr "All posting accounts must belong to the same entity as the transaction."
+
+msgid "error_transaction_correlation_id_reserved"
+msgstr "Correlation ID is reserved for system-generated linked transactions."
+
+msgid "error_transaction_description_length_invalid"
+msgstr "Transaction description must be at most 500 characters."
+
+msgid "error_transaction_immutable_field"
+msgstr "This field cannot be changed after the transaction is created."
+
+msgid "error_transaction_minimum_postings"
+msgstr "A transaction must contain at least two postings."
+
+msgid "error_transaction_unbalanced"
+msgstr "Transaction postings must balance to zero within each currency."

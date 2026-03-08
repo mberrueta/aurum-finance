@@ -137,3 +137,30 @@ msgstr ""
 
 msgid "error_account_operational_subtype_required"
 msgstr ""
+
+msgid "error_posting_amount_invalid"
+msgstr ""
+
+msgid "error_transaction_account_not_found"
+msgstr ""
+
+msgid "error_transaction_already_voided"
+msgstr ""
+
+msgid "error_transaction_cross_entity_account"
+msgstr ""
+
+msgid "error_transaction_correlation_id_reserved"
+msgstr ""
+
+msgid "error_transaction_description_length_invalid"
+msgstr ""
+
+msgid "error_transaction_immutable_field"
+msgstr ""
+
+msgid "error_transaction_minimum_postings"
+msgstr ""
+
+msgid "error_transaction_unbalanced"
+msgstr ""

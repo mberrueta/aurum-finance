@@ -1,6 +1,8 @@
 alias AurumFinance.Currency
 alias AurumFinance.Entities.Entity
+alias AurumFinance.Ledger
 alias AurumFinance.Ledger.Account
+alias AurumFinance.Ledger.Transaction
 alias AurumFinance.Repo
 
 now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
@@ -55,6 +57,16 @@ demo_accounts_by_entity = %{
       notes: "Brokerage settlement cash"
     },
     %{
+      name: "High Yield Savings",
+      management_group: :institution,
+      account_type: :asset,
+      operational_subtype: :bank_savings,
+      currency_code: "USD",
+      institution_name: "Ally",
+      institution_account_ref: "2002",
+      notes: "Reserve cash account"
+    },
+    %{
       name: "Chase Sapphire",
       management_group: :institution,
       account_type: :liability,
@@ -84,6 +96,13 @@ demo_accounts_by_entity = %{
       account_type: :expense,
       currency_code: "USD",
       notes: "Restaurants and groceries"
+    },
+    %{
+      name: "Household",
+      management_group: :category,
+      account_type: :expense,
+      currency_code: "USD",
+      notes: "Home supplies and misc household purchases"
     },
     %{
       name: "Transport",
@@ -232,3 +251,98 @@ Enum.each(entities, fn entity ->
   |> then(&Map.get(demo_accounts_by_entity, &1, []))
   |> Enum.each(&ensure_account.(entity, &1))
 end)
+
+if Repo.aggregate(Transaction, :count, :id) == 0 do
+  personal = Repo.get_by!(Entity, name: "Personal")
+
+  account =
+    fn name ->
+      Repo.get_by!(Account, entity_id: personal.id, name: name)
+    end
+
+  checking = account.("Mercury Checking")
+  savings = account.("High Yield Savings")
+  credit_card = account.("Chase Sapphire")
+  food = account.("Food")
+  household = account.("Household")
+  opening_balances = account.("Opening Balances")
+
+  {:ok, _opening_balance} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -12),
+      description: "Initial checking balance",
+      source_type: :system,
+      postings: [
+        %{account_id: opening_balances.id, amount: Decimal.new("-2500.00")},
+        %{account_id: checking.id, amount: Decimal.new("2500.00")}
+      ]
+    })
+
+  {:ok, voided_source} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -10),
+      description: "Corner market groceries",
+      source_type: :manual,
+      postings: [
+        %{account_id: checking.id, amount: Decimal.new("-45.00")},
+        %{account_id: food.id, amount: Decimal.new("45.00")}
+      ]
+    })
+
+  {:ok, _void_pair} = Ledger.void_transaction(voided_source)
+
+  {:ok, _transfer} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -8),
+      description: "Move cash to savings",
+      source_type: :manual,
+      postings: [
+        %{account_id: checking.id, amount: Decimal.new("-1000.00")},
+        %{account_id: savings.id, amount: Decimal.new("1000.00")}
+      ]
+    })
+
+  {:ok, _card_purchase} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -6),
+      description: "Restaurant dinner",
+      source_type: :manual,
+      postings: [
+        %{account_id: food.id, amount: Decimal.new("85.00")},
+        %{account_id: credit_card.id, amount: Decimal.new("-85.00")}
+      ]
+    })
+
+  {:ok, _card_payment} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -4),
+      description: "Credit card payment",
+      source_type: :manual,
+      postings: [
+        %{account_id: credit_card.id, amount: Decimal.new("500.00")},
+        %{account_id: checking.id, amount: Decimal.new("-500.00")}
+      ]
+    })
+
+  {:ok, _split_purchase} =
+    Ledger.create_transaction(%{
+      entity_id: personal.id,
+      date: Date.add(Date.utc_today(), -2),
+      description: "Superstore run",
+      source_type: :manual,
+      postings: [
+        %{account_id: checking.id, amount: Decimal.new("-150.00")},
+        %{account_id: food.id, amount: Decimal.new("80.00")},
+        %{account_id: household.id, amount: Decimal.new("70.00")}
+      ]
+    })
+
+  IO.puts("seeded transactions for Personal")
+else
+  IO.puts("transactions already exist, skipping transaction seeds")
+end
