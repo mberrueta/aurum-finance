@@ -25,6 +25,12 @@
 | S16-S19: DB immutability triggers for `audit_events`, `postings`, and `transactions` via raw SQL | Integration | `test/aurum_finance/audit_test.exs` |
 | S20-S21: caller migration verification for removed legacy APIs, no default transaction-create audit event, and retained transaction void audit emission | Integration | `test/aurum_finance/audit_test.exs`, `test/aurum_finance/entities_test.exs`, `test/aurum_finance/ledger_test.exs` |
 | S22-S25: query extensions for date range, offset pagination, unknown filters, and distinct entity types | Integration | `test/aurum_finance/audit_test.exs` |
+| S35-S36: Audit log mount, default render, and auth protection | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs`, `test/aurum_finance_web/live/auth_protection_test.exs` |
+| S37-S41: Audit log filter interactions for owner entity, entity type, action, channel, date preset, and clear-filters reset | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs` |
+| S42-S43: Audit log URL hydration and graceful fallback for invalid compact-query values | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs` |
+| S44-S45: Audit log pagination boundaries and page navigation | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs` |
+| S46-S47: Audit log expandable rows, JSON snapshots, and nil-before placeholder rendering | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs` |
+| S48: Audit log empty states and read-only invariant (no mutation controls or write handlers) | LiveView | `test/aurum_finance_web/live/audit_log_live_test.exs` |
 
 ## Audit Trail Notes
 

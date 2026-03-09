@@ -1,9 +1,9 @@
 # Task 07: Audit Log LiveView Tests
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: ✅ COMPLETE
 - **Approved**: [ ] Human sign-off
-- **Blocked by**: Task 06
+- **Blocked by**: None
 - **Blocks**: Task 08
 
 ## Assigned Agent
@@ -51,7 +51,7 @@ Write comprehensive LiveView tests for `AuditLogLive` covering mount, filter int
 - [ ] Selecting an entity type filter updates the URL and filters the displayed events
 - [ ] Selecting an action filter updates the URL and filters the displayed events
 - [ ] Selecting a channel filter updates the URL and filters the displayed events
-- [ ] Entering an entity ID filters to events for that specific record
+- [ ] Selecting an entity filter updates the URL and filters to events owned by that entity
 - [ ] Date preset buttons filter events by date range
 - [ ] Combining multiple filters works correctly
 - [ ] Clearing filters (selecting "All" for each) returns to the unfiltered view
@@ -211,34 +211,42 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Task completed against the current Task 06 implementation, including the reduced v1 audit scope and the user-facing `Entity` selector instead of a raw `Entity ID` input.
 
 ### Work Performed
-- [What was actually done]
+- Recreated `test/aurum_finance_web/live/audit_log_live_test.exs` as a comprehensive async LiveView suite covering mount, filtering, URL hydration, pagination, expandable rows, empty states, and the read-only invariant.
+- Added `/audit-log` to `test/aurum_finance_web/live/auth_protection_test.exs` so route protection is asserted by the shared auth suite.
+- Updated `docs/qa/test_plan.md` to map scenarios S35-S48 to the new audit log LiveView coverage.
+- Verified the full repo with `mix test` and `mix precommit`.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `test/aurum_finance_web/live/audit_log_live_test.exs`
+- Updated `test/aurum_finance_web/live/auth_protection_test.exs`
+- Updated `docs/qa/test_plan.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| Date-preset UI tests should assert URL state and rendered behavior, not historical exclusion across arbitrary dates | Domain context helpers create audit events at `DateTime.utc_now/0`, and immutable audit rows cannot be backdated inside this suite without bypassing the intended task constraints |
+| Using domain contexts to create events and the `Audit` read API only to locate generated event row IDs is acceptable in a LiveView test | The task forbids direct audit inserts, but row-level visibility assertions still need stable DOM targets tied to real audit events |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Reuse the existing auth protection test for `/audit-log` | Duplicate the unauthenticated assertion only inside `audit_log_live_test.exs` | The task explicitly asked to verify the route is included in the shared auth protection coverage |
+| Model the filter as owner-entity selection in the tests | Keep the older raw `entity_id` free-input expectations | Task 06 already moved the UI to a user-facing entity selector while preserving compact UUID filtering in the URL |
+| Keep the suite async | Convert to sync for simpler ordering assumptions | Each scenario creates its own isolated data, and async execution matches the task acceptance criteria |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- The original task text still referred to entering a raw `Entity ID` in the filter. Resolution: aligned the task wording and tests with the implemented entity selector UX while preserving `entity:<uuid>` in the compact URL.
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
