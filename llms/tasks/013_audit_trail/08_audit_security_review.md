@@ -13,7 +13,7 @@
 ```
 Act as a Security Reviewer following llms/constitution.md.
 
-Read and execute Task 07 from llms/tasks/013_audit_trail/07_audit_security_review.md
+Read and execute Task 08 from llms/tasks/013_audit_trail/08_audit_security_review.md
 
 Before starting, read:
 - llms/constitution.md
@@ -23,7 +23,7 @@ Before starting, read:
 ```
 
 ## Objective
-Perform a security audit of the complete audit trail implementation, focusing on: PII redaction enforcement, append-only guarantee integrity, access control on the audit viewer, input validation on filters, and data leakage risks in before/after snapshots. Produce a security findings report with severity ratings and remediation recommendations.
+Perform a security audit of the complete audit trail implementation, focusing on: PII redaction enforcement, append-only guarantee integrity, access control on the audit viewer, input validation on filters, and data leakage risks in before/after snapshots. The review should explicitly respect the reduced v1 scope: operational/manual/admin audit events, not every ledger insert. Produce a security findings report with severity ratings and remediation recommendations.
 
 ## Inputs Required
 
@@ -40,7 +40,7 @@ Perform a security audit of the complete audit trail implementation, focusing on
 
 ## Expected Outputs
 
-- [ ] **Security findings report** written to `llms/tasks/013_audit_trail/07_security_findings.md`
+- [ ] **Security findings report** written to `llms/tasks/013_audit_trail/08_security_findings.md`
 
 ## Acceptance Criteria
 
@@ -123,7 +123,7 @@ Each finding should include:
 
 ### Constraints
 - This is a review task -- no code changes. Findings are documented for remediation in a follow-up.
-- If critical findings are discovered, flag them as blocking for Task 08 (PR review).
+- If critical findings are discovered, flag them as blocking for Task 09 (PR review).
 - Run Sobelow but do not modify `.sobelow-conf` -- only report findings.
 
 ## Execution Instructions
@@ -132,7 +132,7 @@ Each finding should include:
 1. Read all inputs listed above
 2. Systematically review each security area listed in acceptance criteria
 3. Run `mix sobelow --config .sobelow-conf` and capture output
-4. Write findings to `llms/tasks/013_audit_trail/07_security_findings.md`
+4. Write findings to `llms/tasks/013_audit_trail/08_security_findings.md`
 5. Summarize critical/high findings in the Execution Summary
 6. Document all assumptions
 
@@ -141,8 +141,8 @@ After agent completes:
 1. Review the security findings report
 2. Assess severity ratings for accuracy
 3. Decide which findings require remediation before merge (Critical/High) vs. accepted risk (Medium/Low/Informational)
-4. If critical findings exist: reject and request remediation before Task 08
-5. If no critical findings: approve and proceed to Task 08
+4. If critical findings exist: reject and request remediation before Task 09
+5. If no critical findings: approve and proceed to Task 09
 6. If approved: mark `[x]` on "Approved" and update plan.md status
 7. If rejected: add rejection reason and specific feedback
 

@@ -13,37 +13,37 @@
 ```
 Act as a Staff-Level Elixir PR Reviewer following llms/constitution.md.
 
-Read and execute Task 08 from llms/tasks/013_audit_trail/08_audit_pr_review.md
+Read and execute Task 09 from llms/tasks/013_audit_trail/09_audit_pr_review.md
 
 Before starting, read:
 - llms/constitution.md
 - llms/project_context.md
 - llms/tasks/013_audit_trail/plan.md (full spec for design intent verification)
-- llms/tasks/013_audit_trail/07_security_findings.md (security review findings)
+- llms/tasks/013_audit_trail/08_security_findings.md (security review findings)
 - This task file in full
 ```
 
 ## Objective
-Perform a comprehensive PR review of the complete audit trail feature before merge. Verify correctness, design quality, performance, test coverage, code style, and compliance with the constitution. Ensure all security findings from Task 07 have been addressed. Produce a review report with approval/rejection decision.
+Perform a comprehensive PR review of the complete audit trail feature before merge. Verify correctness, design quality, performance, test coverage, code style, and compliance with the constitution. Ensure all security findings from Task 08 have been addressed. Produce a review report with approval/rejection decision.
 
 ## Inputs Required
 
 - [ ] `llms/tasks/013_audit_trail/plan.md` - Full spec and design decisions for intent verification
-- [ ] `llms/tasks/013_audit_trail/07_security_findings.md` - Security findings (from Task 07)
+- [ ] `llms/tasks/013_audit_trail/08_security_findings.md` - Security findings (from Task 08)
 - [ ] All modified/created source files (output of Tasks 01-06)
 - [ ] All test files (output of Tasks 04, 06)
 - [ ] `llms/constitution.md` - Quality gates, conventions, compliance rules
 
 ## Expected Outputs
 
-- [ ] **PR review report** written to `llms/tasks/013_audit_trail/08_pr_review_report.md`
+- [ ] **PR review report** written to `llms/tasks/013_audit_trail/09_pr_review_report.md`
 
 ## Acceptance Criteria
 
 ### Correctness
 - [ ] All design decisions from the plan are correctly implemented (D1-D9)
 - [ ] `with_event/3` and `log_event/1` are fully removed -- no references remain
-- [ ] All domain writes produce atomic audit events
+- [ ] All audited domain writes produce atomic audit events
 - [ ] Append-only enforcement is in place (trigger + no app-level update/delete)
 - [ ] Redaction is applied inside Audit helpers
 - [ ] Date-range and offset filters work correctly
@@ -87,7 +87,7 @@ Perform a comprehensive PR review of the complete audit trail feature before mer
 - [ ] No secrets hardcoded
 - [ ] No debug prints or log noise committed
 - [ ] Migration is reversible
-- [ ] Security findings from Task 07 are resolved or have documented waivers
+- [ ] Security findings from Task 08 are resolved or have documented waivers
 
 ### PR Description Quality
 - [ ] Summary of changes
@@ -100,7 +100,7 @@ The report should include:
 - **Overall assessment**: Approve / Request Changes / Reject
 - **Strengths**: What was done well
 - **Issues found**: Categorized by severity (Must Fix / Should Fix / Nit)
-- **Security findings status**: Which findings from Task 07 are resolved
+- **Security findings status**: Which findings from Task 08 are resolved
 - **Suggested PR description**: Draft for the human to use when creating the PR
 - **Checklist compliance**: Which constitution rules are satisfied
 
@@ -138,7 +138,7 @@ priv/gettext/audit_log.pot
 ### Key Things to Verify via Code Reading
 1. Grep for `with_event` across the entire codebase -- must return zero results
 2. Grep for `log_event` as a public call -- must return zero results (may exist as private helper)
-3. Grep for `Repo.insert` or `Repo.update` inside `entities.ex` and `ledger.ex` -- all domain writes should go through Audit helpers (except within Multi pipelines)
+3. Grep for `Repo.insert` or `Repo.update` inside `entities.ex` and `ledger.ex` -- audited domain writes should go through Audit helpers (except within Multi pipelines); normal transaction/posting creation may remain unaudited by design in v1
 4. Verify the Postgres trigger SQL is syntactically correct
 5. Verify `timestamps(type: :utc_datetime_usec, updated_at: false)` in `AuditEvent`
 
@@ -156,7 +156,7 @@ priv/gettext/audit_log.pot
 4. Read every file listed in "Files to Review"
 5. Grep for `with_event`, `log_event`, and verify removal
 6. Check each acceptance criterion systematically
-7. Write the review report to `llms/tasks/013_audit_trail/08_pr_review_report.md`
+7. Write the review report to `llms/tasks/013_audit_trail/09_pr_review_report.md`
 8. Summarize findings in "Execution Summary"
 
 ### For the Human Reviewer

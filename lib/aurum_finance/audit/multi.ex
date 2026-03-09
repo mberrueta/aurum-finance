@@ -3,8 +3,8 @@ defmodule AurumFinance.Audit.Multi do
   Helpers for appending audit events to an existing `Ecto.Multi` pipeline.
 
   Used by domain contexts that orchestrate multiple steps in a single transaction
-  (e.g., inserting a transaction with postings). The audit event is appended as a
-  named step so it commits atomically with the rest of the pipeline.
+  (e.g., voiding a transaction or applying a manual override). The audit event is
+  appended as a named step so it commits atomically with the rest of the pipeline.
   """
 
   alias AurumFinance.Audit
@@ -42,13 +42,13 @@ defmodule AurumFinance.Audit.Multi do
         actor: "root",
         channel: :web,
         entity_type: "transaction",
-        action: "created"
+        action: "voided"
       }
 
-      {:ok, %{transaction: txn}} =
+      {:ok, %{voided: transaction}} =
         Ecto.Multi.new()
-        |> Ecto.Multi.insert(:transaction, changeset)
-        |> Audit.Multi.append_event(:transaction, nil, meta)
+        |> Ecto.Multi.update(:voided, changeset)
+        |> Audit.Multi.append_event(:voided, before_snapshot, meta)
         |> Repo.transaction()
 
   With a `before` snapshot (update scenario):

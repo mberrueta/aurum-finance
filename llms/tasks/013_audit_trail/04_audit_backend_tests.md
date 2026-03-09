@@ -1,7 +1,7 @@
 # Task 04: Audit Backend Tests — Full Coverage for Foundation Changes
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: ✅ COMPLETE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01, Task 02, Task 03
 - **Blocks**: Task 05
@@ -119,8 +119,8 @@ Create comprehensive test coverage for all audit trail foundation changes: schem
 - [ ] `Entities.archive_entity/2` produces an audit event with `action: "archived"`
 - [ ] `Entities.unarchive_entity/2` produces an audit event with `action: "unarchived"`
 - [ ] `Ledger.create_account/2` produces an audit event with redacted `institution_account_ref`
-- [ ] `Ledger.create_transaction/2` produces an audit event with `entity_type: "transaction"`
-- [ ] `Ledger.void_transaction/2` produces audit events for both the void and the reversal
+- [ ] `Ledger.create_transaction/2` does **not** produce a default audit event
+- [ ] `Ledger.void_transaction/2` produces an audit event for the void action
 - [ ] All audit events produced by callers have the correct `actor` and `channel` values
 
 ### Query Extension Tests

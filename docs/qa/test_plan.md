@@ -23,7 +23,7 @@
 | S06-S15: `Audit` helper atomicity (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`) including rollback on audit failure | Integration | `test/aurum_finance/audit_test.exs` |
 | S26-S34: exhaustive `Audit.Multi.append_event/4` insert/update/archive-style pass/fail/rollback scenarios, inferred vs explicit `entity_id` | Integration | `test/aurum_finance/audit/multi_test.exs` |
 | S16-S19: DB immutability triggers for `audit_events`, `postings`, and `transactions` via raw SQL | Integration | `test/aurum_finance/audit_test.exs` |
-| S20-S21: caller migration verification for removed legacy APIs and ledger transaction/void audit emission | Integration | `test/aurum_finance/audit_test.exs`, `test/aurum_finance/entities_test.exs`, `test/aurum_finance/ledger_test.exs` |
+| S20-S21: caller migration verification for removed legacy APIs, no default transaction-create audit event, and retained transaction void audit emission | Integration | `test/aurum_finance/audit_test.exs`, `test/aurum_finance/entities_test.exs`, `test/aurum_finance/ledger_test.exs` |
 | S22-S25: query extensions for date range, offset pagination, unknown filters, and distinct entity types | Integration | `test/aurum_finance/audit_test.exs` |
 
 ## Audit Trail Notes

@@ -339,13 +339,13 @@ defmodule AurumFinance.Ledger do
   @spec create_transaction(map(), [audit_opt()]) ::
           {:ok, Transaction.t()} | {:error, Ecto.Changeset.t()}
   def create_transaction(attrs, opts \\ []) do
-    audit_metadata = extract_audit_metadata(opts)
+    _audit_metadata = extract_audit_metadata(opts)
     transaction_changeset = Transaction.changeset(%Transaction{}, attrs)
     posting_attrs = posting_attrs(attrs)
 
     case validate_transaction_for_insert(transaction_changeset, posting_attrs) do
       {:ok, validated_changeset, _accounts_by_id} ->
-        persist_transaction(validated_changeset, posting_attrs, audit_metadata)
+        persist_transaction(validated_changeset, posting_attrs)
 
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
@@ -536,8 +536,8 @@ defmodule AurumFinance.Ledger do
   # Transaction persistence (Multi-based)
   # ---------------------------------------------------------------------------
 
-  @dialyzer {:nowarn_function, persist_transaction: 3, persist_void_transaction: 2}
-  defp persist_transaction(validated_changeset, posting_attrs, audit_metadata) do
+  @dialyzer {:nowarn_function, persist_transaction: 2, persist_void_transaction: 2}
+  defp persist_transaction(validated_changeset, posting_attrs) do
     new_multi()
     |> multi_insert(:transaction, validated_changeset)
     |> Ecto.Multi.run(:postings, fn _repo, %{transaction: transaction} ->
@@ -546,13 +546,6 @@ defmodule AurumFinance.Ledger do
     |> Ecto.Multi.run(:transaction_with_postings, fn _repo, %{transaction: transaction} ->
       {:ok, Repo.preload(transaction, :postings)}
     end)
-    |> Audit.Multi.append_event(:transaction_with_postings, nil, %{
-      entity_type: @transaction_entity_type,
-      action: "created",
-      actor: audit_metadata.actor,
-      channel: audit_metadata.channel,
-      serializer: &transaction_snapshot/1
-    })
     |> Repo.transaction()
     |> normalize_multi_transaction_result()
   end
@@ -584,13 +577,6 @@ defmodule AurumFinance.Ledger do
     |> Ecto.Multi.run(:reversal_with_postings, fn _repo, %{reversal: reversal} ->
       {:ok, Repo.preload(reversal, :postings)}
     end)
-    |> Audit.Multi.append_event(:reversal_with_postings, nil, %{
-      entity_type: @transaction_entity_type,
-      action: "created",
-      actor: audit_metadata.actor,
-      channel: audit_metadata.channel,
-      serializer: &transaction_snapshot/1
-    })
     |> Repo.transaction()
     |> normalize_multi_void_result()
   end

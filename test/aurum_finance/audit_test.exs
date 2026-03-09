@@ -357,7 +357,7 @@ defmodule AurumFinance.AuditTest do
       refute function_exported?(Audit, :log_event, 1)
     end
 
-    test "S21: ledger transaction callers emit create, void, and reversal audit events with actor/channel" do
+    test "S21: ledger transaction callers skip create events and keep void audit events with actor/channel" do
       %{entity: entity, checking: checking, expense: expense} = transaction_accounts_fixture()
 
       assert {:ok, transaction} =
@@ -376,32 +376,18 @@ defmodule AurumFinance.AuditTest do
                  channel: :mcp
                )
 
+      assert Audit.list_audit_events(entity_id: transaction.id) == []
+
       assert {:ok, %{voided: voided, reversal: reversal}} =
                Ledger.void_transaction(transaction, actor: "scheduler", channel: :system)
 
-      events =
-        Audit.list_audit_events()
-        |> Enum.filter(&(&1.entity_type == "transaction"))
-        |> Enum.sort_by(& &1.occurred_at, {:asc, DateTime})
-
-      created = Enum.find(events, &(&1.entity_id == transaction.id and &1.action == "created"))
-      voided_event = Enum.find(events, &(&1.entity_id == voided.id and &1.action == "voided"))
-
-      reversal_event =
-        Enum.find(events, &(&1.entity_id == reversal.id and &1.action == "created"))
-
-      assert created.actor == "person"
-      assert created.channel == :mcp
-      assert created.after["description"] == "Caller coverage"
+      [voided_event] = Audit.list_audit_events(entity_id: voided.id)
 
       assert voided_event.actor == "scheduler"
       assert voided_event.channel == :system
       assert voided_event.before["voided_at"] == nil
       assert voided_event.after["voided_at"]
-
-      assert reversal_event.actor == "scheduler"
-      assert reversal_event.channel == :system
-      assert reversal_event.after["correlation_id"] == reversal.correlation_id
+      assert Audit.list_audit_events(entity_id: reversal.id) == []
     end
   end
 

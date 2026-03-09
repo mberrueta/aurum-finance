@@ -31,6 +31,8 @@ Enforce database-level immutability across all financial fact tables in a single
 
 **Schema note:** `transactions` has no `status` column. Void state is represented entirely by `voided_at`. The set-once trigger is the DB-level consistency rule replacing what would otherwise be a status/voided_at CHECK constraint.
 
+**Scope note:** these protections exist for ledger correctness and tamper resistance. They do not require normal `transaction` or `posting` creation to emit `audit_events` in v1.
+
 ## Inputs Required
 
 - [ ] `llms/tasks/013_audit_trail/plan.md` — Full spec and design decisions (especially D7)

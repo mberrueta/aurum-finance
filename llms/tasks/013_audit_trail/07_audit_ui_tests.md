@@ -13,7 +13,7 @@
 ```
 Act as a QA-driven Elixir Test Author following llms/constitution.md.
 
-Read and implement Task 06 from llms/tasks/013_audit_trail/06_audit_ui_tests.md
+Read and implement Task 07 from llms/tasks/013_audit_trail/07_audit_ui_tests.md
 
 Before starting, read:
 - llms/constitution.md
@@ -29,7 +29,7 @@ Write comprehensive LiveView tests for `AuditLogLive` covering mount, filter int
 ## Inputs Required
 
 - [ ] `llms/tasks/013_audit_trail/plan.md` - User stories US-1 to US-5, UX States, edge cases
-- [ ] `lib/aurum_finance_web/live/audit_log_live.ex` - Implementation to test (from Task 05)
+- [ ] `lib/aurum_finance_web/live/audit_log_live.ex` - Implementation to test (from Task 06)
 - [ ] `test/aurum_finance_web/live/transactions_live_test.exs` - Reference pattern for LiveView tests (filter tests, URL hydration, read-only invariant)
 - [ ] `test/support/conn_case.ex` - `log_in_root/1` helper, imported fixtures
 - [ ] `test/support/fixtures.ex` - `entity_fixture/1`, `account_fixture/2`
@@ -162,7 +162,7 @@ entity = entity_fixture(name: "Audit Test Entity")
 # Creates an account AND its audit event
 account = account_fixture(entity, %{name: "Audit Test Account"})
 
-# Creates a transaction AND its audit event
+# Creates a transaction but, in v1, does NOT create a default audit event
 {:ok, transaction} = Ledger.create_transaction(%{
   entity_id: entity.id,
   date: ~D[2026-03-07],
@@ -170,13 +170,16 @@ account = account_fixture(entity, %{name: "Audit Test Account"})
   source_type: :manual,
   postings: [...]
 })
+
+# Creates an account AND its audit event
+account = account_fixture(entity, %{name: "Audit Test Account"})
 ```
 
 ### Constraints
 - Do not test the Audit context API here -- that is covered in Task 04
 - Focus on LiveView behavior: rendering, interactions, URL state
 - Use `has_element?/2` and `render/1` for assertions (not raw HTML string matching where avoidable)
-- Element IDs should match what Task 05 implemented -- coordinate with the LiveView implementation
+- Element IDs should match what Task 06 implemented -- coordinate with the LiveView implementation
 
 ## Execution Instructions
 

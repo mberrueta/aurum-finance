@@ -283,7 +283,7 @@ defmodule AurumFinance.LedgerTest do
   end
 
   describe "create_transaction/2" do
-    test "creates a balanced transaction with preloaded postings and audit event" do
+    test "creates a balanced transaction with preloaded postings and no default audit event" do
       %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
 
       assert {:ok, transaction} =
@@ -307,12 +307,8 @@ defmodule AurumFinance.LedgerTest do
       assert Enum.count(transaction.postings) == 2
       refute Enum.any?(transaction.postings, &Ecto.assoc_loaded?(&1.account))
 
-      [event] = Audit.list_audit_events(entity_id: transaction.id)
-      assert event.entity_type == "transaction"
-      assert event.action == "created"
-      assert event.actor == "person"
-      assert event.channel == :web
-      assert event.after["description"] == "Lunch"
+      assert Audit.list_audit_events(entity_id: transaction.id) == []
+      assert Audit.list_audit_events(entity_type: "posting") == []
     end
 
     test "creates a split transaction with three postings" do
@@ -627,7 +623,7 @@ defmodule AurumFinance.LedgerTest do
   end
 
   describe "void_transaction/2" do
-    test "marks the original voided, creates a reversal, and emits audit events" do
+    test "marks the original voided, creates a reversal, and emits a void audit event" do
       %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
       transaction = create_balanced_transaction(checking, groceries, %{description: "Dinner"})
 
@@ -643,11 +639,14 @@ defmodule AurumFinance.LedgerTest do
       assert Enum.map(reversal.postings, &{&1.account_id, &1.amount}) ==
                Enum.map(transaction.postings, &{&1.account_id, Decimal.negate(&1.amount)})
 
-      actions =
-        Audit.list_audit_events(entity_id: transaction.id)
-        |> Enum.map(& &1.action)
-
-      assert "voided" in actions
+      [event] = Audit.list_audit_events(entity_id: transaction.id)
+      assert event.action == "voided"
+      assert event.actor == "person"
+      assert event.channel == :web
+      assert event.before["voided_at"] == nil
+      assert event.after["voided_at"]
+      assert Audit.list_audit_events(entity_id: reversal.id) == []
+      assert Audit.list_audit_events(entity_type: "posting") == []
       assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("0.00")}
     end
 

@@ -1,14 +1,20 @@
-# 013 — Audit Trail: Immutable Change Log for All Domain Entities
+# 013 — Audit Trail: Operational Audit Log with Immutable Ledger Facts
 
 **GitHub issue**: #13
-**Status**: Draft
+**Status**: In Progress
 **Blocked by**: Ledger primitives (resolved — `Ledger` context, `Transaction`, `Posting`, `Account` schemas exist on `feat/transactions-model`)
+
+## Progress Snapshot
+
+- Completed: Task 01, Task 02, Task 03, Task 04
+- Pending: Task 05, Task 06, Task 07, Task 08, Task 09, Task 10
+- Note: Task statuses above reflect implementation progress in this branch; human sign-off checkboxes remain unset until review.
 
 ---
 
 ## Goal
 
-Deliver a generic, append-only audit trail that records every domain write across all contexts with full before/after snapshots, redaction of sensitive fields, and a dedicated read-only audit log page. The foundation already exists: the `AurumFinance.Audit` context, `AurumFinance.Audit.AuditEvent` schema, and the `audit_events` table are implemented and wired into both the `Entities` and `Ledger` contexts. This issue completes the remaining work: hardening the existing foundation for production use (atomicity, immutability enforcement, metadata field), adding date-range filtering, and building the dedicated audit log viewer at `/audit-log`.
+Deliver a generic, append-only audit trail for operationally meaningful changes: manual actions, administrative updates, configuration/rules/import provenance, and selected transaction lifecycle actions. The foundation already exists: the `AurumFinance.Audit` context, `AurumFinance.Audit.AuditEvent` schema, and the `audit_events` table are implemented and wired into both the `Entities` and `Ledger` contexts. This issue completes the remaining work: hardening the existing foundation for production use (immutability enforcement, metadata field, coherent scope), adding date-range filtering, and building the dedicated audit log viewer at `/audit-log`.
 
 ---
 
@@ -25,7 +31,10 @@ Deliver a generic, append-only audit trail that records every domain write acros
 
 - Harden the existing `AuditEvent` schema with a `metadata` map field (catch-all for context-specific data that does not belong in `before`/`after`)
 - Enforce database-level immutability across all financial fact tables: `audit_events` (append-only), `postings` (append-only), `transactions` (protected facts — DELETE blocked, UPDATE restricted to lifecycle fields `voided_at`/`correlation_id` only, `voided_at` set-once enforced by trigger)
-- Replace `Audit.with_event/3` and `Audit.log_event/1` with the new helper API (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`). All domain writes + audit appends become atomic. All existing callers are migrated — no backward compatibility shim.
+- Keep `entities` and `accounts` lifecycle changes audited
+- Keep transaction audit coverage only for selected operational/lifecycle actions in v1 (currently `voided`; future candidates include classification/manual override and import provenance)
+- Do **not** emit audit events for normal `transaction` creation or individual `posting` creation in v1
+- Replace `Audit.with_event/3` and `Audit.log_event/1` with the new helper API (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`) only where audit events are still in scope
 - Add date-range filtering to `Audit.list_audit_events/1` (`:occurred_after`, `:occurred_before`)
 - Build a minimal, read-only Audit Log viewer as a dedicated `AuditLogLive` accessible at `/audit-log`, with filters for entity_type, action, channel, date range, and optional entity_id
 - Document redaction rules and enforce them in the shared `Audit` context
@@ -55,7 +64,7 @@ Deliver a generic, append-only audit trail that records every domain write acros
 | `AurumFinance.Audit` | `lib/aurum_finance/audit.ex` | The audit context — **current**: `with_event/3`, `log_event/1`, `list_audit_events/1`, redaction logic, snapshot serialization. **Target**: replaced by `insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`. |
 | `AurumFinance.Entities.Entity` | `lib/aurum_finance/entities/entity.ex` | Wired to audit via `create_entity/2`, `update_entity/3`, `archive_entity/2`. Redacts `:tax_identifier`. |
 | `AurumFinance.Ledger.Account` | `lib/aurum_finance/ledger/account.ex` | Wired to audit. Redacts `:institution_account_ref`. |
-| `AurumFinance.Ledger.Transaction` | `lib/aurum_finance/ledger/transaction.ex` | Wired to audit via `create_transaction/2`, `void_transaction/2`. |
+| `AurumFinance.Ledger.Transaction` | `lib/aurum_finance/ledger/transaction.ex` | Protected by DB immutability. Audited for selected operational actions in v1 (currently `void_transaction/2`, not normal creation). |
 | `AurumFinanceWeb.AuditLogLive` | `lib/aurum_finance_web/live/audit_log_live.ex` | **Target** (does not exist yet): dedicated read-only audit log viewer at `/audit-log`. |
 | `AurumFinanceWeb.TransactionsLive` | `lib/aurum_finance_web/live/transactions_live.ex` | Reference pattern for URL-driven filtered list views with `handle_params`, `push_patch`, query-string encoding. |
 
@@ -66,10 +75,10 @@ Deliver a generic, append-only audit trail that records every domain write acros
 | **Schema** | `audit_events` table: `id`, `entity_type`, `entity_id`, `action`, `actor`, `channel`, `before`, `after`, `occurred_at`, `inserted_at`, `updated_at` | Same fields minus `updated_at`; plus new `metadata :map` column |
 | **Indexes** | `(entity_type, entity_id)`, `(action)`, `(channel)`, `(occurred_at)` | Unchanged |
 | **Context API** | `with_event/3` (non-atomic), `log_event/1` (direct insert), `list_audit_events/1` (no date-range filter) | `insert_and_log/2`, `update_and_log/3`, `archive_and_log/3`, `Audit.Multi.append_event/4`; `list_audit_events/1` extended with date-range and offset |
-| **Atomicity** | Non-atomic for Entities + Ledger accounts; atomic only for Ledger transaction paths | Atomic for all write paths via helper API |
+| **Atomicity** | Non-atomic for Entities + Ledger accounts; atomic only for the transaction paths that currently append audit events | Atomic for all audited write paths via helper API |
 | **Immutability** | Application-layer only (no update/delete functions) | Enforced at DB level via Postgres triggers: `audit_events` append-only, `postings` append-only, `transactions` protected facts (DELETE blocked, UPDATE restricted to `voided_at`/`correlation_id`) |
 | **Redaction** | `redact_snapshot/2` in place; callers pass `redact_fields` | Unchanged — redaction logic stays, wired through the new helpers |
-| **Integration points** | `Entities.*` via `with_event/3`; `Ledger.*` via `with_event/3` and `log_event/1` | All callers migrated to new helpers; `with_event/3` and `log_event/1` removed |
+| **Integration points** | `Entities.*` via `with_event/3`; `Ledger.*` via `with_event/3` and `log_event/1` | `Entities.*` and `Ledger` account lifecycle paths remain audited via the new helpers; `Ledger.void_transaction/2` remains audited via `Audit.Multi`; normal transaction/posting creation is not audited in v1 |
 | **UI viewer** | None (does not exist) | `AuditLogLive` at `/audit-log` — read-only, filterable |
 
 ### Naming Conventions Observed
@@ -149,6 +158,14 @@ All financial fact tables are protected at the database level via Postgres trigg
 
 **Schema note:** `transactions` has no `status` column. Void state is represented entirely by `voided_at` (NULL = active, non-NULL = voided). The set-once trigger replaces what would otherwise be a `status`/`voided_at` CHECK constraint. The application layer further enforces this via `validate_voidable/1` in `Transaction.void_changeset/2`.
 
+### D7.1: Auditability and ledger correctness are separate concerns
+
+The v1 audit trail is intentionally **not** a firehose of every ledger insert.
+
+- `audit_events` exists for operational traceability: manual actions, administrative/configuration changes, provenance, and selected transaction lifecycle events.
+- `transactions` and `postings` remain protected by database immutability rules even when they do not generate audit events on normal creation paths.
+- This means a normal transaction import/manual create can be immutable and correct without also producing an `audit_events` row.
+
 ### D8: `metadata` field for extensibility
 
 Add a `:map` field for context-specific metadata that does not belong in `before`/`after` snapshots. Examples: correlation IDs, import batch references, rule engine match explanations, request IDs. This avoids polluting the snapshot fields with non-entity data.
@@ -210,7 +227,7 @@ The `meta` map carries: `actor`, `channel`, `entity_type`, `action` (inferred by
 
 ### `AurumFinance.Audit.Multi` — complex operation helper
 
-For operations that already orchestrate multiple steps (e.g., `Ledger.create_transaction` which inserts a Transaction + multiple Postings), a lower-level Multi helper is provided:
+For operations that already orchestrate multiple steps and still need an audit event (e.g., `Ledger.void_transaction/2`, future import provenance flows, future classification/manual override flows), a lower-level Multi helper is provided:
 
 **`Audit.Multi.append_event(multi, step_name, before_snapshot, meta)`**
 
@@ -252,12 +269,12 @@ Redaction is enforced inside the `Audit` helpers, not in the callers. Each domai
 | `Entities.update_entity/3` | `Audit.with_event/3` | **NOT atomic** — same |
 | `Entities.archive_entity/2` | `Audit.with_event/3` | **NOT atomic** — same |
 | `Ledger.create_account/2` | `Audit.with_event/3` | **NOT atomic** — same |
-| `Ledger.create_transaction/2` | `Repo.transaction` + `Audit.log_event/1` inside | **Atomic** |
+| `Ledger.create_transaction/2` | `Repo.transaction` + `Audit.log_event/1` inside | **Atomic**, but normal creation is no longer in v1 audit scope |
 | `Ledger.void_transaction/2` | `Repo.transaction` + `Audit.log_event/1` inside | **Atomic** |
 
 ### Target state
 
-All domain writes + audit appends must be atomic. The transaction is owned by the `Audit` helper — domain contexts do not manage transactions directly.
+All **audited** domain writes + audit appends must be atomic. Non-audited ledger writes still remain transactionally correct and DB-protected, but they do not need an `audit_events` row.
 
 **Simple operations → `insert_and_log / update_and_log / archive_and_log`**
 
@@ -265,13 +282,13 @@ The `Audit` helper opens `Repo.transaction/1`, performs the domain write, append
 
 **Complex operations → `Audit.Multi.append_event/4`**
 
-For operations already built on `Ecto.Multi` (e.g., `Ledger.create_transaction` with multiple postings), the Multi pipeline is extended with an audit event step. The `Ecto.Multi` is run via `Repo.transaction/1` at the end, making the whole pipeline — domain writes and audit append — atomic in a single transaction.
+For operations already built on `Ecto.Multi` that are still in audit scope (e.g., `Ledger.void_transaction/2`), the Multi pipeline is extended with an audit event step. The `Ecto.Multi` is run via `Repo.transaction/1` at the end, making the whole pipeline — domain writes and audit append — atomic in a single transaction.
 
 **No async job, no fire-and-forget.** The audit append is always synchronous. If it fails, the domain write is rolled back.
 
 ### Migration plan
 
-All current `with_event/3` call sites in `Entities` and `Ledger.create_account` are migrated to the simple helpers in this issue. All current `log_event/1` call sites inside `Repo.transaction` blocks in `Ledger` are migrated to `Audit.Multi.append_event/4`. `with_event/3` and `log_event/1` (as a direct public call) are removed.
+All current `with_event/3` call sites in `Entities` and `Ledger.create_account` are migrated to the simple helpers in this issue. The `Ledger` transaction paths are split by scope: `void_transaction/2` remains audited and uses `Audit.Multi.append_event/4`; normal `create_transaction/2` no longer emits an audit event. `with_event/3` and `log_event/1` (as a direct public call) are removed.
 
 ### Failure semantics
 
@@ -348,7 +365,7 @@ The audit log viewer lives at `/audit-log` under the existing `:app` live sessio
 
 ## Classification Alignment
 
-`audit_events` is the canonical cross-cutting audit trail for **all domain entity changes**, not only for Entities and Ledger data. Classification changes (e.g., updating category labels on transactions, reclassifying entity types, applying or overriding AI-suggested categories) are domain writes and should also be recorded in `audit_events` using a consistent naming convention.
+`audit_events` is the canonical cross-cutting audit trail for **operationally meaningful domain changes**, not a raw mirror of every ledger insert. Classification changes (e.g., updating category labels on transactions, reclassifying entity types, applying or overriding AI-suggested categories) are high-value operational changes and should be recorded in `audit_events` using a consistent naming convention.
 
 ### Convention for classification events
 
@@ -386,7 +403,7 @@ If classification later requires richer explainability metadata — such as mode
 1. Add `metadata` column to `audit_events` table via migration.
 2. Update `AuditEvent` schema to include `metadata` field.
 3. Add database-level append-only enforcement (trigger or privilege revocation).
-4. Implement the new `Audit` helper API (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`). Remove `with_event/3` and direct `log_event/1` calls. Migrate all callers.
+4. Implement the new `Audit` helper API (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`). Remove `with_event/3` and direct `log_event/1` calls. Migrate the callers that remain in audit scope.
 5. Add `occurred_after` and `occurred_before` filter support to `list_audit_events/1`.
 6. Add offset-based pagination support to `list_audit_events/1`.
 7. Tests for all of the above.
@@ -414,7 +431,7 @@ If classification later requires richer explainability metadata — such as mode
 **Option A: Start with Entities only, expand to Ledger later.**
 **Option B: Introduce the shared audit foundation now, integrate with currently available contexts first.**
 
-**Recommendation: Option B — shared foundation first, with currently available contexts.**
+**Recommendation: Option B — shared foundation first, with a narrower v1 event scope.**
 
 The reasoning:
 
@@ -531,7 +548,7 @@ As a **root-authenticated user**, I want to load more audit events beyond the in
 
 ### US-6: Atomic audit recording
 
-As **the system**, all domain writes must atomically append an audit record in the same database transaction, so that no domain change can exist without its audit trail.
+As **the system**, all audited domain writes must atomically append an audit record in the same database transaction, so that no in-scope operational change can exist without its audit trail.
 
 ### US-7: Append-only guarantee
 
@@ -547,7 +564,7 @@ As **the system**, audit records must never be updated or deleted, so that the a
 
 ### Error States
 - Database connection failure during audit viewer load: Show generic error with retry.
-- Audit insert failure during domain write: Roll back the entire transaction. The domain write does not persist. Return `{:error, {:audit_failed, changeset, result}}`.
+- Audit insert failure during an audited domain write: Roll back the entire transaction. The domain write does not persist. Return `{:error, {:audit_failed, reason}}`.
 
 ### Boundary Conditions
 - Very large before/after snapshots (e.g., transaction with many postings): Accept and store. No truncation in Phase 1.

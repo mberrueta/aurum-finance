@@ -14,7 +14,7 @@
 ```
 Act as docs-feature-documentation-author following llms/constitution.md.
 
-Execute Task 09 from llms/tasks/013_audit_trail/09_audit_documentation_sync.md.
+Execute Task 10 from llms/tasks/013_audit_trail/10_audit_documentation_sync.md.
 
 Read all inputs listed in the task file before writing anything.
 Documentation must reflect the implementation as shipped, not the plan's aspirational design.
@@ -24,14 +24,14 @@ Do NOT modify plan.md or any task file.
 
 ## Objective
 
-Update project documentation to accurately reflect the audit trail feature as implemented in Tasks 01–08. This includes the domain model document, relevant ADRs, privacy and security docs, and project context conventions. Documentation must match the actual code, not the plan's aspirational design.
+Update project documentation to accurately reflect the audit trail feature as implemented in Tasks 01–08. This includes the domain model document, relevant ADRs, privacy and security docs, and project context conventions. Documentation must match the actual code, not the plan's aspirational design, and must clearly distinguish operational auditability from ledger immutability protections.
 
 ---
 
 ## Inputs Required
 
 - [ ] `llms/tasks/013_audit_trail/plan.md` — canonical design decisions, terminology, field definitions
-- [ ] `llms/tasks/013_audit_trail/08_audit_pr_review.md` — PR review findings and any approved deviations from plan
+- [ ] `llms/tasks/013_audit_trail/09_pr_review_report.md` — PR review findings and any approved deviations from plan
 - [ ] `llms/constitution.md` — documentation rules
 - [ ] `llms/project_context.md` — project context (update if new conventions were established)
 - [ ] `lib/aurum_finance/audit/audit_event.ex` — source of truth for the AuditEvent schema
@@ -67,6 +67,7 @@ Add or update the **Audit** section with the `AuditEvent` entity:
   - `inserted_at` (utc_datetime_usec — Ecto automatic)
   - **Explicitly: NO `updated_at`** — append-only; an `updated_at` field is semantically meaningless on an immutable record
 - Snapshot model: `before` / `after` are full entity snapshots, not computed diffs or a `changes` field
+- Scope note: `audit_events` is for operationally meaningful changes (entities/accounts lifecycle, transaction voids, classification/manual override, import/config/rules provenance) and is **not** a record of every `transaction` / `posting` insert
 - Append-only guarantee: enforced at both application layer (no update/delete functions) and database layer (Postgres trigger `audit_events_append_only`)
 - Redaction: sensitive fields replaced with `"[REDACTED]"` at write time (irreversible)
 - Classification event convention: `entity_type: "transaction_classification"` with actions `"classified"`, `"reclassified"`, `"manual_override"`, `"rule_applied"` — classification is not transaction lifecycle
@@ -82,6 +83,7 @@ Add implementation notes for:
   - `audit_events_append_only` — fully append-only
   - `postings_append_only` — fully append-only
   - `transactions_immutability` — DELETE blocked; UPDATE restricted to lifecycle fields (`voided_at`, `correlation_id`); fact fields immutable; `voided_at` set-once
+- Explicitly document that these ledger protections remain in force even when normal transaction/posting creation does not emit `audit_events`
 - Note: `transactions` has no `status` column; void state is `voided_at` (NULL = active, non-NULL = voided)
 - Audit viewer access: root-authenticated users only; no write/replay/edit actions in UI
 
@@ -160,7 +162,7 @@ llms/project_context.md                    # Update with Audit helper API conven
 ### Constraints
 
 - Read the actual schema and context files before writing documentation — do not rely on plan.md alone for field names
-- If the PR review (Task 08) identified any approved deviations from the plan, document the implemented state, not the plan's intent
+- If the PR review (Task 09) identified any approved deviations from the plan, document the implemented state, not the plan's intent
 - Keep existing documentation structure and formatting conventions
 
 ---
@@ -170,7 +172,7 @@ llms/project_context.md                    # Update with Audit helper API conven
 ### For the Agent
 
 1. Read all inputs listed above — especially `audit_event.ex` and `audit.ex` as the source of truth for field names and API functions
-2. Read the PR review task output (Task 08) to identify any deviations from the plan that were approved
+2. Read the PR review task output (Task 09) to identify any deviations from the plan that were approved
 3. Read existing `docs/domain-model.md` to understand the current structure and find the right insertion point for `AuditEvent`
 4. Update `docs/domain-model.md` with the AuditEvent entity section
 5. Read `docs/adr/0018-financial-data-security-boundaries.md` and append implementation notes

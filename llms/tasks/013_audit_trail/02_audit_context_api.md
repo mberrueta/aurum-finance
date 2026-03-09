@@ -1,7 +1,7 @@
 # Task 02: Audit Context API — New Helpers and Caller Migration
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: ✅ COMPLETE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01
 - **Blocks**: Task 03, Task 04
@@ -24,7 +24,7 @@ Before starting, read:
 ```
 
 ## Objective
-Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the new atomic helper API: `Audit.insert_and_log/2`, `Audit.update_and_log/3`, `Audit.archive_and_log/3`, and `Audit.Multi.append_event/4`. Migrate ALL existing callers in `Entities` and `Ledger` contexts to the new API. Remove the old functions entirely. This is a breaking change with no backward compatibility shim. Corresponds to plan tasks 4-6.
+Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the new atomic helper API: `Audit.insert_and_log/2`, `Audit.update_and_log/3`, `Audit.archive_and_log/3`, and `Audit.Multi.append_event/4`. Migrate the callers that remain in v1 audit scope. Remove the old functions entirely. This is a breaking change with no backward compatibility shim. Corresponds to plan tasks 4-6.
 
 ## Inputs Required
 
@@ -32,7 +32,7 @@ Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the n
 - [ ] `lib/aurum_finance/audit.ex` - Current context with `with_event/3`, `log_event/1`, `create_audit_event/1`, redaction logic, snapshot helpers
 - [ ] `lib/aurum_finance/audit/audit_event.ex` - Schema (after Task 01 modifications: includes `metadata`, no `updated_at`)
 - [ ] `lib/aurum_finance/entities.ex` - Caller of `Audit.with_event/3` at lines 64, 151. Functions: `create_entity/2`, `update_entity/3`, `archive_entity/2`, `unarchive_entity/2`
-- [ ] `lib/aurum_finance/ledger.ex` - Caller of `Audit.with_event/3` at lines 220, 470. Caller of `Audit.log_event/1` at lines 923, 935. Functions: `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `create_transaction/2`, `void_transaction/2`
+- [ ] `lib/aurum_finance/ledger.ex` - Caller of `Audit.with_event/3` / `Audit.log_event/1`. Functions: `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `create_transaction/2`, `void_transaction/2`
 - [ ] `llms/constitution.md` - Context API conventions, error tuple conventions
 
 ## Expected Outputs
@@ -64,8 +64,8 @@ Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the n
 - [ ] `update_account/3` (via `update_account_with_action/4`) - Replace with `Audit.update_and_log/3`
 - [ ] `archive_account/2` - Replace with `Audit.archive_and_log/3`
 - [ ] `unarchive_account/2` - Replace with `Audit.update_and_log/3` (action `"unarchived"`)
-- [ ] `create_transaction/2` (via `persist_transaction/3`) - Replace `Repo.transaction` + `log_event` pattern with `Audit.Multi.append_event/4`
-- [ ] `void_transaction/2` (via `persist_void_transaction/2`) - Replace `Repo.transaction` + `log_event` pattern with `Audit.Multi.append_event/4` (two audit events: one for the void, one for the reversal creation)
+- [ ] `create_transaction/2` (via `persist_transaction/2`) - Remove normal transaction-create audit logging from the default path while keeping transactional correctness
+- [ ] `void_transaction/2` (via `persist_void_transaction/2`) - Replace `Repo.transaction` + `log_event` pattern with `Audit.Multi.append_event/4` for the void action
 - [ ] Remove `log_transaction_created/2`, `log_transaction_voided/3`, `maybe_log_transaction_created/2` private functions
 - [ ] Remove `account_snapshot/1`, `transaction_snapshot/1` private functions -- move to `meta` serializer or keep as private but pass to Audit
 - [ ] Remove `extract_audit_metadata/1` and `normalize_actor/1`
@@ -84,7 +84,9 @@ Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the n
 - [ ] `Audit.archive_and_log/3` exists and wraps archive update + audit in a single DB transaction
 - [ ] `Audit.Multi.append_event/4` exists and appends an audit step to an `Ecto.Multi`
 - [ ] All `Entities.*` functions produce audit events atomically (verified by existing tests passing)
-- [ ] All `Ledger.*` functions produce audit events atomically (verified by existing tests passing)
+- [ ] `Ledger` account lifecycle functions still produce audit events atomically
+- [ ] `Ledger.create_transaction/2` no longer emits a default audit event
+- [ ] `Ledger.void_transaction/2` still emits an audit event atomically
 - [ ] Redaction is applied inside the Audit helpers, not in the callers
 - [ ] Snapshot serialization is passed via `meta` (as a `:serializer` function) or handled by default snapshot logic in Audit
 - [ ] Error tuples follow constitution conventions: `{:ok, struct}` or `{:error, changeset}` or `{:error, {:audit_failed, reason}}`
@@ -102,8 +104,8 @@ Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the n
 | `lib/aurum_finance/entities.ex` | 148-163 | `Audit.with_event/3` in `update_entity_with_action/4` | `Audit.update_and_log/3` or `Audit.archive_and_log/3` |
 | `lib/aurum_finance/ledger.ex` | 220-232 | `Audit.with_event/3` in `create_account/2` | `Audit.insert_and_log/2` |
 | `lib/aurum_finance/ledger.ex` | 467-482 | `Audit.with_event/3` in `update_account_with_action/4` | `Audit.update_and_log/3` or `Audit.archive_and_log/3` |
-| `lib/aurum_finance/ledger.ex` | 839-846 | `Repo.transaction` + `log_event` in `persist_transaction/3` | `Ecto.Multi` + `Audit.Multi.append_event/4` |
-| `lib/aurum_finance/ledger.ex` | 888-902 | `Repo.transaction` + `log_event` in `persist_void_transaction/2` | `Ecto.Multi` + `Audit.Multi.append_event/4` |
+| `lib/aurum_finance/ledger.ex` | 839-846 | `Repo.transaction` + audit append in `persist_transaction/2` | Remove normal transaction-create audit append |
+| `lib/aurum_finance/ledger.ex` | 888-902 | `Repo.transaction` + `log_event` in `persist_void_transaction/2` | `Ecto.Multi` + `Audit.Multi.append_event/4` for the void action |
 | `lib/aurum_finance/ledger.ex` | 922-944 | `log_transaction_created/2`, `log_transaction_voided/3` | Removed -- replaced by Multi pattern |
 | `lib/aurum_finance/ledger.ex` | 970-986 | `maybe_log_transaction_created/2`, `maybe_finish_void_transaction/3` | Removed -- replaced by Multi pattern |
 
@@ -119,11 +121,11 @@ The current code has `entity_snapshot/1`, `account_snapshot/1`, and `transaction
 
 ### Transaction Refactoring for Ledger
 
-The `persist_transaction/3` function currently uses a manual `Repo.transaction` with nested function calls. This must be refactored to use `Ecto.Multi`:
+The `persist_transaction/3` function currently uses a manual `Repo.transaction` with nested function calls. It should be refactored to a flatter transactional pipeline, but it no longer needs to append an audit event in the normal create path:
 
-1. Build the Multi pipeline: insert transaction -> insert postings -> append audit event
+1. Build the Multi pipeline: insert transaction -> insert postings -> preload transaction
 2. Run the entire Multi via `Repo.transaction/1`
-3. The `Audit.Multi.append_event/4` step reads the transaction result from a prior named step
+3. Reserve `Audit.Multi.append_event/4` for transaction flows that remain in audit scope
 
 Similarly, `persist_void_transaction/2` must be refactored from its current nested callback pattern to a flat `Ecto.Multi` pipeline.
 
@@ -161,7 +163,7 @@ Similarly, `persist_void_transaction/2` must be refactored from its current nest
 2. Implement `Audit.insert_and_log/2`, `Audit.update_and_log/3`, `Audit.archive_and_log/3` in `audit.ex`
 3. Create `lib/aurum_finance/audit/multi.ex` with `Audit.Multi.append_event/4`
 4. Migrate `Entities` context: replace all `with_event/3` calls with new helpers
-5. Migrate `Ledger` context: replace `with_event/3` calls for accounts, refactor transaction/void paths to use Multi
+5. Migrate `Ledger` context: replace `with_event/3` calls for accounts, remove transaction-create audit logging, and refactor the void path to use Multi
 6. Remove `with_event/3`, `log_event/1`, and all dead private helpers from `audit.ex`
 7. Remove dead private helpers from `entities.ex` and `ledger.ex`
 8. Grep the entire codebase for `with_event` and `log_event` to confirm no references remain
@@ -193,8 +195,8 @@ After agent completes:
 - Promoted `normalize_actor/1`, `normalize_channel/1`, `default_snapshot/1`, and `redact_snapshot/2` to `@doc false` public functions in `Audit` so they can be reused by `Audit.Multi` and caller contexts
 - Migrated `Entities` context: replaced all `Audit.with_event/3` calls with new helpers; removed `extract_audit_metadata/1`, `normalize_actor/1`, `update_entity_with_action/4` private functions; snapshot function kept as private, passed via `meta[:serializer]`
 - Migrated `Ledger` context (accounts): replaced all `Audit.with_event/3` calls with new helpers; removed `update_account_with_action/4`; created `account_audit_meta/2` private helper
-- Migrated `Ledger` context (transactions): refactored `persist_transaction/3` from `Repo.transaction` + callback nesting to flat `Ecto.Multi` pipeline with `Audit.Multi.append_event/4`
-- Migrated `Ledger` context (void): refactored `persist_void_transaction/2` from nested `Repo.transaction` + callbacks to flat `Ecto.Multi` pipeline with two `Audit.Multi.append_event/4` calls (void event + reversal created event)
+- Migrated `Ledger` context (transactions): refactored `persist_transaction/3` to a flat transactional pipeline and removed default audit logging from the normal create path
+- Migrated `Ledger` context (void): refactored `persist_void_transaction/2` from nested `Repo.transaction` + callbacks to flat `Ecto.Multi` pipeline with a void audit event
 - Removed `with_event/3`, `log_event/1`, `build_event_attrs/4`, `ensure_audit_logged/2`, `@type with_event_meta`, `snapshot/3` from `Audit` context
 - Removed `log_transaction_created/2`, `log_transaction_voided/3`, `maybe_log_transaction_created/2`, `maybe_finish_void_transaction/3`, `finalize_void_transaction/4`, `normalize_repo_result/1` from `Ledger` context
 - Grep-verified zero remaining references to `with_event` or `log_event` in `lib/` and `test/`
@@ -210,22 +212,21 @@ After agent completes:
 |------------|-----------|
 | `normalize_actor/1`, `normalize_channel/1`, `default_snapshot/1`, `redact_snapshot/2` promoted to `@doc false` public in `Audit` | `Audit.Multi` and caller contexts need to call these; marking `@doc false` keeps them out of public docs while making them accessible |
 | `insert_transaction/2` kept as a plain Repo helper called from both `persist_transaction` Multi run step and `insert_reversal_transaction` | The reversal insertion reuses the same validation + insert logic; embedding it in the Multi step via `Ecto.Multi.run` preserves atomicity |
-| `extract_audit_metadata/1` retained in `Ledger` for transaction/void paths | These paths use `Audit.Multi` and build their own meta maps, so a shared helper in the caller is still appropriate |
+| `extract_audit_metadata/1` retained in `Ledger` for transaction/void paths | The void path still uses `Audit.Multi`, and keeping one shared normalization helper avoids duplicating actor/channel handling |
 | Snapshot functions kept private in domain contexts, passed via `meta[:serializer]` | Option A from the task spec; each context knows its own schema shape best |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
 | Flat `Ecto.Multi` pipeline for `persist_transaction` and `persist_void_transaction` | Keep nested `Repo.transaction` with `Audit.Multi` | Flat Multi is more readable, easier to reason about step ordering, and aligns with the spec's intent |
-| Two separate `Audit.Multi.append_event` calls for void (one for void event, one for reversal created event) | Single combined audit event | The spec says void produces two audit events: one for the voided transaction and one for the reversal creation |
+| Audit only the void action in `persist_void_transaction/2` | Audit both the void and the reversal creation | v1 scope is operationally meaningful transaction lifecycle events, not every ledger insert side effect |
 | `archive_and_log/3` delegates to `update_and_log/3` with `action: "archived"` default | Duplicate implementation | Reduces code duplication; semantic alias pattern is explicit in the spec |
 
 ### Blockers Encountered
 - None
 
 ### Questions for Human
-1. The `persist_transaction/3` refactoring to `Ecto.Multi` changes the internal insert_postings call from a direct sequence to an `Ecto.Multi.run` step. The `insert_postings/2` function still uses `Repo.insert` in a `reduce_while` loop inside the Multi step. This is correct (it runs within the Multi's transaction) but differs from inserting each posting as its own Multi step. Please confirm this is acceptable.
-2. The void path's reversal transaction is inserted via `Ecto.Multi.run(:reversal, ...)` which internally calls `insert_reversal_transaction/2` -> `insert_transaction/2`. These nested `Repo.insert` calls happen within the Multi's transaction. This preserves the existing logic while gaining atomicity with audit events. Please confirm.
+1. None.
 
 ### Ready for Next Task
 - [x] All outputs complete

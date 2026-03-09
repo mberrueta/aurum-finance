@@ -23,7 +23,7 @@ Before starting, read:
 ```
 
 ## Objective
-Build the complete Audit Log viewer UI: a dedicated `AuditLogLive` LiveView at `/audit-log` with URL-driven filters, an event list with expandable rows showing before/after snapshots, offset-based pagination, sidebar navigation entry, and full gettext internationalization. This corresponds to plan tasks 10-16.
+Build the complete Audit Log viewer UI: a dedicated `AuditLogLive` LiveView at `/audit-log` with URL-driven filters, an event list with expandable rows showing before/after snapshots, offset-based pagination, sidebar navigation entry, and full gettext internationalization. The viewer is for operational/admin/manual events, not a raw ledger-insert firehose. This corresponds to plan tasks 10-16.
 
 ## Inputs Required
 
@@ -65,6 +65,7 @@ Build the complete Audit Log viewer UI: a dedicated `AuditLogLive` LiveView at `
 ### Event List
 - [ ] Displays events ordered by `occurred_at` descending
 - [ ] Each row shows: formatted `occurred_at`, `entity_type`, `action`, `actor`, `channel`
+- [ ] Empty/help text and page framing make it clear this is an operational audit log, not an every-transaction ledger feed
 - [ ] Clicking a row expands it to show `before` and `after` snapshots as formatted JSON
 - [ ] Clicking an expanded row collapses it
 - [ ] No edit, delete, replay, or any write-action buttons anywhere in the view
