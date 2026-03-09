@@ -53,11 +53,26 @@ Perform a security audit of the complete audit trail implementation, focusing on
 - [ ] Verify redaction is applied at write time (irreversible -- no way to recover original from audit log)
 - [ ] Check for any code paths where snapshots could bypass redaction (e.g., direct `create_audit_event/1` calls)
 
-### Append-Only Integrity
-- [ ] Verify the Postgres trigger exists and covers both UPDATE and DELETE
-- [ ] Verify no application code path exists that could update or delete audit events
-- [ ] Check for any Ecto.Multi or raw SQL that could bypass the trigger
-- [ ] Verify `create_audit_event/1` (the public function) does not expose an update/delete path
+### DB Immutability Integrity
+
+**`audit_events`** — append-only:
+- [ ] Verify trigger `audit_events_append_only` exists and fires on BEFORE UPDATE OR DELETE
+- [ ] Verify no application code path can update or delete audit events
+- [ ] Verify `create_audit_event/1` does not expose an update/delete path
+
+**`postings`** — append-only:
+- [ ] Verify trigger `postings_append_only` exists and fires on BEFORE UPDATE OR DELETE
+- [ ] Verify no application code path can update or delete postings
+- [ ] Confirm `Posting.changeset/2` is insert-only (no update changeset exists)
+
+**`transactions`** — protected facts:
+- [ ] Verify trigger `transactions_immutability` exists and fires on BEFORE UPDATE OR DELETE
+- [ ] Verify trigger blocks DELETE unconditionally
+- [ ] Verify trigger blocks UPDATE of fact fields (`entity_id`, `date`, `description`, `source_type`, `inserted_at`)
+- [ ] Verify trigger enforces `voided_at` set-once (cannot un-void or change once set)
+- [ ] Verify trigger allows the void lifecycle UPDATE (`voided_at` NULL → non-NULL, `correlation_id`)
+- [ ] Verify no application code path uses raw SQL that could bypass the trigger
+- [ ] Cross-check with `Transaction.void_changeset/2` — app-layer and DB-layer protections should be consistent
 
 ### Access Control
 - [ ] Verify `/audit-log` route is inside the `:require_authenticated_root` pipeline

@@ -90,11 +90,28 @@ Create comprehensive test coverage for all audit trail foundation changes: schem
 - [ ] Verify rollback by checking that the domain record does not exist in the database after failure
 - [ ] Test the `{:error, {:audit_failed, reason}}` return shape
 
-### Append-Only Enforcement Tests
-- [ ] Attempting a raw SQL `UPDATE` on `audit_events` raises a database error
-- [ ] Attempting a raw SQL `DELETE` on `audit_events` raises a database error
-- [ ] `INSERT` operations continue to work normally
-- [ ] Test via `Repo.query!("UPDATE audit_events SET action = 'test' WHERE id = $1", [id])` wrapped in a rescue/catch
+### DB Immutability Enforcement Tests
+
+#### `audit_events` — append-only
+- [ ] Raw SQL `UPDATE audit_events SET ...` raises `Postgrex.Error` matching `~r/append-only/`
+- [ ] Raw SQL `DELETE FROM audit_events ...` raises `Postgrex.Error` matching `~r/append-only/`
+- [ ] `INSERT` into `audit_events` continues to work normally
+
+#### `postings` — append-only
+- [ ] Raw SQL `UPDATE postings SET amount = ... WHERE id = $1` raises `Postgrex.Error` matching `~r/append-only/`
+- [ ] Raw SQL `DELETE FROM postings WHERE id = $1` raises `Postgrex.Error` matching `~r/append-only/`
+- [ ] `INSERT` into `postings` continues to work normally
+
+#### `transactions` — protected facts
+- [ ] Raw SQL `DELETE FROM transactions WHERE id = $1` raises `Postgrex.Error` matching `~r/protected ledger facts/`
+- [ ] Raw SQL UPDATE changing `description` raises `Postgrex.Error` matching `~r/immutable/`
+- [ ] Raw SQL UPDATE changing `entity_id` raises `Postgrex.Error` matching `~r/immutable/`
+- [ ] Raw SQL UPDATE changing `date` raises `Postgrex.Error` matching `~r/immutable/`
+- [ ] Raw SQL UPDATE changing `source_type` raises `Postgrex.Error` matching `~r/immutable/`
+- [ ] Raw SQL UPDATE setting `voided_at` (NULL → non-NULL) **succeeds** — this is the one allowed lifecycle update
+- [ ] Raw SQL UPDATE changing `voided_at` when already non-NULL raises `Postgrex.Error` matching `~r/set-once/`
+- [ ] Raw SQL UPDATE setting `correlation_id` on an existing transaction **succeeds** — allowed lifecycle field
+- [ ] `INSERT` into `transactions` continues to work normally
 
 ### Caller Migration Verification Tests
 - [ ] `Entities.create_entity/2` produces an audit event with correct fields
@@ -140,20 +157,27 @@ test/support/data_case.ex               # DataCase with sandbox setup
 - Use `entity_fixture()` and `account_fixture(entity)` from `test/support/fixtures.ex`
 - For append-only tests, use `Ecto.Adapters.SQL.query!/3` to execute raw SQL and catch the Postgres exception
 
-### Testing Append-Only via Raw SQL
-```elixir
-test "UPDATE on audit_events raises a database error" do
-  # First create an audit event
-  {:ok, entity} = Entities.create_entity(%{name: "Test", type: :individual, country_code: "US"})
-  [event] = Audit.list_audit_events(entity_type: "entity", entity_id: entity.id)
+### Testing DB Immutability via Raw SQL
 
-  assert_raise Postgrex.Error, ~r/append-only/, fn ->
-    Ecto.Adapters.SQL.query!(
-      Repo,
-      "UPDATE audit_events SET action = 'tampered' WHERE id = $1",
-      [Ecto.UUID.dump!(event.id)]
-    )
-  end
+Use `Ecto.Adapters.SQL.query!/3` to bypass Ecto and hit the trigger directly. These tests likely need `async: false` due to sandbox interaction with raw SQL.
+
+```elixir
+# audit_events / postings — append-only pattern
+assert_raise Postgrex.Error, ~r/append-only/, fn ->
+  Ecto.Adapters.SQL.query!(Repo, "UPDATE audit_events SET action = 'tampered' WHERE id = $1", [uuid_bytes])
+end
+
+# transactions — protected fact fields
+assert_raise Postgrex.Error, ~r/immutable/, fn ->
+  Ecto.Adapters.SQL.query!(Repo, "UPDATE transactions SET description = 'tampered' WHERE id = $1", [uuid_bytes])
+end
+
+# transactions — allowed lifecycle update (voided_at NULL → non-NULL)
+assert {:ok, _} = Ecto.Adapters.SQL.query(Repo, "UPDATE transactions SET voided_at = now() WHERE id = $1", [uuid_bytes])
+
+# transactions — set-once enforcement (voided_at already set)
+assert_raise Postgrex.Error, ~r/set-once/, fn ->
+  Ecto.Adapters.SQL.query!(Repo, "UPDATE transactions SET voided_at = now() WHERE id = $1", [uuid_bytes])
 end
 ```
 

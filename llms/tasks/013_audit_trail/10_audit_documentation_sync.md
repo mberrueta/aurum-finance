@@ -67,9 +67,10 @@ Add or update the **Audit** section with the `AuditEvent` entity:
   - `inserted_at` (utc_datetime_usec — Ecto automatic)
   - **Explicitly: NO `updated_at`** — append-only; an `updated_at` field is semantically meaningless on an immutable record
 - Snapshot model: `before` / `after` are full entity snapshots, not computed diffs or a `changes` field
-- Append-only guarantee: enforced at both application layer (no update/delete functions) and database layer (Postgres trigger)
+- Append-only guarantee: enforced at both application layer (no update/delete functions) and database layer (Postgres trigger `audit_events_append_only`)
 - Redaction: sensitive fields replaced with `"[REDACTED]"` at write time (irreversible)
 - Classification event convention: `entity_type: "transaction_classification"` with actions `"classified"`, `"reclassified"`, `"manual_override"`, `"rule_applied"` — classification is not transaction lifecycle
+- Cross-reference the ledger immutability model: `postings` are also append-only (separate trigger); `transactions` are protected facts (separate trigger — DELETE blocked, UPDATE restricted to `voided_at`/`correlation_id`, `voided_at` set-once)
 
 ### `docs/adr/0018-financial-data-security-boundaries.md` — Update
 
@@ -77,7 +78,11 @@ Add implementation notes for:
 
 - Redaction fields per entity type (as implemented): Entity → `tax_identifier`; Account → `institution_account_ref`
 - Redaction is write-time and irreversible — the audit log cannot be used to reconstruct sensitive values
-- Append-only enforcement at the DB level (Postgres trigger on `audit_events` raising on UPDATE/DELETE)
+- **Ledger immutability at DB level**: three Postgres triggers enforce financial fact integrity:
+  - `audit_events_append_only` — fully append-only
+  - `postings_append_only` — fully append-only
+  - `transactions_immutability` — DELETE blocked; UPDATE restricted to lifecycle fields (`voided_at`, `correlation_id`); fact fields immutable; `voided_at` set-once
+- Note: `transactions` has no `status` column; void state is `voided_at` (NULL = active, non-NULL = voided)
 - Audit viewer access: root-authenticated users only; no write/replay/edit actions in UI
 
 ### `docs/privacy.md` — Update

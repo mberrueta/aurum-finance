@@ -24,7 +24,7 @@ Deliver a generic, append-only audit trail that records every domain write acros
 ## Scope — What IS Included
 
 - Harden the existing `AuditEvent` schema with a `metadata` map field (catch-all for context-specific data that does not belong in `before`/`after`)
-- Enforce append-only semantics at the database level (revoke UPDATE/DELETE on `audit_events` for the application role, or add a database trigger that raises on UPDATE/DELETE)
+- Enforce database-level immutability across all financial fact tables: `audit_events` (append-only), `postings` (append-only), `transactions` (protected facts — DELETE blocked, UPDATE restricted to lifecycle fields `voided_at`/`correlation_id` only, `voided_at` set-once enforced by trigger)
 - Replace `Audit.with_event/3` and `Audit.log_event/1` with the new helper API (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`). All domain writes + audit appends become atomic. All existing callers are migrated — no backward compatibility shim.
 - Add date-range filtering to `Audit.list_audit_events/1` (`:occurred_after`, `:occurred_before`)
 - Build a minimal, read-only Audit Log viewer as a dedicated `AuditLogLive` accessible at `/audit-log`, with filters for entity_type, action, channel, date range, and optional entity_id
@@ -67,7 +67,7 @@ Deliver a generic, append-only audit trail that records every domain write acros
 | **Indexes** | `(entity_type, entity_id)`, `(action)`, `(channel)`, `(occurred_at)` | Unchanged |
 | **Context API** | `with_event/3` (non-atomic), `log_event/1` (direct insert), `list_audit_events/1` (no date-range filter) | `insert_and_log/2`, `update_and_log/3`, `archive_and_log/3`, `Audit.Multi.append_event/4`; `list_audit_events/1` extended with date-range and offset |
 | **Atomicity** | Non-atomic for Entities + Ledger accounts; atomic only for Ledger transaction paths | Atomic for all write paths via helper API |
-| **Immutability** | Application-layer only (no update/delete functions) | Enforced at DB level via Postgres trigger |
+| **Immutability** | Application-layer only (no update/delete functions) | Enforced at DB level via Postgres triggers: `audit_events` append-only, `postings` append-only, `transactions` protected facts (DELETE blocked, UPDATE restricted to `voided_at`/`correlation_id`) |
 | **Redaction** | `redact_snapshot/2` in place; callers pass `redact_fields` | Unchanged — redaction logic stays, wired through the new helpers |
 | **Integration points** | `Entities.*` via `with_event/3`; `Ledger.*` via `with_event/3` and `log_event/1` | All callers migrated to new helpers; `with_event/3` and `log_event/1` removed |
 | **UI viewer** | None (does not exist) | `AuditLogLive` at `/audit-log` — read-only, filterable |
@@ -130,9 +130,24 @@ Already implemented. `channel` is `Ecto.Enum` with values `[:web, :system, :mcp,
 
 Append-only is enforced at two layers: the application layer (no update/delete functions exist) and the database layer (see D7).
 
-### D7: Append-only enforcement at the database level
+### D7: Database-level immutability for audit and ledger tables
 
-The application layer has no update/delete functions for audit events, but defense-in-depth requires database-level enforcement. Options: (a) a Postgres trigger that raises on UPDATE/DELETE; (b) revoking UPDATE/DELETE privileges on the `audit_events` table for the application database role. Recommend option (a) because it is portable and does not require managing database roles.
+All financial fact tables are protected at the database level via Postgres triggers. This provides defense-in-depth beyond the application layer and ensures no raw SQL access, migration bug, or future code path can silently corrupt financial history.
+
+| Table | Protection | Allowed writes |
+|-------|-----------|----------------|
+| `audit_events` | Fully append-only | INSERT only |
+| `postings` | Fully append-only | INSERT only |
+| `transactions` | Protected facts | INSERT; UPDATE restricted to lifecycle fields only (`voided_at`, `correlation_id`); DELETE blocked |
+
+**`audit_events` and `postings`** use a simple `BEFORE UPDATE OR DELETE` trigger that raises unconditionally.
+
+**`transactions`** use a restricted-update trigger that:
+- Blocks DELETE unconditionally
+- On UPDATE: rejects any change to fact fields (`entity_id`, `date`, `description`, `source_type`, `inserted_at`)
+- On UPDATE: enforces `voided_at` as set-once — once non-NULL it cannot be changed or reversed. This is the DB-level consistency rule: a transaction can be voided (NULL → non-NULL) exactly once.
+
+**Schema note:** `transactions` has no `status` column. Void state is represented entirely by `voided_at` (NULL = active, non-NULL = voided). The set-once trigger replaces what would otherwise be a `status`/`voided_at` CHECK constraint. The application layer further enforces this via `validate_voidable/1` in `Transaction.void_changeset/2`.
 
 ### D8: `metadata` field for extensibility
 
@@ -166,8 +181,10 @@ The current `Audit.with_event/3` performs the domain write first, then inserts t
 
 ### Migration changes needed
 
-1. Add `metadata :map` column (nullable) to `audit_events`.
-2. Add a Postgres trigger or rule that raises on UPDATE/DELETE of `audit_events`.
+1. Add `metadata :map` column (nullable) to `audit_events`; remove `updated_at` from `audit_events`.
+2. Create append-only trigger on `audit_events` (BEFORE UPDATE OR DELETE → raises).
+3. Create append-only trigger on `postings` (BEFORE UPDATE OR DELETE → raises).
+4. Create restricted-update + delete-protection trigger on `transactions` (BEFORE UPDATE OR DELETE): blocks DELETE unconditionally; on UPDATE, rejects changes to fact fields (`entity_id`, `date`, `description`, `source_type`, `inserted_at`) and enforces `voided_at` set-once semantics.
 
 ---
 
