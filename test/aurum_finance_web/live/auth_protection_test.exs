@@ -7,6 +7,7 @@ defmodule AurumFinanceWeb.AuthProtectionTest do
     "/",
     "/dashboard",
     "/accounts",
+    "/audit-log",
     "/transactions",
     "/import",
     "/rules",

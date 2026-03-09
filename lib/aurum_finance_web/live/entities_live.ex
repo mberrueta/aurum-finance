@@ -104,11 +104,7 @@ defmodule AurumFinanceWeb.EntitiesLive do
     |> load_entities()
   end
 
-  defp handle_persist_result(
-         socket,
-         {:error, {:audit_failed, _changeset, _entity}},
-         _success_message
-       ) do
+  defp handle_persist_result(socket, {:error, {:audit_failed, _reason}}, _success_message) do
     socket
     |> put_flash(:error, dgettext("entities", "flash_audit_logging_failed"))
     |> reset_form_state()

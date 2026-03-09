@@ -576,3 +576,9 @@ core domain contexts.
   internal schemas or Repo directly (per constitution).
 - Cross-context communication uses function calls through the public API — no
   PubSub or message passing is needed at this scale.
+- `AurumFinance.Audit` is implemented as a cross-cutting foundation helper used
+  by multiple contexts. It is not treated as a standalone bounded context with
+  its own product surface.
+- Current shipped audit scope is intentionally narrow: entity lifecycle, account
+  lifecycle, and transaction void actions. Import/rules/settings/classification
+  provenance remains deferred.

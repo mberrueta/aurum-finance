@@ -28,6 +28,11 @@ enable safe refactoring, and ensure CI readiness.
 - Complex retrievals SHOULD expose a reusable `list_*_query/1` for composition.
 - Functions that can fail MUST return `{:ok, data}` or `{:error, reason}` tuples.
 - Web layers MUST call through contexts, not schemas or repos directly.
+- Public functions that define important backend or shared-module behavior MUST
+  have `@doc` documentation.
+- Important public backend/shared functions SHOULD include executable examples in
+  their `@doc` blocks when the behavior is non-trivial or reused across
+  contexts, so the docs also serve as doctest-style usage guidance.
 
 Rationale: Consistent, composable APIs and queries improve readability,
 maintainability, and testability across contexts.

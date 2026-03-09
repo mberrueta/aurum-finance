@@ -193,7 +193,7 @@ msgstr "Entity updated."
 msgid "flash_entity_created"
 msgstr "Entity created."
 
-#: lib/aurum_finance_web/live/entities_live.ex:113
+#: lib/aurum_finance_web/live/entities_live.ex:109
 #, elixir-autogen, elixir-format
 msgid "flash_audit_logging_failed"
 msgstr "Entity saved, but audit logging failed."

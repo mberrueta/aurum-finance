@@ -169,11 +169,7 @@ defmodule AurumFinanceWeb.AccountsLive do
     |> load_accounts()
   end
 
-  defp handle_persist_result(
-         socket,
-         {:error, {:audit_failed, _changeset, _account}},
-         _success_message
-       ) do
+  defp handle_persist_result(socket, {:error, {:audit_failed, _reason}}, _success_message) do
     socket
     |> put_flash(:error, dgettext("accounts", "flash_audit_logging_failed"))
     |> reset_form_state()

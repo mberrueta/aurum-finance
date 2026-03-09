@@ -62,7 +62,7 @@ Issue #8 introduces minimal self-hosted authentication to block anonymous access
 - ⏸️ ON_HOLD - Paused by human
 
 ## Assumptions
-1. GitHub issue #8 is the authoritative specification source for this work (no `llms/specs/*` file exists yet).
+1. GitHub issue #8 is the authoritative specification source for this work (no `llms/tasks/*` file exists yet).
 2. Password verification will use bcrypt, adding a dependency if not already present.
 3. Session timeout is idle-based only: 2 hours of inactivity, enforced by Aurum auth logic (session remains stored in Phoenix signed cookie).
 4. Startup enforcement for `AURUM_ROOT_PASSWORD_HASH` applies whenever the application boots, with test setup updated accordingly.

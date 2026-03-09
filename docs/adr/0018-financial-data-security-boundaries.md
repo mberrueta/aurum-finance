@@ -159,7 +159,24 @@ for a future full RBAC implementation.
 
 ## Implementation Notes
 
-- Introduce reusable redaction/masking utilities for sensitive fields.
-- Require explicit scope parameters for AI/MCP retrieval operations.
-- Keep audit logs append-only and queryable by channel/scope.
-- Treat imported raw files and tax snapshot data as highest-sensitivity classes.
+- Sensitive snapshot redaction is implemented in the generic audit helpers:
+  `Entity.tax_identifier` and `Account.institution_account_ref` are stored as
+  `\"[REDACTED]\"` in audit snapshots.
+- Audit metadata is not redacted. Do not store secrets, tokens, tax IDs,
+  account refs, or other sensitive values in `audit_events.metadata`.
+- `audit_events` is append-only at the database level via the
+  `audit_events_append_only` trigger.
+- `postings` is append-only at the database level via the
+  `postings_append_only` trigger.
+- `transactions` protect immutable fact fields at the database level via the
+  `transactions_immutability` trigger; only the set-once `voided_at` lifecycle
+  marker is mutable.
+- Normal transaction creation and posting creation do not emit audit events in
+  v1. This is intentional. Ledger correctness and audit traceability are
+  separate concerns.
+- `/audit-log` is a root-authenticated, read-only LiveView for operational
+  audit events. It supports channel/scope-style querying without exposing write
+  actions.
+- AI/MCP retrieval paths should still require explicit scope parameters when
+  those integrations are added.
+- Imported raw files and tax snapshot data remain highest-sensitivity classes.

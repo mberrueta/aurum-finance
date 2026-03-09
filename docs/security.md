@@ -49,3 +49,75 @@ This avoids introducing unnecessary complexity such as:
 - multi-user identity systems
 - external identity providers
 - role-based access control
+
+## Audit Trail Security Posture
+
+The audit trail is implemented as an operational traceability layer, not as a
+raw ledger-insert feed.
+
+Current shipped audit scope includes:
+
+- entity lifecycle changes
+- account lifecycle changes
+- transaction void actions
+
+Current shipped audit scope does not include:
+
+- normal transaction creation
+- posting creation
+
+This is intentional. Auditability and ledger correctness are separate controls.
+
+## Immutability Controls
+
+The branch enforces several protections at the database level:
+
+- `audit_events` is append-only
+- `postings` is append-only
+- `transactions` keep core fact fields immutable and allow only the set-once
+  `voided_at` lifecycle marker
+
+These constraints protect ledger correctness even when a given operation does
+not emit an `audit_events` row.
+
+## Snapshot Redaction
+
+Audit helpers apply snapshot redaction before insert. Current redacted fields:
+
+- `Entity.tax_identifier`
+- `Account.institution_account_ref`
+
+Redacted values are stored as `\"[REDACTED]\"` inside audit snapshots.
+
+## Metadata Rule
+
+`audit_events.metadata` is intentionally free-form in v1, but it is not
+redacted.
+
+Do not store:
+
+- secrets
+- tokens
+- tax IDs
+- institution account references
+- other sensitive identifiers
+
+The current rule is documentation and code-comment enforced. Metadata
+allowlisting/redaction remains future work.
+
+## Audit Log Access
+
+`/audit-log` is a root-authenticated LiveView inside the normal browser
+session. The viewer is read-only:
+
+- no write actions are exposed
+- filters are parameterized and validated
+- entity filtering is user-facing by entity name, while URLs continue to use
+  the entity UUID internally
+
+## Residual Risks
+
+- Operators with host or direct database access remain trusted by design.
+- Metadata sensitivity still relies on caller discipline in v1.
+- A missing site-wide Content Security Policy remains an app-wide hardening gap
+  outside the audit trail scope.

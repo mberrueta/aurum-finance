@@ -12,7 +12,7 @@ defmodule AurumFinance.Audit.AuditEvent do
 
   @channels [:web, :system, :mcp, :ai_assistant]
   @required [:entity_type, :entity_id, :action, :actor, :channel, :occurred_at]
-  @optional [:before, :after]
+  @optional [:before, :after, :metadata]
 
   @type t :: %__MODULE__{}
 
@@ -25,8 +25,9 @@ defmodule AurumFinance.Audit.AuditEvent do
     field :before, :map
     field :after, :map
     field :occurred_at, :utc_datetime_usec
+    field :metadata, :map
 
-    timestamps(type: :utc_datetime_usec)
+    timestamps(type: :utc_datetime_usec, updated_at: false)
   end
 
   @doc """

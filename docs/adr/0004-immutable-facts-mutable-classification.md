@@ -95,5 +95,12 @@ is AurumFinance's design to enable automated workflows without sacrificing user 
 
 - Fact fields: immutable after insert; no update path exposed.
 - Classification fields: versioned; each write records `classified_by`, `manually_overridden`, and timestamp.
-- Audit log entries reference the field name, old value, new value, source (rule ID or user ID), and timestamp.
+- The generic `audit_events` foundation is implemented today for operationally
+  meaningful changes such as entity/account lifecycle changes and transaction
+  void actions.
+- Classification-specific audit entries described in this ADR remain deferred
+  until the classification context is implemented. Do not assume a shipped
+  `ClassificationAuditLog` table or runtime yet.
+- When classification audit is implemented, entries should reference the field
+  name, old value, new value, source (rule ID or user ID), and timestamp.
 - UI must surface `classified_by` and `manually_overridden` state visibly to the user.

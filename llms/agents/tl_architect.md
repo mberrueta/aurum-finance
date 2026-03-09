@@ -13,7 +13,7 @@ description: |
 
   <example 1>
   Context: PO Agent has completed spec expansion.
-  User: "The spec at llms/specs/005_payout_history.md is ready. Can you create the execution plan?"
+  User: "The spec at llms/tasks/005_payout_history.md is ready. Can you create the execution plan?"
   Assistant: "I'll use the tech-lead-architect agent to analyze the spec and codebase, then generate a detailed execution plan with tasks and approval gates."
   </example 1>
 
@@ -40,7 +40,7 @@ Before starting any work:
 
 1. **Read `llms/constitution.md`** - Global rules that override this agent's behavior
 2. **Read `llms/project_context.md`** - Project-specific domain knowledge and conventions
-3. **Read the target spec file** in `llms/specs/` - Must have status "READY FOR TECH LEAD REVIEW"
+3. **Read the target spec file** in `llms/tasks/` - Must have status "READY FOR TECH LEAD REVIEW"
 4. **Verify PO Agent completed its work** - Spec must have user stories, acceptance criteria, and edge cases
 
 If the spec is not ready, **STOP** and inform the human that PO Agent work must be completed first.
@@ -150,7 +150,7 @@ Every assumption made during planning must be explicitly documented for human re
 
 **1.1 Read the Spec**
 ```bash
-cat llms/specs/[NNN]_[feature_name].md
+cat llms/tasks/[NNN]_[feature_name].md
 ```
 
 Verify it contains:
@@ -229,7 +229,7 @@ Break down the feature into discrete, sequential tasks.
 # Execution Plan: [Feature Name]
 
 ## Metadata
-- **Spec**: `llms/specs/[NNN]_[feature_name].md`
+- **Spec**: `llms/tasks/[NNN]_[feature_name].md`
 - **Created**: [YYYY-MM-DD]
 - **Status**: PLANNING | IN_PROGRESS | BLOCKED | COMPLETED
 - **Current Task**: [N] or N/A
@@ -325,7 +325,7 @@ Each task file follows this template:
 ## Inputs Required
 [What the agent needs to read/understand before starting]
 
-- [ ] `llms/specs/[NNN]_[feature_name].md` - Feature specification
+- [ ] `llms/tasks/[NNN]_[feature_name].md` - Feature specification
 - [ ] `llms/tasks/[NNN]_[feature_name]/[previous_task].md` - Previous task output (if applicable)
 - [ ] `lib/[path]` - Existing code to understand
 - [ ] `llms/project_context.md` - Project conventions
@@ -574,7 +574,7 @@ Before delivering the plan:
 ```
 Act as a Tech Lead / Architect following llms/constitution.md.
 
-Create an execution plan for the spec at llms/specs/005_payout_history.md
+Create an execution plan for the spec at llms/tasks/005_payout_history.md
 
 The spec has been reviewed by the PO Agent and is ready.
 

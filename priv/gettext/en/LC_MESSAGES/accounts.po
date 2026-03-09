@@ -117,7 +117,7 @@ msgstr "Create account"
 msgid "btn_edit"
 msgstr "Edit"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:323
+#: lib/aurum_finance_web/live/accounts_live.ex:319
 #, elixir-autogen
 msgid "btn_hide_archived"
 msgstr "Hide archived"
@@ -132,7 +132,7 @@ msgstr "New account"
 msgid "btn_save_changes"
 msgstr "Save changes"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:325
+#: lib/aurum_finance_web/live/accounts_live.ex:321
 #, elixir-autogen
 msgid "btn_show_archived"
 msgstr "Show archived"
@@ -142,12 +142,12 @@ msgstr "Show archived"
 msgid "btn_unarchive"
 msgstr "Unarchive"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:357
+#: lib/aurum_finance_web/live/accounts_live.ex:353
 #, elixir-autogen
 msgid "empty_category_accounts"
 msgstr "No category accounts for this entity yet."
 
-#: lib/aurum_finance_web/live/accounts_live.ex:360
+#: lib/aurum_finance_web/live/accounts_live.ex:356
 #, elixir-autogen
 msgid "empty_category_accounts_archived"
 msgstr "No archived category accounts for this entity."
@@ -157,12 +157,12 @@ msgstr "No archived category accounts for this entity."
 msgid "empty_form_requires_entity"
 msgstr "Select an entity before managing accounts."
 
-#: lib/aurum_finance_web/live/accounts_live.ex:352
+#: lib/aurum_finance_web/live/accounts_live.ex:348
 #, elixir-autogen
 msgid "empty_institution_accounts"
 msgstr "No institution accounts for this entity yet."
 
-#: lib/aurum_finance_web/live/accounts_live.ex:355
+#: lib/aurum_finance_web/live/accounts_live.ex:351
 #, elixir-autogen
 msgid "empty_institution_accounts_archived"
 msgstr "No archived institution accounts for this entity."
@@ -172,12 +172,12 @@ msgstr "No archived institution accounts for this entity."
 msgid "empty_no_entities"
 msgstr "Create an entity first to scope accounts correctly."
 
-#: lib/aurum_finance_web/live/accounts_live.ex:363
+#: lib/aurum_finance_web/live/accounts_live.ex:359
 #, elixir-autogen
 msgid "empty_system_managed_accounts"
 msgstr "No system-managed accounts for this entity yet."
 
-#: lib/aurum_finance_web/live/accounts_live.ex:366
+#: lib/aurum_finance_web/live/accounts_live.ex:362
 #, elixir-autogen
 msgid "empty_system_managed_accounts_archived"
 msgstr "No archived system-managed accounts for this entity."
@@ -202,7 +202,7 @@ msgstr "Account unarchived"
 msgid "flash_account_updated"
 msgstr "Account updated"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:178
+#: lib/aurum_finance_web/live/accounts_live.ex:174
 #, elixir-autogen
 msgid "flash_audit_logging_failed"
 msgstr "The account changed, but audit logging failed."
@@ -388,12 +388,12 @@ msgstr "Canonical ledger accounts managed through institution, category, and sys
 msgid "page_title"
 msgstr "Accounts"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:349
+#: lib/aurum_finance_web/live/accounts_live.ex:345
 #, elixir-autogen
 msgid "panel_edit_account"
 msgstr "Edit account"
 
-#: lib/aurum_finance_web/live/accounts_live.ex:346
+#: lib/aurum_finance_web/live/accounts_live.ex:342
 #, elixir-autogen
 msgid "panel_new_account"
 msgstr "New %{group} account"

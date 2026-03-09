@@ -1,0 +1,228 @@
+<div id="audit-log-page">
+  <.page_header title={dgettext("audit_log", "page_title")}>
+    <:subtitle>{dgettext("audit_log", "page_subtitle")}</:subtitle>
+  </.page_header>
+
+  <div class="space-y-4">
+    <.au_card>
+      <div class="flex flex-col gap-4">
+        <div class="flex flex-col gap-3 xl:flex-row xl:items-start xl:justify-between">
+          <div class="min-w-0 flex-1">
+            <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+              {dgettext("audit_log", "filter_date")}
+            </div>
+            <div class="mt-2 flex flex-wrap gap-2">
+              <button
+                :for={{label, value} <- date_preset_options()}
+                id={"audit-log-date-preset-#{value}"}
+                type="button"
+                phx-click="set_date_preset"
+                phx-value-preset={value}
+                class={date_preset_button_class(@filters.date_preset == value)}
+              >
+                {label}
+              </button>
+            </div>
+          </div>
+
+          <div class="flex items-center gap-2 self-start xl:self-center">
+            <.badge variant={:purple}>{length(@events)}</.badge>
+            <span class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-white/72">
+              {dgettext("audit_log", "operational_scope_hint")}
+            </span>
+          </div>
+        </div>
+
+        <.form
+          for={@filters_form}
+          id="audit-log-filter-form"
+          phx-change="filter"
+          class="grid gap-4 rounded-2xl border border-white/8 bg-white/[0.025] p-4 lg:grid-cols-2 xl:grid-cols-4"
+        >
+          <input type="hidden" name="filters[date_preset]" value={@filters.date_preset} />
+
+          <div>
+            <label for="filters_entity_type" class="block text-sm font-medium text-white/88">
+              {dgettext("audit_log", "filter_entity_type")}
+            </label>
+            <.input
+              field={@filters_form[:entity_type]}
+              type="select"
+              options={entity_type_filter_options(@entity_type_options)}
+            />
+          </div>
+
+          <div>
+            <label for="filters_action" class="block text-sm font-medium text-white/88">
+              {dgettext("audit_log", "filter_action")}
+            </label>
+            <.input
+              field={@filters_form[:action]}
+              type="select"
+              options={action_filter_options()}
+            />
+          </div>
+
+          <div>
+            <label for="filters_channel" class="block text-sm font-medium text-white/88">
+              {dgettext("audit_log", "filter_channel")}
+            </label>
+            <.input
+              field={@filters_form[:channel]}
+              type="select"
+              options={channel_filter_options()}
+            />
+          </div>
+
+          <div>
+            <label for="filters_owner_entity_id" class="block text-sm font-medium text-white/88">
+              {dgettext("audit_log", "filter_entity_id")}
+            </label>
+            <.input
+              field={@filters_form[:owner_entity_id]}
+              type="select"
+              options={owner_entity_filter_options(@entities)}
+            />
+          </div>
+        </.form>
+      </div>
+    </.au_card>
+
+    <.au_card>
+      <:header>
+        <span>{dgettext("audit_log", "page_title")}</span>
+      </:header>
+
+      <div class="mb-4 rounded-2xl border border-amber-300/15 bg-amber-300/8 px-4 py-3 text-sm text-amber-100/90">
+        {dgettext("audit_log", "operational_help")}
+      </div>
+
+      <div :if={@events == [] and !active_filters?(@filters)}>
+        <.empty_state text={dgettext("audit_log", "empty_state")} />
+      </div>
+
+      <div :if={@events == [] and active_filters?(@filters)} class="space-y-4">
+        <.empty_state text={dgettext("audit_log", "empty_state_filtered")} />
+        <div class="flex justify-center">
+          <.link
+            patch={~p"/audit-log"}
+            class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/[0.06]"
+          >
+            {dgettext("audit_log", "clear_filters")}
+          </.link>
+        </div>
+      </div>
+
+      <div :if={@events != []} class="space-y-4">
+        <div class="hidden rounded-2xl border border-white/8 bg-white/[0.02] px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-white/45 lg:grid lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr] lg:gap-4">
+          <div>{dgettext("audit_log", "column_occurred_at")}</div>
+          <div>{dgettext("audit_log", "column_entity_type")}</div>
+          <div>{dgettext("audit_log", "column_action")}</div>
+          <div>{dgettext("audit_log", "column_actor")}</div>
+          <div>{dgettext("audit_log", "column_channel")}</div>
+        </div>
+
+        <div
+          :for={event <- @events}
+          id={"audit-log-event-#{event.id}"}
+          class="overflow-hidden rounded-2xl border border-white/8 bg-white/[0.02]"
+        >
+          <button
+            id={"audit-log-event-toggle-#{event.id}"}
+            type="button"
+            phx-click="toggle_event"
+            phx-value-id={event.id}
+            class="grid w-full gap-3 px-4 py-4 text-left transition hover:bg-white/[0.03] lg:grid-cols-[1.6fr_1fr_1fr_1fr_1fr] lg:items-center lg:gap-4"
+          >
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.16em] text-white/45 lg:hidden">
+                {dgettext("audit_log", "column_occurred_at")}
+              </div>
+              <div class="text-sm font-medium text-white/90">
+                {formatted_occurred_at(event.occurred_at)}
+              </div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.16em] text-white/45 lg:hidden">
+                {dgettext("audit_log", "column_entity_type")}
+              </div>
+              <div class="text-sm text-white/82">{event.entity_type}</div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.16em] text-white/45 lg:hidden">
+                {dgettext("audit_log", "column_action")}
+              </div>
+              <div class="text-sm text-white/82">{event.action}</div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.16em] text-white/45 lg:hidden">
+                {dgettext("audit_log", "column_actor")}
+              </div>
+              <div class="text-sm text-white/82">{event.actor}</div>
+            </div>
+
+            <div>
+              <div class="text-[11px] uppercase tracking-[0.16em] text-white/45 lg:hidden">
+                {dgettext("audit_log", "column_channel")}
+              </div>
+              <div class="text-sm text-white/82">{event.channel}</div>
+            </div>
+          </button>
+
+          <div
+            :if={@expanded_event_id == event.id}
+            id={"audit-log-event-detail-#{event.id}"}
+            class="border-t border-white/8 bg-[#0b1020]/70 px-4 py-4"
+          >
+            <div class="grid gap-4 xl:grid-cols-2">
+              <section>
+                <h3 class="mb-2 text-sm font-semibold text-white/88">
+                  {dgettext("audit_log", "snapshot_before")}
+                </h3>
+                <pre class="overflow-x-auto rounded-2xl border border-white/8 bg-[#08101f] p-4 text-xs text-white/72"><code>{pretty_snapshot(event.before) || "—"}</code></pre>
+              </section>
+
+              <section>
+                <h3 class="mb-2 text-sm font-semibold text-white/88">
+                  {dgettext("audit_log", "snapshot_after")}
+                </h3>
+                <pre class="overflow-x-auto rounded-2xl border border-white/8 bg-[#08101f] p-4 text-xs text-white/72"><code>{pretty_snapshot(event.after) || "—"}</code></pre>
+              </section>
+            </div>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between gap-3 border-t border-white/8 pt-2">
+          <button
+            id="audit-log-prev-page"
+            type="button"
+            phx-click="go_page"
+            phx-value-page={@page - 1}
+            disabled={@page == 1}
+            class={pagination_button_class(@page > 1)}
+          >
+            {dgettext("audit_log", "pagination_prev")}
+          </button>
+
+          <div class="text-sm text-white/55">
+            {dgettext("audit_log", "pagination_page", page: @page)}
+          </div>
+
+          <button
+            id="audit-log-next-page"
+            type="button"
+            phx-click="go_page"
+            phx-value-page={@page + 1}
+            disabled={!@has_next_page}
+            class={pagination_button_class(@has_next_page)}
+          >
+            {dgettext("audit_log", "pagination_next")}
+          </button>
+        </div>
+      </div>
+    </.au_card>
+  </div>
+</div>

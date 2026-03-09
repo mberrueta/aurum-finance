@@ -50,3 +50,17 @@ AurumFinance is a self-hosted personal finance operating system focused on:
   - `account_type` for accounting semantics
   - `operational_subtype` for operational meaning
   - `management_group` for management/presentation grouping
+- Public backend APIs that are non-trivial should have `@doc`; important public
+  backend functions should include executable-style examples when practical.
+- Audit scope in v1 is intentionally narrow:
+  - audit operationally meaningful actions
+  - do not emit audit events for normal transaction/posting creation
+  - keep DB immutability protections for `audit_events`, `postings`, and restricted `transactions`
+- Current audit helper entry points are:
+  - `AurumFinance.Audit.insert_and_log/2`
+  - `AurumFinance.Audit.update_and_log/3`
+  - `AurumFinance.Audit.archive_and_log/3`
+  - `AurumFinance.Audit.Multi.append_event/4`
+- Audit snapshots use targeted redaction before persistence.
+- `audit_events.metadata` is non-sensitive only; it is not redacted in the
+  current implementation.

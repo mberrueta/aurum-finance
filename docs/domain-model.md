@@ -90,7 +90,7 @@ graph TD
 | **Entities** | Entity | Tenant boundary for all financial data; fiscal residency fields are columns on Entity; no user model | N/A (defines the boundary) |
 | **Ledger** | Account, Transaction, Posting (implemented), BalanceSnapshot (deferred) | Account and transaction reads require explicit entity scope; posting currency is derived from the joined account; balances are derived from postings on read | Entity-scoped |
 | **ExchangeRates** | RateSeries, RateRecord, TaxRateSnapshot, Currency | Tax snapshots immutable; rate types are string keys; arbitrary jurisdictions | Mixed (rates global, snapshots entity-scoped) |
-| **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
+| **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog (deferred) | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
 | **Ingestion** | ImportBatch, ImportRow | Fact/classification split at import; idempotent re-import; preview-before-commit | Entity-scoped |
 | **Reconciliation** | ReconciliationSession, MatchResult, Discrepancy | State machine: unreconciled -> cleared -> reconciled; corrections reset state | Entity-scoped |
 | **Reporting** | RecurringPattern, Projection, AnomalyAlert | Read-only over primary data; projections labeled with evidence base | Entity-scoped (+ cross-entity) |
@@ -392,9 +392,108 @@ Existing tax snapshots are immutable regardless of fiscal residency changes.
    (`fiscal_residency_country_code`, `default_tax_rate_type`) are columns
    directly on the Entity table; there is no separate fiscal residency record.
 5. **No user-entity relationship exists.** The operator owns all entities.
-6. **Entity lifecycle changes are audited** via generic `audit_events` entries
-   with `entity_type`, `entity_id`, `action`, `actor` (string),
-   `channel`, `before`, `after`, and `occurred_at`.
+6. **Entity lifecycle changes are audited** via append-only generic
+   `audit_events` entries. The current implementation audits operationally
+   meaningful lifecycle changes, not every ledger fact insert.
+
+### Audit Trail
+
+The audit context (`AurumFinance.Audit`) is a cross-cutting operational
+traceability layer. It is implemented, but intentionally narrower than the
+conceptual classification and ingestion audit domains described elsewhere in
+this document.
+
+#### Current v1 audit scope
+
+The current implementation records audit events for:
+
+- entity lifecycle changes
+- account lifecycle changes
+- transaction void actions
+- other explicit operational/manual actions that opt into the audit helpers
+
+The current implementation does not record audit events for:
+
+- normal transaction creation
+- posting creation
+- future classification/import/settings/rules provenance domains that are still deferred
+
+This distinction is intentional:
+
+- `audit_events` provide operational traceability
+- transaction/posting immutability protections preserve ledger correctness
+
+#### AuditEvent
+
+`AurumFinance.Audit.AuditEvent` is the generic append-only record used by the
+audit trail.
+
+| Field | Meaning |
+|-------|---------|
+| `id` | UUID primary key |
+| `entity_type` | Lowercase singular domain label such as `entity`, `account`, or `transaction` |
+| `entity_id` | UUID of the audited record |
+| `action` | Verb such as `created`, `updated`, `archived`, `unarchived`, or `voided` |
+| `actor` | Simple string label describing who triggered the change |
+| `channel` | `web`, `system`, `mcp`, or `ai_assistant` |
+| `before` | Full redacted snapshot before the change, or `nil` |
+| `after` | Full redacted snapshot after the change, or `nil` |
+| `metadata` | Optional non-sensitive operational metadata |
+| `occurred_at` | Domain timestamp for when the change happened |
+| `inserted_at` | DB insert timestamp |
+
+Notes:
+
+- `AuditEvent` has no `updated_at`.
+- `before` and `after` store full snapshots, not diffs.
+- `metadata` is not redacted. Do not store secrets, tokens, tax IDs, account
+  refs, or other sensitive values there.
+
+#### Audit helper API
+
+The implemented public audit entry points are:
+
+- `insert_and_log/2`
+- `update_and_log/3`
+- `archive_and_log/3`
+- `Audit.Multi.append_event/4`
+- `list_audit_events/1`
+- `distinct_entity_types/0`
+
+There is no public raw audit insert API. Domain code is expected to use the
+redaction-aware helpers so snapshots and metadata handling stay centralized.
+
+#### Redaction and immutability
+
+The audit helpers serialize full snapshots and apply field-level redaction
+before insert. Current redact conventions include:
+
+- `Entity.tax_identifier`
+- `Account.institution_account_ref`
+
+At the database level:
+
+- `audit_events` is append-only
+- `postings` is append-only
+- `transactions` protect immutable fact fields and allow only the set-once
+  `voided_at` lifecycle marker
+
+These protections remain in place even when normal transaction/posting creates
+do not emit audit events.
+
+#### Audit log viewer
+
+The current UI exposes a read-only `/audit-log` LiveView for operational events.
+It supports filtering by:
+
+- audited `entity_type`
+- action
+- channel
+- owner `Entity`
+- date preset
+
+The owner-entity filter is user-facing by entity name and stored internally as
+an entity UUID in the URL query.
 
 ### Ingestion and Normalization
 
