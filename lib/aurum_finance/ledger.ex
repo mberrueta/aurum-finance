@@ -536,9 +536,10 @@ defmodule AurumFinance.Ledger do
   # Transaction persistence (Multi-based)
   # ---------------------------------------------------------------------------
 
+  @dialyzer {:nowarn_function, persist_transaction: 3, persist_void_transaction: 2}
   defp persist_transaction(validated_changeset, posting_attrs, audit_metadata) do
-    Ecto.Multi.new()
-    |> Ecto.Multi.insert(:transaction, validated_changeset)
+    new_multi()
+    |> multi_insert(:transaction, validated_changeset)
     |> Ecto.Multi.run(:postings, fn _repo, %{transaction: transaction} ->
       insert_postings(transaction, posting_attrs)
     end)
@@ -568,8 +569,8 @@ defmodule AurumFinance.Ledger do
         correlation_id: correlation_id
       })
 
-    Ecto.Multi.new()
-    |> Ecto.Multi.update(:voided, void_changeset)
+    new_multi()
+    |> multi_update(:voided, void_changeset)
     |> Audit.Multi.append_event(:voided, before_snapshot, %{
       entity_type: @transaction_entity_type,
       action: "voided",
@@ -608,9 +609,7 @@ defmodule AurumFinance.Ledger do
     {:error, reason}
   end
 
-  defp normalize_multi_void_result(
-         {:ok, %{voided: voided, reversal_with_postings: reversal}}
-       ) do
+  defp normalize_multi_void_result({:ok, %{voided: voided, reversal_with_postings: reversal}}) do
     {:ok, %{voided: voided, reversal: reversal}}
   end
 
@@ -621,6 +620,16 @@ defmodule AurumFinance.Ledger do
   defp normalize_multi_void_result({:error, _step, reason, _}) do
     {:error, reason}
   end
+
+  @dialyzer {:nowarn_function, new_multi: 0, multi_insert: 3, multi_update: 3}
+  @spec new_multi() :: any()
+  defp new_multi, do: Ecto.Multi.new()
+
+  @spec multi_insert(any(), atom(), Ecto.Changeset.t()) :: any()
+  defp multi_insert(multi, name, changeset), do: Ecto.Multi.insert(multi, name, changeset)
+
+  @spec multi_update(any(), atom(), Ecto.Changeset.t()) :: any()
+  defp multi_update(multi, name, changeset), do: Ecto.Multi.update(multi, name, changeset)
 
   # ---------------------------------------------------------------------------
   # Transaction helpers

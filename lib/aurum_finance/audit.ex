@@ -150,7 +150,8 @@ defmodule AurumFinance.Audit do
     Repo.transaction(fn ->
       with {:domain, {:ok, updated}} <- {:domain, Repo.update(changeset)},
            after_snapshot = updated |> serializer.() |> redact_snapshot(redact_fields),
-           audit_attrs = build_audit_attrs(meta, updated.id, action, before_snapshot, after_snapshot),
+           audit_attrs =
+             build_audit_attrs(meta, updated.id, action, before_snapshot, after_snapshot),
            {:audit, {:ok, _event}} <- {:audit, create_audit_event(audit_attrs)} do
         updated
       else
