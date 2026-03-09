@@ -1,0 +1,208 @@
+msgid ""
+msgstr ""
+"Language: en\n"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:300
+#, elixir-autogen
+msgid "action_archived"
+msgstr "archived"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:298
+#, elixir-autogen
+msgid "action_created"
+msgstr "created"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:301
+#, elixir-autogen
+msgid "action_unarchived"
+msgstr "unarchived"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:299
+#, elixir-autogen
+msgid "action_updated"
+msgstr "updated"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:302
+#, elixir-autogen
+msgid "action_voided"
+msgstr "voided"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:308
+#, elixir-autogen
+msgid "channel_ai_assistant"
+msgstr "ai_assistant"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:307
+#, elixir-autogen
+msgid "channel_mcp"
+msgstr "mcp"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:306
+#, elixir-autogen
+msgid "channel_system"
+msgstr "system"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:305
+#, elixir-autogen
+msgid "channel_web"
+msgstr "web"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:111
+#, elixir-autogen
+msgid "clear_filters"
+msgstr "Clear filters"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:120
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:155
+#, elixir-autogen
+msgid "column_action"
+msgstr "Action"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:121
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:162
+#, elixir-autogen
+msgid "column_actor"
+msgstr "Actor"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:122
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:169
+#, elixir-autogen
+msgid "column_channel"
+msgstr "Channel"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:119
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:148
+#, elixir-autogen
+msgid "column_entity_type"
+msgstr "Entity type"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:118
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:139
+#, elixir-autogen
+msgid "column_occurred_at"
+msgstr "Occurred at"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:101
+#, elixir-autogen
+msgid "empty_state"
+msgstr "No audit events recorded yet."
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:105
+#, elixir-autogen
+msgid "empty_state_filtered"
+msgstr "No events match the selected filters."
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:57
+#, elixir-autogen
+msgid "filter_action"
+msgstr "Action"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:252
+#, elixir-autogen
+msgid "filter_action_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:68
+#, elixir-autogen
+msgid "filter_channel"
+msgstr "Channel"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:259
+#, elixir-autogen
+msgid "filter_channel_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:12
+#, elixir-autogen
+msgid "filter_date"
+msgstr "Date range"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:247
+#, elixir-autogen
+msgid "filter_date_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:246
+#, elixir-autogen
+msgid "filter_date_this_month"
+msgstr "This month"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:245
+#, elixir-autogen
+msgid "filter_date_this_week"
+msgstr "This week"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:244
+#, elixir-autogen
+msgid "filter_date_today"
+msgstr "Today"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:79
+#, elixir-autogen
+msgid "filter_entity_id"
+msgstr "Entity"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:271
+#, elixir-autogen
+msgid "filter_entity_id_all"
+msgstr "All"
+
+msgid "filter_entity_id_placeholder"
+msgstr "UUID"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:46
+#, elixir-autogen
+msgid "filter_entity_type"
+msgstr "Entity type"
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:266
+#, elixir-autogen
+msgid "filter_entity_type_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:97
+#, elixir-autogen
+msgid "operational_help"
+msgstr "This view records operational, administrative, and manual changes. It is not a firehose of every ledger insert."
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:31
+#, elixir-autogen
+msgid "operational_scope_hint"
+msgstr "Operational scope"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:3
+#, elixir-autogen
+msgid "page_subtitle"
+msgstr "Trace meaningful operational changes, manual actions, and provenance events."
+
+#: lib/aurum_finance_web/live/audit_log_live.ex:23
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:2
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:93
+#, elixir-autogen
+msgid "page_title"
+msgstr "Audit Log"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:222
+#, elixir-autogen
+msgid "pagination_next"
+msgstr "Next"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:211
+#, elixir-autogen
+msgid "pagination_page"
+msgstr "Page %{page}"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:207
+#, elixir-autogen
+msgid "pagination_prev"
+msgstr "Previous"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:190
+#, elixir-autogen
+msgid "snapshot_after"
+msgstr "After"
+
+#: lib/aurum_finance_web/live/audit_log_live.html.heex:183
+#, elixir-autogen
+msgid "snapshot_before"
+msgstr "Before"

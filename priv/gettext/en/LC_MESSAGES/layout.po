@@ -38,6 +38,11 @@ msgstr "Dashboard"
 msgid "nav_fx"
 msgstr "FX Rates"
 
+#: lib/aurum_finance_web/components/layouts.ex:152
+#, elixir-autogen, elixir-format
+msgid "nav_audit_log"
+msgstr "Audit Log"
+
 #: lib/aurum_finance_web/components/layouts.ex:145
 #, elixir-autogen, elixir-format
 msgid "nav_import"

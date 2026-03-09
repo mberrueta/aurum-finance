@@ -1,7 +1,7 @@
 # Task 06: Audit Log LiveView — Route, Sidebar, Filters, Event List, Pagination, Gettext
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: ✅ COMPLETE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 04, Task 05
 - **Blocks**: Task 07
@@ -197,31 +197,47 @@ After agent completes:
 *[Filled by executing agent after completion]*
 
 ### Work Performed
-- [What was actually done]
+- Implemented `AurumFinanceWeb.AuditLogLive` with URL-driven filters, date presets, expandable event rows, and offset-based pagination using the shared `FilterQuery` helper
+- Added the `/audit-log` route under the authenticated `:app` live session and wired the sidebar navigation entry with `active_nav: :audit_log`
+- Built the LiveView template with a read-only operational audit framing, dynamic entity type filter options from `Audit.distinct_entity_types/0`, static action/channel filters, entity ID filtering, empty states, and JSON before/after snapshot expansion
+- Added gettext coverage for the new `audit_log` domain plus the `layout` navigation label for the sidebar entry
+- Added a minimal LiveView regression suite covering mount, filtering, expansion, empty filtered state, and read-only behavior, then ran the full repo gates
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `lib/aurum_finance_web/live/audit_log_live.ex`
+- `lib/aurum_finance_web/live/audit_log_live.html.heex`
+- `lib/aurum_finance_web/router.ex`
+- `lib/aurum_finance_web/components/layouts.ex`
+- `priv/gettext/audit_log.pot`
+- `priv/gettext/en/LC_MESSAGES/audit_log.po`
+- `priv/gettext/layout.pot`
+- `priv/gettext/en/LC_MESSAGES/layout.po`
+- `test/aurum_finance_web/live/audit_log_live_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| The existing compact `?q=key:value&key:value` filter format should be reused unchanged for the audit viewer | Task 05 established this as the shared URL convention and the task explicitly references `TransactionsLive` as the pattern to follow |
+| Invalid `entity_id`, `channel`, and `page` query values should be ignored rather than raising errors | The audit viewer should remain bookmarkable and resilient to malformed URLs in a single-user operational UI |
+| A minimal initial LiveView test suite is appropriate even though Task 07 will deepen coverage | The constitution requires tests for executable logic, and Task 07 can expand from this baseline instead of starting from zero |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Used a separate `.html.heex` template instead of a single-file inline render | Inline `~H` render in `audit_log_live.ex` | The page has enough structure that the separate template is easier to review and maintain |
+| Implemented simple prev/next pagination with a `page` URL clause and `limit + 1` lookahead | Load-more UI or total-count pagination | This satisfies the spec with minimal extra state and no count query |
+| Framed the page explicitly as an operational audit log with no write controls | A more generic event feed presentation | The narrowed v1 audit scope needs to be visible in the UI so it is not interpreted as a ledger insert firehose |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- Gettext does not allow dynamic `dgettext/2` keys. Resolution: replaced interpolated action/channel translation lookups with explicit helper functions for each supported value.
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

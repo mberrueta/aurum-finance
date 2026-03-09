@@ -29,6 +29,7 @@ defmodule AurumFinance.Audit do
   @type list_opt ::
           {:entity_type, String.t()}
           | {:entity_id, Ecto.UUID.t()}
+          | {:owner_entity_id, Ecto.UUID.t()}
           | {:channel, audit_channel()}
           | {:action, String.t()}
           | {:limit, pos_integer()}
@@ -233,6 +234,7 @@ defmodule AurumFinance.Audit do
 
     - `{:entity_type, String.t()}`
     - `{:entity_id, Ecto.UUID.t()}`
+    - `{:owner_entity_id, Ecto.UUID.t()}`
     - `{:channel, audit_channel()}`
     - `{:action, String.t()}`
     - `{:occurred_after, DateTime.t()}`
@@ -439,6 +441,21 @@ defmodule AurumFinance.Audit do
   defp filter_query(query, [{:entity_id, entity_id} | rest]) do
     query
     |> where([audit_event], audit_event.entity_id == ^entity_id)
+    |> filter_query(rest)
+  end
+
+  defp filter_query(query, [{:owner_entity_id, owner_entity_id} | rest]) do
+    query
+    |> where(
+      [audit_event],
+      (audit_event.entity_type == "entity" and audit_event.entity_id == ^owner_entity_id) or
+        fragment(
+          "COALESCE((?->>'entity_id'), (?->>'entity_id')) = ?",
+          audit_event.after,
+          audit_event.before,
+          ^owner_entity_id
+        )
+    )
     |> filter_query(rest)
   end
 

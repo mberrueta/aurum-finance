@@ -148,7 +148,9 @@ defmodule AurumFinanceWeb.Layouts do
        ~p"/reconciliation"},
       {:fx, dgettext("layout", "nav_fx"), "hero-globe-alt-mini", ~p"/fx"},
       {:reports, dgettext("layout", "nav_reports"), "hero-chart-bar-mini", ~p"/reports"},
-      {:settings, dgettext("layout", "nav_settings"), "hero-cog-6-tooth-mini", ~p"/settings"}
+      {:settings, dgettext("layout", "nav_settings"), "hero-cog-6-tooth-mini", ~p"/settings"},
+      {:audit_log, dgettext("layout", "nav_audit_log"), "hero-clipboard-document-list-mini",
+       ~p"/audit-log"}
     ]
   end
 
