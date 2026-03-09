@@ -184,34 +184,53 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- [What was actually done]
+- Implemented `Audit.insert_and_log/2`, `Audit.update_and_log/3`, `Audit.archive_and_log/3` in `lib/aurum_finance/audit.ex` -- each wraps domain write + audit event append in a single `Repo.transaction`
+- Created `lib/aurum_finance/audit/multi.ex` with `Audit.Multi.append_event/4` for appending audit events to existing `Ecto.Multi` pipelines
+- Extended `Audit.list_audit_events/1` with `:occurred_after`, `:occurred_before`, and `:offset` filter support
+- Added `Audit.distinct_entity_types/0` for UI filter dropdown population
+- Promoted `normalize_actor/1`, `normalize_channel/1`, `default_snapshot/1`, and `redact_snapshot/2` to `@doc false` public functions in `Audit` so they can be reused by `Audit.Multi` and caller contexts
+- Migrated `Entities` context: replaced all `Audit.with_event/3` calls with new helpers; removed `extract_audit_metadata/1`, `normalize_actor/1`, `update_entity_with_action/4` private functions; snapshot function kept as private, passed via `meta[:serializer]`
+- Migrated `Ledger` context (accounts): replaced all `Audit.with_event/3` calls with new helpers; removed `update_account_with_action/4`; created `account_audit_meta/2` private helper
+- Migrated `Ledger` context (transactions): refactored `persist_transaction/3` from `Repo.transaction` + callback nesting to flat `Ecto.Multi` pipeline with `Audit.Multi.append_event/4`
+- Migrated `Ledger` context (void): refactored `persist_void_transaction/2` from nested `Repo.transaction` + callbacks to flat `Ecto.Multi` pipeline with two `Audit.Multi.append_event/4` calls (void event + reversal created event)
+- Removed `with_event/3`, `log_event/1`, `build_event_attrs/4`, `ensure_audit_logged/2`, `@type with_event_meta`, `snapshot/3` from `Audit` context
+- Removed `log_transaction_created/2`, `log_transaction_voided/3`, `maybe_log_transaction_created/2`, `maybe_finish_void_transaction/3`, `finalize_void_transaction/4`, `normalize_repo_result/1` from `Ledger` context
+- Grep-verified zero remaining references to `with_event` or `log_event` in `lib/` and `test/`
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `lib/aurum_finance/audit.ex` -- rewritten with new helper API
+- `lib/aurum_finance/audit/multi.ex` -- new module
+- `lib/aurum_finance/entities.ex` -- migrated to new API
+- `lib/aurum_finance/ledger.ex` -- migrated to new API
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| `normalize_actor/1`, `normalize_channel/1`, `default_snapshot/1`, `redact_snapshot/2` promoted to `@doc false` public in `Audit` | `Audit.Multi` and caller contexts need to call these; marking `@doc false` keeps them out of public docs while making them accessible |
+| `insert_transaction/2` kept as a plain Repo helper called from both `persist_transaction` Multi run step and `insert_reversal_transaction` | The reversal insertion reuses the same validation + insert logic; embedding it in the Multi step via `Ecto.Multi.run` preserves atomicity |
+| `extract_audit_metadata/1` retained in `Ledger` for transaction/void paths | These paths use `Audit.Multi` and build their own meta maps, so a shared helper in the caller is still appropriate |
+| Snapshot functions kept private in domain contexts, passed via `meta[:serializer]` | Option A from the task spec; each context knows its own schema shape best |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Flat `Ecto.Multi` pipeline for `persist_transaction` and `persist_void_transaction` | Keep nested `Repo.transaction` with `Audit.Multi` | Flat Multi is more readable, easier to reason about step ordering, and aligns with the spec's intent |
+| Two separate `Audit.Multi.append_event` calls for void (one for void event, one for reversal created event) | Single combined audit event | The spec says void produces two audit events: one for the voided transaction and one for the reversal creation |
+| `archive_and_log/3` delegates to `update_and_log/3` with `action: "archived"` default | Duplicate implementation | Reduces code duplication; semantic alias pattern is explicit in the spec |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- None
 
 ### Questions for Human
-1. [Question needing human input]
+1. The `persist_transaction/3` refactoring to `Ecto.Multi` changes the internal insert_postings call from a direct sequence to an `Ecto.Multi.run` step. The `insert_postings/2` function still uses `Repo.insert` in a `reduce_while` loop inside the Multi step. This is correct (it runs within the Multi's transaction) but differs from inserting each posting as its own Multi step. Please confirm this is acceptable.
+2. The void path's reversal transaction is inserted via `Ecto.Multi.run(:reversal, ...)` which internally calls `insert_reversal_transaction/2` -> `insert_transaction/2`. These nested `Repo.insert` calls happen within the Multi's transaction. This preserves the existing logic while gaining atomicity with audit events. Please confirm.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

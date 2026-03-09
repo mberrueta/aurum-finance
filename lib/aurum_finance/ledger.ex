@@ -213,22 +213,11 @@ defmodule AurumFinance.Ledger do
   @spec create_account(map(), [audit_opt()]) ::
           {:ok, Account.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Account.t()}}
+          | {:error, {:audit_failed, term()}}
   def create_account(attrs, opts \\ []) do
-    audit_metadata = extract_audit_metadata(opts)
+    changeset = Account.changeset(%Account{}, attrs)
 
-    Audit.with_event(
-      %{
-        event: "created",
-        target: nil,
-        entity_type: @entity_type,
-        actor: audit_metadata.actor,
-        channel: audit_metadata.channel,
-        redact_fields: @audit_redact_fields
-      },
-      fn -> Repo.insert(Account.changeset(%Account{}, attrs)) end,
-      serializer: &account_snapshot/1
-    )
+    Audit.insert_and_log(changeset, account_audit_meta(opts))
   end
 
   @doc """
@@ -258,9 +247,11 @@ defmodule AurumFinance.Ledger do
   @spec update_account(Account.t(), map(), [audit_opt()]) ::
           {:ok, Account.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Account.t()}}
+          | {:error, {:audit_failed, term()}}
   def update_account(%Account{} = account, attrs, opts \\ []) do
-    update_account_with_action(account, attrs, "updated", opts)
+    changeset = Account.changeset(account, attrs)
+
+    Audit.update_and_log(account, changeset, account_audit_meta(opts, action: "updated"))
   end
 
   @doc """
@@ -276,9 +267,11 @@ defmodule AurumFinance.Ledger do
   @spec archive_account(Account.t(), [audit_opt()]) ::
           {:ok, Account.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Account.t()}}
+          | {:error, {:audit_failed, term()}}
   def archive_account(%Account{} = account, opts \\ []) do
-    update_account_with_action(account, %{archived_at: DateTime.utc_now()}, "archived", opts)
+    changeset = Account.changeset(account, %{archived_at: DateTime.utc_now()})
+
+    Audit.archive_and_log(account, changeset, account_audit_meta(opts))
   end
 
   @doc """
@@ -294,9 +287,11 @@ defmodule AurumFinance.Ledger do
   @spec unarchive_account(Account.t(), [audit_opt()]) ::
           {:ok, Account.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Account.t()}}
+          | {:error, {:audit_failed, term()}}
   def unarchive_account(%Account{} = account, opts \\ []) do
-    update_account_with_action(account, %{archived_at: nil}, "unarchived", opts)
+    changeset = Account.changeset(account, %{archived_at: nil})
+
+    Audit.update_and_log(account, changeset, account_audit_meta(opts, action: "unarchived"))
   end
 
   @doc """
@@ -464,24 +459,35 @@ defmodule AurumFinance.Ledger do
     |> Map.new()
   end
 
-  defp update_account_with_action(%Account{} = account, attrs, action, opts) do
-    audit_metadata = extract_audit_metadata(opts)
+  # ---------------------------------------------------------------------------
+  # Account audit meta
+  # ---------------------------------------------------------------------------
 
-    Audit.with_event(
-      %{
-        event: action,
-        target: account,
-        entity_type: @entity_type,
-        actor: audit_metadata.actor,
-        channel: audit_metadata.channel,
-        redact_fields: @audit_redact_fields
-      },
-      fn -> Repo.update(Account.changeset(account, attrs)) end,
+  defp account_audit_meta(opts, overrides \\ []) do
+    actor =
+      opts
+      |> Keyword.get(:actor, @default_actor)
+      |> Audit.normalize_actor()
+
+    channel =
+      opts
+      |> Keyword.get(:channel, :system)
+      |> Audit.normalize_channel()
+
+    base = %{
+      actor: actor,
+      channel: channel,
+      entity_type: @entity_type,
+      redact_fields: @audit_redact_fields,
       serializer: &account_snapshot/1
-    )
+    }
+
+    Enum.reduce(overrides, base, fn {key, value}, acc ->
+      Map.put(acc, key, value)
+    end)
   end
 
-  defp account_snapshot(account) when is_struct(account, Account) do
+  defp account_snapshot(%Account{} = account) do
     %{
       "id" => account.id,
       "entity_id" => account.entity_id,
@@ -499,7 +505,9 @@ defmodule AurumFinance.Ledger do
     }
   end
 
-  defp account_snapshot(value), do: value
+  # ---------------------------------------------------------------------------
+  # Transaction snapshot
+  # ---------------------------------------------------------------------------
 
   defp transaction_snapshot(%Transaction{} = transaction) do
     transaction = Repo.preload(transaction, :postings)
@@ -524,33 +532,113 @@ defmodule AurumFinance.Ledger do
     }
   end
 
-  defp transaction_snapshot(value), do: value
+  # ---------------------------------------------------------------------------
+  # Transaction persistence (Multi-based)
+  # ---------------------------------------------------------------------------
+
+  defp persist_transaction(validated_changeset, posting_attrs, audit_metadata) do
+    Ecto.Multi.new()
+    |> Ecto.Multi.insert(:transaction, validated_changeset)
+    |> Ecto.Multi.run(:postings, fn _repo, %{transaction: transaction} ->
+      insert_postings(transaction, posting_attrs)
+    end)
+    |> Ecto.Multi.run(:transaction_with_postings, fn _repo, %{transaction: transaction} ->
+      {:ok, Repo.preload(transaction, :postings)}
+    end)
+    |> Audit.Multi.append_event(:transaction_with_postings, nil, %{
+      entity_type: @transaction_entity_type,
+      action: "created",
+      actor: audit_metadata.actor,
+      channel: audit_metadata.channel,
+      serializer: &transaction_snapshot/1
+    })
+    |> Repo.transaction()
+    |> normalize_multi_transaction_result()
+  end
+
+  defp persist_void_transaction(transaction, audit_metadata) do
+    voided_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+    correlation_id = Ecto.UUID.generate()
+
+    before_snapshot = transaction_snapshot(transaction)
+
+    void_changeset =
+      Transaction.void_changeset(transaction, %{
+        voided_at: voided_at,
+        correlation_id: correlation_id
+      })
+
+    Ecto.Multi.new()
+    |> Ecto.Multi.update(:voided, void_changeset)
+    |> Audit.Multi.append_event(:voided, before_snapshot, %{
+      entity_type: @transaction_entity_type,
+      action: "voided",
+      actor: audit_metadata.actor,
+      channel: audit_metadata.channel,
+      serializer: &transaction_snapshot/1
+    })
+    |> Ecto.Multi.run(:reversal, fn _repo, %{voided: _voided} ->
+      insert_reversal_transaction(transaction, correlation_id)
+    end)
+    |> Ecto.Multi.run(:reversal_with_postings, fn _repo, %{reversal: reversal} ->
+      {:ok, Repo.preload(reversal, :postings)}
+    end)
+    |> Audit.Multi.append_event(:reversal_with_postings, nil, %{
+      entity_type: @transaction_entity_type,
+      action: "created",
+      actor: audit_metadata.actor,
+      channel: audit_metadata.channel,
+      serializer: &transaction_snapshot/1
+    })
+    |> Repo.transaction()
+    |> normalize_multi_void_result()
+  end
+
+  defp normalize_multi_transaction_result(
+         {:ok, %{transaction_with_postings: transaction_with_postings}}
+       ) do
+    {:ok, transaction_with_postings}
+  end
+
+  defp normalize_multi_transaction_result({:error, _step, %Ecto.Changeset{} = changeset, _}) do
+    {:error, changeset}
+  end
+
+  defp normalize_multi_transaction_result({:error, _step, reason, _}) do
+    {:error, reason}
+  end
+
+  defp normalize_multi_void_result(
+         {:ok, %{voided: voided, reversal_with_postings: reversal}}
+       ) do
+    {:ok, %{voided: voided, reversal: reversal}}
+  end
+
+  defp normalize_multi_void_result({:error, _step, %Ecto.Changeset{} = changeset, _}) do
+    {:error, changeset}
+  end
+
+  defp normalize_multi_void_result({:error, _step, reason, _}) do
+    {:error, reason}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Transaction helpers
+  # ---------------------------------------------------------------------------
 
   defp extract_audit_metadata(opts) do
     actor =
       opts
       |> Keyword.get(:actor, @default_actor)
-      |> normalize_actor()
+      |> Audit.normalize_actor()
 
     channel =
-      case Keyword.get(opts, :channel, :system) do
-        channel when channel in [:web, :system, :mcp, :ai_assistant] -> channel
-        _ -> :system
-      end
+      opts
+      |> Keyword.get(:channel, :system)
+      |> Audit.normalize_channel()
 
     %{actor: actor, channel: channel}
   end
-
-  defp normalize_actor(actor) when is_binary(actor) do
-    actor
-    |> String.trim()
-    |> case do
-      "" -> @default_actor
-      value -> value
-    end
-  end
-
-  defp normalize_actor(_actor), do: @default_actor
 
   defp require_entity_scope!(opts, function_name) do
     case Keyword.fetch(opts, :entity_id) do
@@ -836,15 +924,6 @@ defmodule AurumFinance.Ledger do
     end
   end
 
-  defp persist_transaction(validated_changeset, posting_attrs, audit_metadata) do
-    Repo.transaction(fn ->
-      validated_changeset
-      |> insert_transaction(posting_attrs)
-      |> maybe_log_transaction_created(audit_metadata)
-    end)
-    |> normalize_repo_result()
-  end
-
   defp insert_postings(transaction, posting_attrs) do
     Enum.reduce_while(posting_attrs, {:ok, []}, fn posting_attr, {:ok, postings} ->
       attrs = %{
@@ -885,64 +964,6 @@ defmodule AurumFinance.Ledger do
     end
   end
 
-  defp persist_void_transaction(transaction, audit_metadata) do
-    voided_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
-    correlation_id = Ecto.UUID.generate()
-
-    Repo.transaction(fn ->
-      case update_voided_transaction(transaction, voided_at, correlation_id) do
-        {:ok, voided} ->
-          finalize_void_transaction(transaction, voided, correlation_id, audit_metadata)
-
-        {:error, %Ecto.Changeset{} = changeset} ->
-          Repo.rollback(changeset)
-      end
-    end)
-    |> normalize_repo_result()
-  end
-
-  defp update_voided_transaction(transaction, voided_at, correlation_id) do
-    transaction
-    |> Transaction.void_changeset(%{voided_at: voided_at, correlation_id: correlation_id})
-    |> Repo.update()
-  end
-
-  defp finalize_void_transaction(transaction, voided, correlation_id, audit_metadata) do
-    case log_transaction_voided(transaction, voided, audit_metadata) do
-      :ok ->
-        transaction
-        |> insert_reversal_transaction(correlation_id)
-        |> maybe_finish_void_transaction(voided, audit_metadata)
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        Repo.rollback(changeset)
-    end
-  end
-
-  defp log_transaction_created(transaction, audit_metadata) do
-    Audit.log_event(%{
-      entity_type: @transaction_entity_type,
-      entity_id: transaction.id,
-      action: "created",
-      actor: audit_metadata.actor,
-      channel: audit_metadata.channel,
-      before: nil,
-      after: transaction_snapshot(transaction)
-    })
-  end
-
-  defp log_transaction_voided(before_transaction, after_transaction, audit_metadata) do
-    Audit.log_event(%{
-      entity_type: @transaction_entity_type,
-      entity_id: after_transaction.id,
-      action: "voided",
-      actor: audit_metadata.actor,
-      channel: audit_metadata.channel,
-      before: transaction_snapshot(before_transaction),
-      after: transaction_snapshot(Repo.preload(after_transaction, :postings))
-    })
-  end
-
   defp maybe_filter_balance_as_of_date(query, nil), do: query
 
   defp maybe_filter_balance_as_of_date(query, %Date{} = as_of_date) do
@@ -966,35 +987,6 @@ defmodule AurumFinance.Ledger do
       :error -> raise ArgumentError, "invalid posting amount"
     end
   end
-
-  defp maybe_log_transaction_created({:ok, transaction}, audit_metadata) do
-    case log_transaction_created(transaction, audit_metadata) do
-      :ok -> transaction
-      {:error, %Ecto.Changeset{} = changeset} -> Repo.rollback(changeset)
-    end
-  end
-
-  defp maybe_log_transaction_created({:error, %Ecto.Changeset{} = changeset}, _audit_metadata) do
-    Repo.rollback(changeset)
-  end
-
-  defp maybe_finish_void_transaction({:ok, reversal}, voided, audit_metadata) do
-    case log_transaction_created(reversal, audit_metadata) do
-      :ok -> %{voided: voided, reversal: reversal}
-      {:error, %Ecto.Changeset{} = changeset} -> Repo.rollback(changeset)
-    end
-  end
-
-  defp maybe_finish_void_transaction(
-         {:error, %Ecto.Changeset{} = changeset},
-         _voided,
-         _audit_metadata
-       ) do
-    Repo.rollback(changeset)
-  end
-
-  defp normalize_repo_result({:ok, result}), do: {:ok, result}
-  defp normalize_repo_result({:error, %Ecto.Changeset{} = changeset}), do: {:error, changeset}
 
   defp datetime_to_iso8601(nil), do: nil
   defp datetime_to_iso8601(%DateTime{} = datetime), do: DateTime.to_iso8601(datetime)

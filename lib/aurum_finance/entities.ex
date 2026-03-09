@@ -57,22 +57,11 @@ defmodule AurumFinance.Entities do
   @spec create_entity(map(), [audit_opt()]) ::
           {:ok, Entity.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+          | {:error, {:audit_failed, term()}}
   def create_entity(attrs, opts \\ []) do
-    audit_metadata = extract_audit_metadata(opts)
+    changeset = Entity.changeset(%Entity{}, attrs)
 
-    Audit.with_event(
-      %{
-        event: "created",
-        target: nil,
-        entity_type: @entity_type,
-        actor: audit_metadata.actor,
-        channel: audit_metadata.channel,
-        redact_fields: @audit_redact_fields
-      },
-      fn -> Repo.insert(Entity.changeset(%Entity{}, attrs)) end,
-      serializer: &entity_snapshot/1
-    )
+    Audit.insert_and_log(changeset, audit_meta(opts))
   end
 
   @doc """
@@ -86,9 +75,11 @@ defmodule AurumFinance.Entities do
   @spec update_entity(Entity.t(), map(), [audit_opt()]) ::
           {:ok, Entity.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+          | {:error, {:audit_failed, term()}}
   def update_entity(%Entity{} = entity, attrs, opts \\ []) do
-    update_entity_with_action(entity, attrs, "updated", opts)
+    changeset = Entity.changeset(entity, attrs)
+
+    Audit.update_and_log(entity, changeset, audit_meta(opts, action: "updated"))
   end
 
   @doc """
@@ -104,9 +95,11 @@ defmodule AurumFinance.Entities do
   @spec archive_entity(Entity.t(), [audit_opt()]) ::
           {:ok, Entity.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+          | {:error, {:audit_failed, term()}}
   def archive_entity(%Entity{} = entity, opts \\ []) do
-    update_entity_with_action(entity, %{archived_at: DateTime.utc_now()}, "archived", opts)
+    changeset = Entity.changeset(entity, %{archived_at: DateTime.utc_now()})
+
+    Audit.archive_and_log(entity, changeset, audit_meta(opts))
   end
 
   @doc """
@@ -120,9 +113,11 @@ defmodule AurumFinance.Entities do
   @spec unarchive_entity(Entity.t(), [audit_opt()]) ::
           {:ok, Entity.t()}
           | {:error, Ecto.Changeset.t()}
-          | {:error, {:audit_failed, Ecto.Changeset.t(), Entity.t()}}
+          | {:error, {:audit_failed, term()}}
   def unarchive_entity(%Entity{} = entity, opts \\ []) do
-    update_entity_with_action(entity, %{archived_at: nil}, "unarchived", opts)
+    changeset = Entity.changeset(entity, %{archived_at: nil})
+
+    Audit.update_and_log(entity, changeset, audit_meta(opts, action: "unarchived"))
   end
 
   @doc """
@@ -145,24 +140,11 @@ defmodule AurumFinance.Entities do
     Entity.changeset(entity, attrs)
   end
 
-  defp update_entity_with_action(%Entity{} = entity, attrs, action, opts) do
-    audit_metadata = extract_audit_metadata(opts)
+  # ---------------------------------------------------------------------------
+  # Private helpers
+  # ---------------------------------------------------------------------------
 
-    Audit.with_event(
-      %{
-        event: action,
-        target: entity,
-        entity_type: @entity_type,
-        actor: audit_metadata.actor,
-        channel: audit_metadata.channel,
-        redact_fields: @audit_redact_fields
-      },
-      fn -> Repo.update(Entity.changeset(entity, attrs)) end,
-      serializer: &entity_snapshot/1
-    )
-  end
-
-  defp entity_snapshot(entity) when is_struct(entity, Entity) do
+  defp entity_snapshot(%Entity{} = entity) do
     %{
       "id" => entity.id,
       "name" => entity.name,
@@ -178,33 +160,29 @@ defmodule AurumFinance.Entities do
     }
   end
 
-  defp entity_snapshot(value), do: value
-
-  defp extract_audit_metadata(opts) do
+  defp audit_meta(opts, overrides \\ []) do
     actor =
       opts
       |> Keyword.get(:actor, @default_actor)
-      |> normalize_actor()
+      |> Audit.normalize_actor()
 
     channel =
-      case Keyword.get(opts, :channel, :system) do
-        channel when channel in [:web, :system, :mcp, :ai_assistant] -> channel
-        _ -> :system
-      end
+      opts
+      |> Keyword.get(:channel, :system)
+      |> Audit.normalize_channel()
 
-    %{actor: actor, channel: channel}
+    base = %{
+      actor: actor,
+      channel: channel,
+      entity_type: @entity_type,
+      redact_fields: @audit_redact_fields,
+      serializer: &entity_snapshot/1
+    }
+
+    Enum.reduce(overrides, base, fn {key, value}, acc ->
+      Map.put(acc, key, value)
+    end)
   end
-
-  defp normalize_actor(actor) when is_binary(actor) do
-    actor
-    |> String.trim()
-    |> case do
-      "" -> @default_actor
-      value -> value
-    end
-  end
-
-  defp normalize_actor(_actor), do: @default_actor
 
   defp filter_query(query, []), do: query
 
