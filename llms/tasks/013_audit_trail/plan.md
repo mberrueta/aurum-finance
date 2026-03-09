@@ -6,8 +6,8 @@
 
 ## Progress Snapshot
 
-- Completed: Task 01, Task 02, Task 03, Task 04, Task 05, Task 06, Task 07
-- Pending: Task 08, Task 09, Task 10
+- Completed: Task 01, Task 02, Task 03, Task 04, Task 05, Task 06, Task 07, Task 08
+- Pending: Task 09, Task 10
 - Note: Task statuses above reflect implementation progress in this branch; human sign-off checkboxes remain unset until review.
 
 ---
@@ -169,6 +169,8 @@ The v1 audit trail is intentionally **not** a firehose of every ledger insert.
 ### D8: `metadata` field for extensibility
 
 Add a `:map` field for context-specific metadata that does not belong in `before`/`after` snapshots. Examples: correlation IDs, import batch references, rule engine match explanations, request IDs. This avoids polluting the snapshot fields with non-entity data.
+
+`metadata` is for non-sensitive values only. It is not redacted in v1, so secrets, tokens, tax identifiers, institution account references, or similar sensitive values must not be stored there. A future enhancement may add key allowlisting and/or metadata redaction.
 
 ### D9: Atomic domain write + audit append via Ecto.Multi
 

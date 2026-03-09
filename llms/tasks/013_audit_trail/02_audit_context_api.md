@@ -29,7 +29,7 @@ Replace the existing `Audit.with_event/3` and `Audit.log_event/1` API with the n
 ## Inputs Required
 
 - [ ] `llms/tasks/013_audit_trail/plan.md` - Full spec, especially sections: "API / Context Design", "Transaction / Atomicity Strategy", "Redaction enforcement"
-- [ ] `lib/aurum_finance/audit.ex` - Current context with `with_event/3`, `log_event/1`, `create_audit_event/1`, redaction logic, snapshot helpers
+- [ ] `lib/aurum_finance/audit.ex` - Current context with `with_event/3`, `log_event/1`, redaction logic, snapshot helpers
 - [ ] `lib/aurum_finance/audit/audit_event.ex` - Schema (after Task 01 modifications: includes `metadata`, no `updated_at`)
 - [ ] `lib/aurum_finance/entities.ex` - Caller of `Audit.with_event/3` at lines 64, 151. Functions: `create_entity/2`, `update_entity/3`, `archive_entity/2`, `unarchive_entity/2`
 - [ ] `lib/aurum_finance/ledger.ex` - Caller of `Audit.with_event/3` / `Audit.log_event/1`. Functions: `create_account/2`, `update_account/3`, `archive_account/2`, `unarchive_account/2`, `create_transaction/2`, `void_transaction/2`
@@ -146,7 +146,7 @@ Similarly, `persist_void_transaction/2` must be refactored from its current nest
 ### Constraints
 - This is a **breaking internal change**. All callers must be migrated in this single task. No partial migration.
 - The public API of `Entities` and `Ledger` contexts must NOT change. The functions still accept the same arguments and return the same tuple shapes.
-- The `create_audit_event/1` and `change_audit_event/2` functions in `Audit` should be preserved (they are independent of the event logging pipeline).
+- `change_audit_event/2` in `Audit` may remain as a generic changeset helper, but raw audit insertion should stay internal-only so app code cannot bypass helper-level redaction accidentally.
 - Existing redaction logic (`redact_snapshot/2`, `do_redact/2`) must be preserved and reused by the new helpers.
 - Existing snapshot helpers (`default_snapshot/1`, `stringify_keys/1`, `stringify_value/1`) must be preserved.
 

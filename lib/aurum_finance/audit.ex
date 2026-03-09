@@ -98,7 +98,7 @@ defmodule AurumFinance.Audit do
       with {:domain, {:ok, record}} <- {:domain, Repo.insert(changeset)},
            after_snapshot = record |> serializer.() |> redact_snapshot(redact_fields),
            audit_attrs = build_audit_attrs(meta, record.id, action, nil, after_snapshot),
-           {:audit, {:ok, _event}} <- {:audit, create_audit_event(audit_attrs)} do
+           {:audit, {:ok, _event}} <- {:audit, insert_audit_event(audit_attrs)} do
         record
       else
         {:domain, {:error, cs}} -> Repo.rollback(cs)
@@ -153,7 +153,7 @@ defmodule AurumFinance.Audit do
            after_snapshot = updated |> serializer.() |> redact_snapshot(redact_fields),
            audit_attrs =
              build_audit_attrs(meta, updated.id, action, before_snapshot, after_snapshot),
-           {:audit, {:ok, _event}} <- {:audit, create_audit_event(audit_attrs)} do
+           {:audit, {:ok, _event}} <- {:audit, insert_audit_event(audit_attrs)} do
         updated
       else
         {:domain, {:error, cs}} -> Repo.rollback(cs)
@@ -196,34 +196,6 @@ defmodule AurumFinance.Audit do
   # ---------------------------------------------------------------------------
   # Query / Read API
   # ---------------------------------------------------------------------------
-
-  @doc """
-  Creates an audit event and returns the inserted record.
-
-  Prefer the atomic helpers (`insert_and_log/2`, `update_and_log/3`,
-  `archive_and_log/3`) which apply redaction and wrap domain writes in a
-  single transaction. Call this directly only when building a custom pipeline
-  that already manages its own transaction.
-
-  ## Examples
-
-      attrs = %{
-        entity_type: "entity",
-        entity_id: Ecto.UUID.generate(),
-        action: "created",
-        actor: "root",
-        channel: :web,
-        occurred_at: DateTime.utc_now()
-      }
-
-      {:ok, %AuditEvent{}} = Audit.create_audit_event(attrs)
-  """
-  @spec create_audit_event(map()) :: {:ok, AuditEvent.t()} | {:error, Ecto.Changeset.t()}
-  def create_audit_event(attrs) do
-    %AuditEvent{}
-    |> AuditEvent.changeset(attrs)
-    |> Repo.insert()
-  end
 
   @doc """
   Lists audit events with optional filters.
@@ -362,6 +334,10 @@ defmodule AurumFinance.Audit do
   # ---------------------------------------------------------------------------
 
   defp build_audit_attrs(meta, entity_id, action, before_snapshot, after_snapshot) do
+    # Audit metadata is not redacted. Do not store secrets, tokens, tax IDs,
+    # account refs, or other sensitive values in metadata.
+    # Future enhancement: add allowlisting and/or redaction for selected
+    # metadata keys before wider audit-domain adoption.
     %{
       entity_type: meta.entity_type,
       entity_id: entity_id,
@@ -373,6 +349,12 @@ defmodule AurumFinance.Audit do
       metadata: Map.get(meta, :metadata),
       occurred_at: DateTime.utc_now()
     }
+  end
+
+  defp insert_audit_event(attrs) do
+    %AuditEvent{}
+    |> AuditEvent.changeset(attrs)
+    |> Repo.insert()
   end
 
   defp normalize_transaction_result({:ok, result}), do: {:ok, result}

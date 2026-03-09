@@ -50,7 +50,7 @@ defmodule AurumFinance.Audit.MultiTest do
           country_code: "US"
         })
 
-      assert {:error, :audit_entity, %Ecto.Changeset{} = changeset, _changes} =
+      assert {:error, {:audit, :entity}, %Ecto.Changeset{} = changeset, _changes} =
                Ecto.Multi.new()
                |> Ecto.Multi.insert(:entity, changeset)
                |> Multi.append_event(:entity, nil, %{
@@ -67,7 +67,7 @@ defmodule AurumFinance.Audit.MultiTest do
     end
 
     test "S28: rolls back when entity_id cannot be inferred and none is provided" do
-      assert {:error, :audit_payload, %Ecto.Changeset{} = changeset, _changes} =
+      assert {:error, {:audit, :payload}, %Ecto.Changeset{} = changeset, _changes} =
                Ecto.Multi.new()
                |> Ecto.Multi.put(:payload, %{name: "payload without id"})
                |> Multi.append_event(:payload, nil, %{
@@ -164,7 +164,7 @@ defmodule AurumFinance.Audit.MultiTest do
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{notes: "rolled back"})
 
-      assert {:error, :audit_entity, %Ecto.Changeset{} = changeset, _changes} =
+      assert {:error, {:audit, :entity}, %Ecto.Changeset{} = changeset, _changes} =
                Ecto.Multi.new()
                |> Ecto.Multi.update(:entity, changeset)
                |> Multi.append_event(:entity, before_snapshot, %{
@@ -216,7 +216,7 @@ defmodule AurumFinance.Audit.MultiTest do
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{archived_at: ~U[2026-03-06 11:00:00Z]})
 
-      assert {:error, :audit_entity, %Ecto.Changeset{} = changeset, _changes} =
+      assert {:error, {:audit, :entity}, %Ecto.Changeset{} = changeset, _changes} =
                Ecto.Multi.new()
                |> Ecto.Multi.update(:entity, changeset)
                |> Multi.append_event(:entity, before_snapshot, %{

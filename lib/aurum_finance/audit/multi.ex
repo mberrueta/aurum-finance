@@ -64,7 +64,7 @@ defmodule AurumFinance.Audit.Multi do
   """
   @spec append_event(Ecto.Multi.t(), atom(), map() | nil, map()) :: Ecto.Multi.t()
   def append_event(multi, step_name, before_snapshot, meta) do
-    audit_step_name = :"audit_#{step_name}"
+    audit_step_name = {:audit, step_name}
     redact_fields = Map.get(meta, :redact_fields, [])
     serializer = Map.get(meta, :serializer, &Audit.default_snapshot/1)
 
@@ -77,6 +77,10 @@ defmodule AurumFinance.Audit.Multi do
 
       entity_id = Map.get(meta, :entity_id) || infer_entity_id(step_result)
 
+      # Audit metadata is not redacted. Do not store secrets, tokens, tax IDs,
+      # account refs, or other sensitive values in metadata.
+      # Future enhancement: add allowlisting and/or redaction for selected
+      # metadata keys before wider audit-domain adoption.
       attrs = %{
         entity_type: meta.entity_type,
         entity_id: entity_id,

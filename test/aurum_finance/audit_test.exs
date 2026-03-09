@@ -214,7 +214,7 @@ defmodule AurumFinance.AuditTest do
           country_code: "US"
         })
 
-      assert {:error, :audit_entity, %Ecto.Changeset{} = changeset, _changes} =
+      assert {:error, {:audit, :entity}, %Ecto.Changeset{} = changeset, _changes} =
                Ecto.Multi.new()
                |> Ecto.Multi.insert(:entity, changeset)
                |> AuditMulti.append_event(:entity, nil, %{
@@ -244,15 +244,15 @@ defmodule AurumFinance.AuditTest do
         SQL.query!(Repo, "DELETE FROM audit_events WHERE id = $1", [dumped_id])
       end
 
-      assert {:ok, inserted} =
-               Audit.create_audit_event(%{
-                 entity_type: "entity",
-                 entity_id: Ecto.UUID.generate(),
-                 action: "created",
-                 actor: "root",
-                 channel: :web,
-                 occurred_at: ~U[2026-03-01 00:00:00Z]
-               })
+      inserted =
+        audit_event_fixture(%{
+          entity_type: "entity",
+          entity_id: Ecto.UUID.generate(),
+          action: "created",
+          actor: "root",
+          channel: :web,
+          occurred_at: ~U[2026-03-01 00:00:00Z]
+        })
 
       assert Repo.get(AuditEvent, inserted.id)
     end
@@ -492,10 +492,12 @@ defmodule AurumFinance.AuditTest do
       occurred_at: DateTime.utc_now()
     }
 
+    attrs = Map.merge(defaults, attrs)
+
     {:ok, event} =
-      defaults
-      |> Map.merge(attrs)
-      |> Audit.create_audit_event()
+      %AuditEvent{}
+      |> AuditEvent.changeset(attrs)
+      |> Repo.insert()
 
     event
   end
