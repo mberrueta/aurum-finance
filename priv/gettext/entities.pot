@@ -202,7 +202,7 @@ msgstr ""
 msgid "flash_entity_created"
 msgstr ""
 
-#: lib/aurum_finance_web/live/entities_live.ex:113
+#: lib/aurum_finance_web/live/entities_live.ex:109
 #, elixir-autogen, elixir-format
 msgid "flash_audit_logging_failed"
 msgstr ""

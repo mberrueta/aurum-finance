@@ -216,34 +216,50 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Completed.
 
 ### Work Performed
-- [What was actually done]
+- Expanded `test/aurum_finance/audit_test.exs` into a full integration suite covering:
+  - `insert_and_log/2`, `update_and_log/3`, and `archive_and_log/3`
+  - `Audit.Multi.append_event/4`
+  - rollback behavior on audit failures
+  - raw-SQL immutability checks for `audit_events`, `postings`, and `transactions`
+  - query extensions (`occurred_after`, `occurred_before`, `offset`, `distinct_entity_types/0`)
+  - legacy API removal and ledger transaction caller audit coverage
+- Added `test/aurum_finance/audit/audit_event_test.exs` for schema/changeset coverage around required fields, optional metadata, length validation, and `updated_at` removal.
+- Added `test/aurum_finance/audit/multi_test.exs` with direct, exhaustive `Audit.Multi.append_event/4` coverage for insert, update, and archive-style update flows, including pass/fail/audit-fail rollback cases and inferred vs explicit `entity_id`.
+- Updated `docs/qa/test_plan.md` with scenario-to-test mappings for the audit trail foundation work.
+- Ran targeted audit tests, the full `mix test` suite, and `mix precommit`.
 
 ### Outputs Created
-- [List of files/artifacts created]
+- `test/aurum_finance/audit_test.exs`
+- `test/aurum_finance/audit/audit_event_test.exs`
+- `test/aurum_finance/audit/multi_test.exs`
+- `docs/qa/test_plan.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why this was assumed] |
+| Existing audit assertions in `entities_test.exs` and `ledger_test.exs` remain part of Task 04 coverage | The task asks for full backend coverage, and those suites already verify several caller-migration behaviors that did not need to be duplicated again in the new audit-specific files. |
+| Raw SQL immutability tests should live in a non-async `DataCase` module | They intentionally bypass Ecto and exercise database triggers directly, which is safer under the sandbox with serialized execution. |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Kept trigger assertions in `audit_test.exs` instead of a separate trigger-only file | Split by DB concern into another integration file | The task’s expected outputs name `audit_test.exs` as the integration suite, and keeping the raw-SQL checks there makes the foundation coverage easier to review in one place. |
+| Used per-record / per-action assertions instead of global table counts in helper tests | Assert the whole table is empty after each failure | Fixtures and prior lifecycle events make global counts brittle; checking the specific entity or event stream proves rollback more accurately. |
+| Documented coverage mapping in `docs/qa/test_plan.md` instead of duplicating all lifecycle caller tests in the new files | Re-implement every existing entity/account audit assertion inside `audit_test.exs` | The QA agent workflow requires scenario mapping, and the existing tests already cover part of the acceptance matrix well. |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- `mix coveralls.html` could not be generated because the task is not defined in this repo (`** (Mix) The task "coveralls.html" could not be found`). Resolution: documented as a follow-up gap; all required ExUnit and precommit gates passed.
 
 ### Questions for Human
-1. [Question needing human input]
+1. Should the repo expose an ExCoveralls task (for example by adding the expected dev/test dependency/task wiring), or should the constitution’s coverage-artifact requirement be waived for now?
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

@@ -14,3 +14,19 @@
 
 - The original plan mentioned a DB-level zero-sum trigger. That trigger was intentionally removed and the invariant now lives in the application layer only.
 - The Transactions LiveView currently uses compact URL filters via `q=` and date presets (`this_week`, `this_month`, `this_year`, `all`) instead of manual `date_from`/`date_to` inputs in the UI.
+
+## Audit Trail Scenario Mapping
+
+| Scenario | Layer | File |
+|---|---|---|
+| S01-S05: `AuditEvent` changeset validity, required fields, metadata casting, length validation, no `updated_at` | Unit | `test/aurum_finance/audit/audit_event_test.exs` |
+| S06-S15: `Audit` helper atomicity (`insert_and_log`, `update_and_log`, `archive_and_log`, `Audit.Multi.append_event`) including rollback on audit failure | Integration | `test/aurum_finance/audit_test.exs` |
+| S26-S34: exhaustive `Audit.Multi.append_event/4` insert/update/archive-style pass/fail/rollback scenarios, inferred vs explicit `entity_id` | Integration | `test/aurum_finance/audit/multi_test.exs` |
+| S16-S19: DB immutability triggers for `audit_events`, `postings`, and `transactions` via raw SQL | Integration | `test/aurum_finance/audit_test.exs` |
+| S20-S21: caller migration verification for removed legacy APIs and ledger transaction/void audit emission | Integration | `test/aurum_finance/audit_test.exs`, `test/aurum_finance/entities_test.exs`, `test/aurum_finance/ledger_test.exs` |
+| S22-S25: query extensions for date range, offset pagination, unknown filters, and distinct entity types | Integration | `test/aurum_finance/audit_test.exs` |
+
+## Audit Trail Notes
+
+- Raw SQL trigger assertions live in a non-async `DataCase` module because they intentionally bypass Ecto and exercise the database protections directly.
+- Existing entity/account lifecycle audit assertions remain in `entities_test.exs` and `ledger_test.exs`; Task 04 adds the missing foundation-level coverage around the shared `Audit` context itself.
