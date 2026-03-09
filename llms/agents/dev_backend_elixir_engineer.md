@@ -90,6 +90,10 @@ You MUST:
 - Prefer small, composable functions
 - Treat data integrity as non-negotiable (constraints > app-level checks)
 - Document assumptions and provide clear review steps
+- Add `@doc` to important public functions you introduce or materially change
+- Include doctest-style examples in `@doc` blocks for important public backend or
+  shared helper functions whenever the behavior is non-trivial or likely to be
+  reused
 - NEVER hardcode secrets, salts, keys, or any cryptographic material in source
   code. Always use environment variables (via `runtime.exs`) for prod/staging,
   with clearly labelled dev-only defaults in `config.exs`
@@ -275,4 +279,3 @@ Focus on correctness, tenant scoping, and production reliability.
 ---
 
 You are careful, pragmatic, and production-minded. You ship backend changes that are safe, observable, and easy to maintain.
-

@@ -1,7 +1,7 @@
 # Task 05: Shared URL Filter Helper — `AurumFinanceWeb.FilterQuery`
 
 ## Status
-- **Status**: 🔒 BLOCKED
+- **Status**: ✅ COMPLETE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 04
 - **Blocks**: Task 06
@@ -205,31 +205,40 @@ After the agent completes:
 *[Filled by executing agent after completion]*
 
 ### Work Performed
-- [What was actually done]
+- Extracted the compact `?q=key:value&key:value` URL filter encoding/decoding logic from `TransactionsLive` into a shared pure helper module, `AurumFinanceWeb.FilterQuery`
+- Implemented `FilterQuery.decode/1`, `FilterQuery.encode/1`, `FilterQuery.build_path/2`, and `FilterQuery.skip_default/2`
+- Refactored `TransactionsLive` to use `FilterQuery` for all URL parsing and path construction, removing the inline private helper functions that duplicated this behavior
+- Added public docs with usage examples to the important `FilterQuery` functions so the shared helper is self-describing and ready for reuse by `AuditLogLive`
+- Added unit coverage for the helper and verified existing `TransactionsLive` behavior still passes
 
 ### Outputs Created
-- [List of files created or modified]
+- `lib/aurum_finance_web/filter_query.ex`
+- `lib/aurum_finance_web/live/transactions_live.ex`
+- `test/aurum_finance_web/filter_query_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [Assumption 1] | [Why assumed] |
+| The existing compact `?q=` format in `TransactionsLive` is the canonical project convention and must remain byte-for-byte compatible | Task 06 will reuse the same encoding pattern for `AuditLogLive`, so changing the format here would create unnecessary downstream churn |
+| A pure helper under `AurumFinanceWeb` is the correct boundary for this logic | The concern is URL/query encoding for LiveViews, not core domain behavior |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [Decision 1] | [Options] | [Why chosen] |
+| Keep `FilterQuery` minimal and string-based | Add typed parsing, pagination helpers, or LiveView-specific wrappers | The task explicitly called for extracting the current pattern without over-generalising |
+| Preserve `TransactionsLive` filter parsing behavior exactly and only replace the helper calls | Rework the filter state structure while extracting the code | This task is a refactor prerequisite for Task 06, not a feature redesign |
+| Add docs/examples directly on the shared helper's public API | Rely only on tests for discoverability | This helper is intended for reuse across views, so examples reduce future ambiguity |
 
 ### Blockers Encountered
-- [Blocker 1] - Resolution: [How resolved or "Needs human input"]
+- None
 
 ### Questions for Human
-1. [Question needing human input]
+1. None.
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

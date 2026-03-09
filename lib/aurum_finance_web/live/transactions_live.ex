@@ -4,6 +4,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
   import AurumFinanceWeb.TransactionsComponents
 
   alias AurumFinance.Entities
+  alias AurumFinanceWeb.FilterQuery
   alias AurumFinance.Ledger
   alias AurumFinance.Helpers
 
@@ -118,7 +119,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
       uri
       |> URI.parse()
       |> Map.get(:query)
-      |> decode_query_clauses()
+      |> FilterQuery.decode()
 
     entity_id =
       clauses
@@ -268,49 +269,12 @@ defmodule AurumFinanceWeb.TransactionsLive do
   end
 
   defp transactions_path(current_entity, filters) do
-    clauses =
-      []
-      |> maybe_add_query_clause("entity", current_entity && current_entity.id)
-      |> maybe_add_query_clause("account", filters.account_id)
-      |> maybe_add_query_clause("date", non_default_filter(filters.date_preset, "all"))
-      |> maybe_add_query_clause("source", non_default_filter(filters.source_type, ""))
-      |> maybe_add_query_clause("voided", filters.include_voided && "true")
-
-    case clauses do
-      [] -> "/transactions"
-      _clauses -> "/transactions?q=" <> Enum.join(clauses, "&")
-    end
-  end
-
-  defp maybe_add_query_clause(clauses, _key, nil), do: clauses
-  defp maybe_add_query_clause(clauses, _key, false), do: clauses
-  defp maybe_add_query_clause(clauses, _key, ""), do: clauses
-  defp maybe_add_query_clause(clauses, key, value), do: clauses ++ ["#{key}:#{value}"]
-
-  defp non_default_filter(value, default) when value == default, do: nil
-  defp non_default_filter(value, _default), do: value
-
-  defp decode_query_clauses(nil), do: %{}
-
-  defp decode_query_clauses(query_string) do
-    query_string
-    |> extract_q_payload()
-    |> URI.decode()
-    |> String.split("&", trim: true)
-    |> Enum.reduce(%{}, fn clause, acc ->
-      case String.split(clause, ":", parts: 2) do
-        [key, value] when key != "" and value != "" -> Map.put(acc, key, value)
-        _parts -> acc
-      end
-    end)
-  end
-
-  defp extract_q_payload("q=" <> payload), do: payload
-
-  defp extract_q_payload(query_string) do
-    case URI.decode_query(query_string) do
-      %{"q" => payload} -> payload
-      _params -> ""
-    end
+    FilterQuery.build_path("/transactions",
+      entity: current_entity && current_entity.id,
+      account: filters.account_id,
+      date: FilterQuery.skip_default(filters.date_preset, "all"),
+      source: FilterQuery.skip_default(filters.source_type, ""),
+      voided: filters.include_voided && "true"
+    )
   end
 end
