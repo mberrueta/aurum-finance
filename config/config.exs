@@ -11,6 +11,18 @@ config :aurum_finance,
   ecto_repos: [AurumFinance.Repo],
   generators: [timestamp_type: :utc_datetime, binary_id: true]
 
+config :aurum_finance, AurumFinance.Ingestion.LocalFileStorage,
+  base_path: Path.expand("../tmp/imports", __DIR__)
+
+config :aurum_finance, Oban,
+  repo: AurumFinance.Repo,
+  plugins: [
+    {Oban.Plugins.Pruner, max_age: 60 * 60 * 24}
+  ],
+  queues: [
+    imports: 5
+  ]
+
 # Configure the endpoint
 config :aurum_finance, AurumFinanceWeb.Endpoint,
   url: [host: "localhost"],

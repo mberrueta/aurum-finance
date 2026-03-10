@@ -43,6 +43,7 @@ defmodule AurumFinanceWeb.Router do
       live "/accounts", AccountsLive, :index
       live "/transactions", TransactionsLive, :index
       live "/import", ImportLive, :index
+      live "/import/accounts/:account_id/files/:imported_file_id", ImportDetailsLive, :show
       live "/rules", RulesLive, :index
       live "/reconciliation", ReconciliationLive, :index
       live "/fx", FxLive, :index

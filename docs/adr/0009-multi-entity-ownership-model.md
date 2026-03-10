@@ -201,7 +201,7 @@ These tables carry an `entity_id` column. All queries filter by entity.
 | **Entities** | Entity | Entity IS the boundary; fiscal residency fields are columns on Entity |
 | **Ledger** | Account, Transaction, Posting, BalanceSnapshot | All financial positions are entity-scoped |
 | **Classification** | ClassificationRecord, ClassificationAuditLog | Classification results are entity-scoped (one record per transaction) |
-| **Ingestion** | ImportBatch, ImportFile, ImportRow, DeduplicationRecord | Every import targets a specific entity |
+| **Ingestion** | ImportedFile, ImportedRow | Every import targets a specific account within one entity |
 | **Reconciliation** | ReconciliationSession, MatchResult, Discrepancy | Reconciliation operates on entity-scoped postings |
 | **ExchangeRates** | TaxRateSnapshot | Tax snapshots reference entity-specific tax events |
 | **Reporting** | RecurringPattern, Projection, AnomalyAlert | Derived from entity-scoped data |
@@ -343,7 +343,7 @@ Tax event in Entity B ("My LLC", country: IE, fiscal_residency_country_code: "PE
 erDiagram
     Entity ||--o{ Account : "owns"
     Entity ||--o{ Transaction : "owns"
-    Entity ||--o{ ImportBatch : "owns"
+    Entity ||--o{ ImportedFile : "owns via account"
     Entity ||--o{ ReconciliationSession : "owns"
     Entity ||--o{ TaxRateSnapshot : "owns"
 

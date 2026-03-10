@@ -6,11 +6,11 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   alias AurumFinance.Ledger
 
   test "renders management tabs and entity-scoped accounts", %{conn: conn} do
-    visible_entity = entity_fixture(name: "Accounts Alpha")
-    hidden_entity = entity_fixture(name: "Accounts Zeta")
+    visible_entity = insert_entity(name: "Accounts Alpha")
+    hidden_entity = insert_entity(name: "Accounts Zeta")
 
     visible_account =
-      account_fixture(visible_entity, %{
+      insert_account(visible_entity, %{
         name: "Visible checking",
         account_type: :asset,
         operational_subtype: :bank_checking,
@@ -19,7 +19,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
       })
 
     _hidden_account =
-      account_fixture(hidden_entity, %{
+      insert_account(hidden_entity, %{
         name: "Hidden salary",
         account_type: :income,
         operational_subtype: nil,
@@ -39,10 +39,10 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "opens and closes the right sidebar for account forms", %{conn: conn} do
-    entity = entity_fixture(name: "Sidebar account entity")
+    entity = insert_entity(name: "Sidebar account entity")
 
     account =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: "Sidebar checking",
         account_type: :asset,
         operational_subtype: :bank_checking,
@@ -84,7 +84,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "creates an institution account in the selected entity", %{conn: conn} do
-    entity = entity_fixture(name: "Create institution entity")
+    entity = insert_entity(name: "Create institution entity")
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
 
@@ -122,7 +122,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "defaults currency select from selected entity country", %{conn: conn} do
-    entity = entity_fixture(name: "Chile entity", country_code: "CL")
+    entity = insert_entity(name: "Chile entity", country_code: "CL")
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
 
@@ -138,7 +138,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "creates a category account from the category tab", %{conn: conn} do
-    entity = entity_fixture(name: "Create category entity")
+    entity = insert_entity(name: "Create category entity")
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
 
@@ -180,10 +180,10 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "edits, archives, and unarchives accounts from the list", %{conn: conn} do
-    entity = entity_fixture(name: "Lifecycle entity")
+    entity = insert_entity(name: "Lifecycle entity")
 
     account =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: "Lifecycle checking",
         account_type: :asset,
         operational_subtype: :bank_checking,
@@ -241,9 +241,9 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
   end
 
   test "rejects edit events for accounts outside the selected entity scope", %{conn: conn} do
-    selected_entity = entity_fixture(name: "Selected entity")
-    foreign_entity = entity_fixture(name: "Foreign entity")
-    foreign_account = account_fixture(foreign_entity, %{name: "Foreign checking"})
+    selected_entity = insert_entity(name: "Selected entity")
+    foreign_entity = insert_entity(name: "Foreign entity")
+    foreign_account = insert_account(foreign_entity, %{name: "Foreign checking"})
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/accounts")
 

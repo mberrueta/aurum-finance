@@ -1,0 +1,5 @@
+Date,Description,Amount,Currency
+2026-03-10,Coffee Shop,-4.50,USD
+2026-03-11,,12.00,USD
+2026-03-12,Broken Amount,wat,USD
+not-a-date,Unknown Merchant,-8.75,USD

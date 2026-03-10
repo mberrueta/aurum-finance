@@ -75,7 +75,7 @@ defmodule AurumFinance.AuditTest do
 
     test "S09: update_and_log/3 records before and after snapshots with redaction" do
       entity =
-        entity_fixture(%{name: unique_name("Update before after"), tax_identifier: "OLD-TAX-ID"})
+        insert_entity(%{name: unique_name("Update before after"), tax_identifier: "OLD-TAX-ID"})
 
       changeset =
         Entity.changeset(entity, %{
@@ -105,7 +105,7 @@ defmodule AurumFinance.AuditTest do
     end
 
     test "S10: update_and_log/3 returns the domain changeset error when the update is invalid" do
-      entity = entity_fixture(%{name: unique_name("Invalid update")})
+      entity = insert_entity(%{name: unique_name("Invalid update")})
       changeset = Entity.changeset(entity, %{name: nil})
       before_event_count = length(Audit.list_audit_events(entity_id: entity.id))
 
@@ -116,7 +116,7 @@ defmodule AurumFinance.AuditTest do
     end
 
     test "S11: update_and_log/3 rolls back the persisted update when audit insertion fails" do
-      entity = entity_fixture(%{name: unique_name("Update rollback")})
+      entity = insert_entity(%{name: unique_name("Update rollback")})
       changeset = Entity.changeset(entity, %{notes: "should rollback"})
       before_event_count = length(Audit.list_audit_events(entity_id: entity.id))
 
@@ -129,7 +129,7 @@ defmodule AurumFinance.AuditTest do
     end
 
     test "S12: archive_and_log/3 records an archived action and archived_at in the after snapshot" do
-      entity = entity_fixture(%{name: unique_name("Archive helper")})
+      entity = insert_entity(%{name: unique_name("Archive helper")})
 
       changeset = Entity.changeset(entity, %{archived_at: ~U[2026-03-05 12:00:00Z]})
 
@@ -503,11 +503,11 @@ defmodule AurumFinance.AuditTest do
   end
 
   defp transaction_accounts_fixture do
-    entity = entity_fixture(%{name: unique_name("Audit transaction entity")})
-    checking = account_fixture(entity, %{name: unique_name("Checking")})
+    entity = insert_entity(%{name: unique_name("Audit transaction entity")})
+    checking = insert_account(entity, %{name: unique_name("Checking")})
 
     expense =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: unique_name("Expense"),
         account_type: :expense,
         operational_subtype: nil,

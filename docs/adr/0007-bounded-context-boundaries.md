@@ -58,8 +58,8 @@ with its source ADR or product invariant:
 | 10 | Rule group | ADR-0003 |
 | 11 | Rule (conditions, actions, priority within group) | ADR-0003 |
 | 12 | Rule evaluation result / audit log | ADR-0003 |
-| 13 | Import batch / import file | ADR-0004, project_context |
-| 14 | Import row (raw parsed line from source file) | ADR-0004 |
+| 13 | Imported file (uploaded source file + async lifecycle) | ADR-0004, project_context |
+| 14 | Imported row (raw parsed line persisted as immutable evidence) | ADR-0004 |
 | 15 | Deduplication identity | project_context |
 | 16 | FX rate series (currency pair + rate type + jurisdiction) | ADR-0005 |
 | 17 | FX rate record (date, value, source) | ADR-0005 |
@@ -144,8 +144,8 @@ higher or same tier (except within the same tier where explicitly noted).
 | ExchangeRates | Entities | Fiscal residency is entity-scoped |
 | Classification | Ledger | Rules classify transactions/postings owned by Ledger |
 | Classification | Entities | Conditions can reference entity attributes (entity_name, entity_slug, entity_type, entity_country_code) to achieve entity-specific matching; rule groups themselves are global |
-| Ingestion | Ledger | Pipeline creates postings in the Ledger |
-| Ingestion | Classification | Pipeline invokes rules for auto-classification |
+| Ingestion | Ledger | Future milestone only: later materialization may create ledger facts from imported evidence |
+| Ingestion | Classification | Future milestone only: later review/materialization may invoke classification |
 | Ingestion | Entities | Imports target a specific entity |
 | Reconciliation | Ledger | Reconciliation operates on postings |
 | Reconciliation | Ingestion | Reconciliation matches imported rows to existing postings |
@@ -338,40 +338,35 @@ get_classification_audit_log(transaction) -> [AuditLogEntry]
 
 #### `AurumFinance.Ingestion` (Tier 2)
 
-**Responsibility:** Import pipeline from raw file to classified postings.
-Manages import batches, file tracking, format detection, parsing,
-normalization, deduplication, and the preview-before-commit workflow. Orchestrates
-the creation of ledger transactions and invocation of classification rules.
+**Responsibility:** Import pipeline from uploaded file to immutable review
+evidence. Manages file tracking, CSV parsing, normalization, deduplication,
+async processing, and preview/history state. It does not create ledger
+transactions or invoke classification in the current milestone.
 
-**Owns:** ImportBatch, ImportFile, ImportRow, FormatAdapter, DeduplicationRecord
+**Owns:** ImportedFile, ImportedRow, parser boundary, duplicate fingerprints
 
-**Multi-entity scope:** Entity-scoped. Every import targets a specific entity
-and account.
+**Multi-entity scope:** Account-scoped within an entity. Every import targets a
+specific account; entity selection is only a UI helper for narrowing accounts.
 
 **Milestone:** M2
 
 **Key invariants:**
-- Fact/classification split happens at import time (ADR-0004)
-- Same file imported twice must be idempotent (project_context)
-- Preview-before-commit is mandatory for user control (ADR-0003)
+- Imported rows are immutable evidence records
+- Same file imported twice is allowed; row-level dedupe decides `ready` vs `duplicate`
+- The milestone ends at preview/review state, before any ledger materialization
 
 **Conceptual public API:**
 
 ```
-# Import lifecycle
-create_import_batch(entity, account, file_attrs) -> {:ok, ImportBatch} | {:error, changeset}
-parse_import_file(import_batch) -> {:ok, [ImportRow]} | {:error, parse_errors}
-preview_import(import_batch) -> {:ok, ImportPreview} | {:error, reason}
-commit_import(import_batch, user_decisions) -> {:ok, CommitResult} | {:error, reason}
+# File lifecycle
+store_imported_file(attrs) -> {:ok, ImportedFile} | {:error, term}
+enqueue_import_processing(imported_file) -> {:ok, job} | {:error, term}
+parse_imported_file(imported_file) -> {:ok, ParsedImport} | {:error, parse_error}
 
-# Import history
-list_import_batches(entity, opts) -> [ImportBatch]
-get_import_batch!(id) -> ImportBatch
-get_import_rows(import_batch) -> [ImportRow]
-
-# Format adapters
-list_supported_formats() -> [FormatAdapter]
-detect_format(file) -> {:ok, FormatAdapter} | {:error, :unknown_format}
+# History / review
+list_imported_files(account_id: account_id) -> [ImportedFile]
+get_imported_file!(account_id, imported_file_id) -> ImportedFile
+list_imported_rows(account_id: account_id, imported_file_id: imported_file_id) -> [ImportedRow]
 ```
 
 ---

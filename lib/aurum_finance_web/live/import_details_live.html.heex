@@ -1,0 +1,152 @@
+<div id="import-details-page" class="space-y-[14px]">
+  <.page_header title={dgettext("import", "details_page_title")}>
+    <:subtitle>
+      {dgettext("import", "details_page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <.link navigate={~p"/import"} class="au-btn" id="import-details-back-link">
+        {dgettext("import", "btn_back_to_imports")}
+      </.link>
+    </:actions>
+  </.page_header>
+
+  <.info_callout title={dgettext("import", "details_preview_title")} tone={:info}>
+    <p>{dgettext("import", "details_preview_body")}</p>
+  </.info_callout>
+
+  <.section_panel
+    :if={@imported_file}
+    title={dgettext("import", "section_import_summary")}
+    badge={import_status_label(@imported_file.status)}
+    badge_variant={import_status_variant(@imported_file.status)}
+  >
+    <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+          {dgettext("import", "label_file")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-white/90">{@imported_file.filename}</p>
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+          {dgettext("import", "label_uploaded_at")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-white/90">
+          {format_timestamp(@imported_file.inserted_at)}
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+          {dgettext("import", "label_processed_at")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-white/90">
+          {format_timestamp(@imported_file.processed_at)}
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+          {dgettext("import", "label_size")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-white/90">
+          {format_byte_size(@imported_file.byte_size)}
+        </p>
+      </div>
+    </div>
+
+    <div class="mt-4 grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-2xl border border-emerald-300/20 bg-emerald-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/65">
+          {dgettext("import", "label_rows_total")}
+        </p>
+        <p class="mt-2 text-lg font-semibold text-emerald-50">{@imported_file.row_count}</p>
+      </div>
+
+      <div class="rounded-2xl border border-sky-300/20 bg-sky-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-sky-100/65">
+          {dgettext("import", "label_rows_ready")}
+        </p>
+        <p class="mt-2 text-lg font-semibold text-sky-50">{@imported_file.imported_row_count}</p>
+      </div>
+
+      <div class="rounded-2xl border border-amber-300/20 bg-amber-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-amber-100/65">
+          {dgettext("import", "label_rows_duplicates")}
+        </p>
+        <p class="mt-2 text-lg font-semibold text-amber-50">{@imported_file.skipped_row_count}</p>
+      </div>
+
+      <div class="rounded-2xl border border-rose-300/20 bg-rose-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-rose-100/65">
+          {dgettext("import", "label_rows_invalid")}
+        </p>
+        <p class="mt-2 text-lg font-semibold text-rose-50">{@imported_file.invalid_row_count}</p>
+      </div>
+    </div>
+
+    <div :if={@imported_file.error_message} id="import-details-error" class="mt-4">
+      <.info_callout title={dgettext("import", "details_error_title")} tone={:warn}>
+        <p>{@imported_file.error_message}</p>
+      </.info_callout>
+    </div>
+
+    <div :if={warning_entries(@imported_file) != []} id="import-details-warnings" class="mt-4">
+      <.info_callout title={dgettext("import", "details_warnings_title")} tone={:warn}>
+        <dl class="space-y-2 text-sm text-white/80">
+          <div :for={{key, value} <- warning_entries(@imported_file)}>
+            <dt class="font-semibold text-white/92">{key}</dt>
+            <dd class="mt-1 text-white/68">{inspect(value)}</dd>
+          </div>
+        </dl>
+      </.info_callout>
+    </div>
+  </.section_panel>
+
+  <.section_panel
+    :if={@imported_file}
+    title={dgettext("import", "section_import_rows")}
+    badge={to_string(@imported_row_count)}
+    badge_variant={:purple}
+  >
+    <div :if={@imported_row_count == 0} id="import-rows-empty">
+      <.empty_state text={dgettext("import", "empty_import_rows")} />
+    </div>
+
+    <div :if={@imported_row_count > 0} class="overflow-x-auto">
+      <table class="min-w-full text-left text-sm">
+        <thead class="border-b border-white/10 text-[11px] uppercase tracking-[0.16em] text-white/38">
+          <tr>
+            <th class="px-3 py-3">{dgettext("import", "label_row_index")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_status")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_date")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_description")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_amount")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_currency")}</th>
+            <th class="px-3 py-3">{dgettext("import", "label_row_note")}</th>
+          </tr>
+        </thead>
+        <tbody id="import-rows-table" phx-update="stream" class="divide-y divide-white/5">
+          <tr :for={{id, row} <- @streams.imported_rows} id={id}>
+            <td class="px-3 py-3 font-mono text-white/72">{row.row_index}</td>
+            <td class="px-3 py-3">
+              <.badge variant={imported_row_status_variant(row.status)}>
+                {imported_row_status_label(row.status)}
+              </.badge>
+            </td>
+            <td class="px-3 py-3 text-white/72">{format_date(row.posted_on)}</td>
+            <td class="px-3 py-3 text-white/92">
+              {row.description || row.normalized_description || "—"}
+            </td>
+            <td class="px-3 py-3 text-white/92">
+              {format_amount(row.amount)}
+            </td>
+            <td class="px-3 py-3 text-white/72">{row.currency || "—"}</td>
+            <td class="px-3 py-3 text-white/60">{row_note(row)}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </.section_panel>
+</div>

@@ -47,9 +47,10 @@ Before starting any work:
 
 1. **Read `llms/constitution.md`** - Global rules that override this agent's behavior
 2. **Read `llms/project_context.md`** - Project-specific conventions and patterns
-3. **Read the task file** - Understand requirements, inputs, and expected outputs
-4. **Explore existing UI patterns** - Match the project's established conventions
-5. **Loop in other specialist agents when tasks overlap** - Review which agents in `llms/agents/` apply (e.g., accessibility, QA, SEO, security, backend, docs) and call them as needed
+3. **Read `llms/coding_styles/elixir.md`** - Repository Elixir style rules for LiveView modules and components
+4. **Read the task file** - Understand requirements, inputs, and expected outputs
+5. **Explore existing UI patterns** - Match the project's established conventions
+6. **Loop in other specialist agents when tasks overlap** - Review which agents in `llms/agents/` apply (e.g., accessibility, QA, SEO, security, backend, docs) and call them as needed
 
 ---
 
@@ -849,6 +850,8 @@ export default InfiniteScroll
 ## What You ALWAYS Do
 
 - ✅ **Explore existing patterns first** - Match the codebase style
+- ✅ **Use `.html.heex` templates for LiveViews** - Do not add `render/1` in LiveView modules unless the repo already uses that pattern for the specific page
+- ✅ **Prefer `assign/2` with a keyword list for related assigns** - Avoid chains of multiple `assign/3` calls when updating a cohesive set of values together
 - ✅ **Use semantic HTML** - Proper elements for proper purposes
 - ✅ **Make it responsive** - Mobile-first, then scale up
 - ✅ **Handle all states** - Loading, empty, error, success

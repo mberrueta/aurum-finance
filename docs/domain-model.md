@@ -70,8 +70,7 @@ graph TD
 
     CLS -->|classifies transactions| LED
     CLS -->|entity-scoped| ENT
-    ING -->|creates postings| LED
-    ING -->|invokes rules| CLS
+    ING -->|provides import evidence| REC
     ING -->|entity-scoped| ENT
     REC -->|operates on postings| LED
     REC -->|matches imports| ING
@@ -91,7 +90,7 @@ graph TD
 | **Ledger** | Account, Transaction, Posting (implemented), BalanceSnapshot (deferred) | Account and transaction reads require explicit entity scope; posting currency is derived from the joined account; balances are derived from postings on read | Entity-scoped |
 | **ExchangeRates** | RateSeries, RateRecord, TaxRateSnapshot, Currency | Tax snapshots immutable; rate types are string keys; arbitrary jurisdictions | Mixed (rates global, snapshots entity-scoped) |
 | **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog (deferred) | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
-| **Ingestion** | ImportBatch, ImportRow | Fact/classification split at import; idempotent re-import; preview-before-commit | Entity-scoped |
+| **Ingestion** | ImportedFile, ImportedRow | Account-scoped async ingestion; immutable evidence + preview/review only; no ledger mutation in M2 | Account-scoped within an entity |
 | **Reconciliation** | ReconciliationSession, MatchResult, Discrepancy | State machine: unreconciled -> cleared -> reconciled; corrections reset state | Entity-scoped |
 | **Reporting** | RecurringPattern, Projection, AnomalyAlert | Read-only over primary data; projections labeled with evidence base | Entity-scoped (+ cross-entity) |
 
@@ -130,10 +129,9 @@ erDiagram
     ACCOUNT ||--o{ POSTING : receives
     ACCOUNT ||--o{ BALANCE_SNAPSHOT : caches
 
-    ENTITY ||--o{ IMPORT_BATCH : owns
-    IMPORT_BATCH ||--|{ IMPORT_ROW : contains
-    IMPORT_ROW o|--|| TRANSACTION : commits_to
-    IMPORT_ROW o|--|| TRANSACTION : matched_to_duplicate
+    ENTITY ||--o{ IMPORTED_FILE : owns_via_account
+    ACCOUNT ||--o{ IMPORTED_FILE : targets
+    IMPORTED_FILE ||--|{ IMPORTED_ROW : contains
 
     RULE_GROUP ||--|{ RULE : contains
     RULE ||--|{ CONDITION : has
@@ -158,7 +156,7 @@ erDiagram
 | Domain Area | Primary Lifecycle |
 |-------------|-------------------|
 | **Ledger transaction** | created -> posted -> voided (with reversing transaction) |
-| **Import batch** | uploading -> parsing -> parsed -> previewing -> committed (or failed states) |
+| **Import file** | pending -> processing -> complete or failed |
 | **Classification field** | rule-assigned/user-assigned -> optionally manually overridden -> optionally re-opened for rules |
 | **FX snapshot** | created at tax event -> immutable forever |
 | **Reconciliation state** | unreconciled -> cleared -> reconciled; corrections reopen to cleared |
@@ -337,7 +335,7 @@ entities on the instance.
 - Entity 1--* Account (entity-scoped, via Ledger)
 - Entity 1--* Transaction (entity-scoped, via Ledger)
 - Entity attributes (entity_name, entity_type, entity_country_code) are referenceable as Condition fields in Classification (no foreign key; resolved at evaluation time)
-- Entity 1--* ImportBatch (entity-scoped, via Ingestion)
+- Entity 1--* ImportedFile (entity-scoped via the target account, in Ingestion)
 - Entity 1--* ReconciliationSession (entity-scoped, via Reconciliation)
 - Entity 1--* TaxRateSnapshot (entity-scoped, via ExchangeRates)
 
@@ -358,7 +356,7 @@ access boundary.
 
 | Scope | Data | Rationale |
 |-------|------|-----------|
-| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportBatch, ImportFile, ImportRow, DeduplicationRecord, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity. In the current implementation, Account, Transaction, and Posting already use this boundary. |
+| **Entity-scoped** | Account, Transaction, Posting, BalanceSnapshot, ClassificationRecord, ClassificationAuditLog, ImportedFile, ImportedRow, ReconciliationSession, MatchResult, Discrepancy, TaxRateSnapshot, RecurringPattern, Projection, AnomalyAlert | Financial data belongs to exactly one entity. In the current implementation, Account, Transaction, Posting, ImportedFile, and ImportedRow already use this boundary. |
 | **Global** | Currency, RateSeries, RateRecord, RuleGroup, Rule, Condition, Action | Currencies, exchange rates, and classification rules are shared across entities |
 
 #### Cross-Entity Transfers
@@ -498,87 +496,65 @@ an entity UUID in the URL query.
 ### Ingestion and Normalization
 
 The Ingestion context (`AurumFinance.Ingestion`) manages the import pipeline
-from raw file to classified ledger postings. See ADR-0010 for the full design
-rationale.
+from uploaded source file to immutable preview/review evidence. The current
+implemented milestone is CSV-only, account-scoped, asynchronous, and explicitly
+does not create ledger transactions, postings, or classification outcomes.
 
 #### Pipeline Overview
 
-Data flows through six sequential stages:
+Data flows through five sequential stages:
 
 ```
-Upload & Detect --> Parse & Extract --> Normalize & Validate --> Deduplicate
-                                                                     |
-                                                                     v
-                                                                  Preview
-                                                                (user reviews)
-                                                                     |
-                                                                     v
-                                                                   Commit
-                                                             (write to Ledger +
-                                                              classify via Rules)
+Upload & Store --> Parse & Extract --> Normalize & Validate --> Deduplicate
+                                                                       |
+                                                                       v
+                                                                    Persist
+                                                              imported_rows +
+                                                               preview state
 ```
 
-The **fact/classification split** occurs at the Normalize stage: normalized
-values (amount, date, description, account reference, effective currency,
-institution reference) become immutable Transaction and Posting facts or are
-derivable from them. Classification is applied after
-fact creation and stored separately in ClassificationRecord (ADR-0004).
+The output of this milestone is immutable import evidence. Parsed rows are
+stored as `imported_rows` linked to one `imported_file`, and the UI renders
+preview/review state from that durable data. Materialization into ledger facts
+and any later classification step are future work.
 
 #### Domain Objects
 
 | Domain Object | Description | Key Fields |
 |---------------|-------------|------------|
-| **ImportBatch** | A single import operation (one file upload). Tracks the lifecycle from upload to commit. | `entity_id`, `account_id`, `format`, `original_filename`, `file_hash`, `file_size_bytes`, `status`, `total_rows`, `committed_rows`, `error_rows`, `duplicate_rows`, `skipped_rows`, `started_at`, `committed_at` |
-| **ImportRow** | A single parsed row from the import file. Preserves raw data for audit. | `import_batch_id`, `row_number`, `raw_data` (JSON), `normalized_data` (JSON), `status`, `error_message`, `dedup_fingerprint`, `matched_transaction_id`, `committed_transaction_id` |
+| **ImportedFile** | One uploaded source file plus async processing lifecycle and summary. | `account_id`, `filename`, `sha256`, `format`, `status`, `row_count`, `imported_row_count`, `skipped_row_count`, `invalid_row_count`, `error_message`, `warnings`, `storage_path`, `processed_at` |
+| **ImportedRow** | One immutable parsed row from the file, persisted as evidence and preview data. | `imported_file_id`, `account_id`, `row_index`, `raw_data`, `description`, `normalized_description`, `posted_on`, `amount`, `currency`, `fingerprint`, `status`, `skip_reason`, `validation_error` |
 
 #### Relationships
 
-- Entity 1--* ImportBatch (entity-scoped)
-- Account 1--* ImportBatch (target account for the import)
-- ImportBatch 1--+ ImportRow (one batch contains many rows)
-- ImportRow 0..1--1 Transaction (committed_transaction_id, after commit)
-- ImportRow 0..1--1 Transaction (matched_transaction_id, if duplicate)
+- Account 1--* ImportedFile (target account for the import)
+- ImportedFile 1--+ ImportedRow (one file contains many persisted row evidences)
+- ImportedRow belongs to one account explicitly for account-scoped dedupe and review
 
-#### ImportBatch Status Lifecycle
+#### ImportedFile Status Lifecycle
 
 ```
-:uploading --> :parsing --> :parsed --> :previewing --> :committed
-                  |            |                           |
-                  v            v                           v
-              :parse_failed  :validation_failed       :commit_failed
+:pending --> :processing --> :complete
+                    |
+                    v
+                 :failed
 ```
 
 #### Deduplication Strategy
 
-- **Fingerprint:** SHA-256 hash of `(account_id, date, amount, currency_code,
-  institution_reference OR description)`. Derived from raw row data only —
-  no system-assigned IDs.
-- **Scope:** Per account within an entity. Transactions in different accounts
-  do not deduplicate against each other.
-- **File-level check:** `file_hash` is compared against previously committed
-  batches as a soft warning.
-- **Conflict resolution:** During preview, the user can skip duplicates
-  (default), force import (for genuinely repeated transactions), or replace
-  (void existing and import new).
+- **Fingerprint:** stable hash of normalized canonical row data.
+- **Scope:** Per account. Rows in different accounts do not deduplicate against each other.
+- **File-level check:** `sha256` is stored as metadata only and does not block repeated uploads.
+- **Conflict resolution:** duplicate rows are persisted as `duplicate`; new rows are persisted as `ready`; invalid rows are persisted as `invalid`.
 
-#### Preview-Before-Commit
+#### Preview / Review State
 
-The preview is mandatory. After Stages 1-4, the user sees all rows with their
-statuses (ready, duplicate, error). For ready rows, the system invokes
-`Classification.preview_classification/1` to show proposed rule matches.
-The user can accept, skip, force, or override before committing. No data is
-written to the Ledger until the user approves.
+Preview is rendered from persisted `imported_files` and `imported_rows`.
+History and detail pages survive page reloads and browser disconnects because
+the source of truth is durable state, with LiveView updates driven by PubSub.
 
-Preview state is persisted in the database (ImportBatch + ImportRow records),
-so it survives page reloads and browser disconnects.
-
-#### Commit Atomicity
-
-All writes for a single batch are wrapped in a database transaction. If any
-row fails during commit, the entire batch is rolled back. For each approved
-row, the pipeline creates a Transaction + Postings in the Ledger (with
-`source_type: :import`), invokes Classification, records the dedup
-fingerprint, and links the ImportRow to the created Transaction.
+This milestone stops at preview/review. There is no `commit_import/2`, no
+ledger write phase, and no classification preview in the current ingestion flow.
 
 #### Format Extensibility
 
@@ -591,13 +567,11 @@ pipeline stages.
 
 #### Key Invariants
 
-1. **Raw data preservation:** `ImportRow.raw_data` is immutable — original
+1. **Raw data preservation:** `ImportedRow.raw_data` is immutable — original
    file data is never modified.
-2. **Idempotent import:** Same file imported twice produces no new
-   transactions (dedup fingerprint + file hash).
-3. **Preview is mandatory:** No data enters the Ledger without user approval.
-4. **Full provenance:** File -> batch -> row -> transaction. Every imported
-   transaction is traceable to its source row and file.
+2. **Repeated uploads are allowed:** same file imported twice may create a new `imported_file`, but row-level dedupe prevents duplicate `ready` evidence.
+3. **Preview only:** No data enters the Ledger in this milestone.
+4. **Full provenance:** File -> row evidence. Every persisted preview row is traceable to its source file.
 
 ### Rule Groups and Classification Outcomes
 
@@ -798,7 +772,7 @@ results, and discrepancy records. See ADR-0013 for full design rationale.
 - ReconciliationSession 1--* Discrepancy
 - Posting 1--* MatchResult (across sessions over time)
 - Posting 1--* ReconciliationAuditLog
-- ImportRow 0..1--* MatchResult via `statement_row_reference`
+- ImportedRow 0..1--* MatchResult via `statement_row_reference`
 
 #### Posting Reconciliation State Machine
 

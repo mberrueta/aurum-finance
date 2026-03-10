@@ -28,6 +28,16 @@ config :aurum_finance, AurumFinanceWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
 if config_env() == :prod do
+  ingestion_storage_path =
+    System.get_env("AURUM_INGESTION_STORAGE_PATH") ||
+      raise """
+      environment variable AURUM_INGESTION_STORAGE_PATH is missing.
+      Set it to an absolute path for uploaded import file storage.
+      """
+
+  config :aurum_finance, AurumFinance.Ingestion.LocalFileStorage,
+    base_path: ingestion_storage_path
+
   database_url =
     System.get_env("DATABASE_URL") ||
       raise """
