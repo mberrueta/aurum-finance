@@ -138,4 +138,35 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
     assert render(view) =~ "Complete"
     assert render(view) =~ "Dinner"
   end
+
+  test "shows error details for a failed import", %{conn: conn} do
+    entity = insert_entity(name: "Failed detail entity")
+    account = insert_account(entity, %{name: "Failed detail account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "failed-detail.csv",
+               sha256: String.duplicate("e", 64),
+               format: :csv,
+               status: :failed,
+               row_count: 0,
+               imported_row_count: 0,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               error_message: "CSV file is empty",
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/failed-detail.csv"
+             })
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    assert has_element?(view, "#import-details-error")
+    assert has_element?(view, "#import-rows-empty")
+    assert render(view) =~ "Processing error"
+    assert render(view) =~ "CSV file is empty"
+  end
 end

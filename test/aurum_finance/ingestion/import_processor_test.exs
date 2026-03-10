@@ -7,6 +7,10 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
   alias AurumFinance.Ingestion.Fingerprint
   alias AurumFinance.Ingestion.ImportWorker
   alias AurumFinance.Ingestion.PubSub
+  alias AurumFinance.Ledger
+  alias AurumFinance.Ledger.Posting
+  alias AurumFinance.Ledger.Transaction
+  alias AurumFinance.Repo
 
   describe "enqueue_import_processing/1" do
     test "processes a stored file asynchronously and summarizes ready, duplicate, and invalid rows" do
@@ -140,6 +144,9 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
       assert Enum.at(rows, 0).skip_reason == "already imported"
       assert Enum.at(rows, 1).fingerprint != nil
       assert Enum.at(rows, 2).validation_error == "invalid amount"
+      assert Ledger.list_transactions(entity_id: entity.id) == []
+      assert Repo.aggregate(Transaction, :count, :id) == 0
+      assert Repo.aggregate(Posting, :count, :id) == 0
     end
 
     test "marks the import as failed when parsing cannot proceed" do

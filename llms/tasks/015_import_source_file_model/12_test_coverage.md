@@ -1,7 +1,7 @@
 # Task 12: Test Coverage
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01, Task 02, Task 03, Task 04, Task 05, Task 06, Task 07, Task 08, Task 09, Task 10, Task 11
 - **Blocks**: Task 13
@@ -45,8 +45,9 @@ Ensure the milestone has strong automated coverage across upload flow, async pro
 - [ ] No tests assume transactions are created by the import pipeline
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Backend coverage now spans storage, parser, normalization, fingerprinting, duplicate lookup, async processing, audit lifecycle, and the explicit guarantee that imports do not create ledger `transactions` or `postings`.
+- LiveView coverage now spans account-selection enforcement, upload flow, PubSub refreshes, detail-page preview rendering, and failed-import detail rendering.
+- The milestone test suite remains deterministic and factory-driven; no tests assume ledger materialization from the import pipeline.
 
 ## Human Review
 *[Filled by human reviewer]*
-
