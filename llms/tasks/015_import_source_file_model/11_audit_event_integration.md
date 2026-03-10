@@ -1,7 +1,7 @@
 # Task 11: Audit Event Integration
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01, Task 02, Task 07
 - **Blocks**: Tasks 12, 13
@@ -46,8 +46,9 @@ Wire the import workflow into the existing generic audit event system for upload
 - [ ] No second audit mechanism is introduced
 
 ## Execution Summary
-*[Filled by executing agent]*
+- `store_imported_file/1` now records the initial `uploaded` lifecycle event through `AurumFinance.Audit.insert_and_log/2`.
+- Import status transitions continue to append generic audit events inside the existing audit context flow, while preserving the transaction ordering required by the async processor.
+- Test coverage now verifies the full lifecycle sequence: `uploaded`, `processing_started`, `processing_completed`, and `processing_failed`.
 
 ## Human Review
 *[Filled by human reviewer]*
-

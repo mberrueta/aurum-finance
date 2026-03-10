@@ -106,10 +106,15 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
       assert processed_import.error_message == nil
       assert %DateTime{} = processed_import.processed_at
 
-      [started_event, completed_event] =
+      [uploaded_event, started_event, completed_event] =
         processed_import.id
         |> fetch_import_audit_events()
         |> Enum.sort_by(& &1.occurred_at, {:asc, DateTime})
+
+      assert uploaded_event.action == "uploaded"
+      assert uploaded_event.before == nil
+      assert uploaded_event.after["status"] == "pending"
+      assert uploaded_event.metadata == %{"account_id" => account.id}
 
       assert started_event.action == "processing_started"
       assert started_event.actor == "system"
@@ -187,10 +192,13 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
       assert failed_import.error_message == "CSV file is empty"
       assert %DateTime{} = failed_import.processed_at
 
-      [started_event, failed_event] =
+      [uploaded_event, started_event, failed_event] =
         failed_import.id
         |> fetch_import_audit_events()
         |> Enum.sort_by(& &1.occurred_at, {:asc, DateTime})
+
+      assert uploaded_event.action == "uploaded"
+      assert uploaded_event.after["status"] == "pending"
 
       assert started_event.action == "processing_started"
       assert started_event.after["status"] == "processing"

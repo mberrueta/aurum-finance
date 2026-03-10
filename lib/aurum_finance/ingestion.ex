@@ -5,6 +5,7 @@ defmodule AurumFinance.Ingestion do
 
   import Ecto.Query, warn: false
 
+  alias AurumFinance.Audit
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportWorker
   alias AurumFinance.Ingestion.LocalFileStorage
@@ -33,6 +34,11 @@ defmodule AurumFinance.Ingestion do
   @type duplicate_lookup_opt ::
           {:account_id, Ecto.UUID.t()}
           | {:fingerprints, [String.t()]}
+
+  @audit_actor "system"
+  @audit_channel :system
+  @audit_entity_type "imported_file"
+  @upload_audit_action "uploaded"
 
   @doc """
   Returns a composable query for imported files within one account scope.
@@ -129,8 +135,8 @@ defmodule AurumFinance.Ingestion do
   """
   @spec create_imported_file(map()) :: {:ok, ImportedFile.t()} | {:error, Ecto.Changeset.t()}
   def create_imported_file(attrs) do
-    %ImportedFile{}
-    |> ImportedFile.changeset(attrs)
+    attrs
+    |> imported_file_changeset()
     |> Repo.insert()
   end
 
@@ -163,7 +169,7 @@ defmodule AurumFinance.Ingestion do
         |> Map.put_new(:format, :csv)
         |> Map.put_new(:status, :pending)
 
-      case create_imported_file(imported_file_attrs) do
+      case create_audited_imported_file(imported_file_attrs) do
         {:ok, imported_file} ->
           :ok = PubSub.broadcast_imported_file(imported_file)
           {:ok, imported_file}
@@ -299,6 +305,23 @@ defmodule AurumFinance.Ingestion do
   @spec change_imported_file(ImportedFile.t(), map()) :: Ecto.Changeset.t()
   def change_imported_file(%ImportedFile{} = imported_file, attrs \\ %{}) do
     ImportedFile.changeset(imported_file, attrs)
+  end
+
+  defp imported_file_changeset(attrs) do
+    %ImportedFile{}
+    |> ImportedFile.changeset(attrs)
+  end
+
+  defp create_audited_imported_file(attrs) do
+    attrs
+    |> imported_file_changeset()
+    |> Audit.insert_and_log(%{
+      actor: @audit_actor,
+      channel: @audit_channel,
+      entity_type: @audit_entity_type,
+      action: @upload_audit_action,
+      metadata: %{account_id: Map.fetch!(attrs, :account_id)}
+    })
   end
 
   @doc """

@@ -1,6 +1,7 @@
 defmodule AurumFinance.IngestionTest do
   use AurumFinance.DataCase, async: true
 
+  alias AurumFinance.Audit
   alias AurumFinance.Ingestion
   alias AurumFinance.Ingestion.CanonicalRowCandidate
   alias AurumFinance.Ingestion.Fingerprint
@@ -254,6 +255,32 @@ defmodule AurumFinance.IngestionTest do
 
       assert account_id == account.id
       assert imported_file_id == imported_file.id
+    end
+
+    test "store_imported_file/1 logs an uploaded audit event" do
+      entity = insert(:entity, name: "Audit upload entity")
+
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Audit upload account")
+
+      assert {:ok, imported_file} =
+               Ingestion.store_imported_file(%{
+                 account_id: account.id,
+                 filename: "statement.csv",
+                 content: "Date,Description,Amount\n2026-03-10,Coffee,-4.50\n",
+                 content_type: "text/csv"
+               })
+
+      [uploaded_event] =
+        Audit.list_audit_events(entity_type: "imported_file", entity_id: imported_file.id)
+
+      assert uploaded_event.action == "uploaded"
+      assert uploaded_event.actor == "system"
+      assert uploaded_event.channel == :system
+      assert uploaded_event.before == nil
+      assert uploaded_event.after["status"] == "pending"
+      assert uploaded_event.after["filename"] == "statement.csv"
+      assert uploaded_event.metadata == %{"account_id" => account.id}
     end
   end
 
