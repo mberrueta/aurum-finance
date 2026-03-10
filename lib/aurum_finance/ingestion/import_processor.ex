@@ -12,6 +12,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
   alias AurumFinance.Ingestion.Fingerprint
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ParserError
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ingestion.RowNormalizer
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
@@ -336,6 +337,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
       updated_import
     end)
     |> normalize_repo_transaction_result()
+    |> broadcast_transition()
   end
 
   defp import_audit_attrs(imported_file, before_snapshot, action) do
@@ -418,6 +420,13 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
 
   defp normalize_repo_transaction_result({:ok, result}), do: {:ok, result}
   defp normalize_repo_transaction_result({:error, reason}), do: {:error, reason}
+
+  defp broadcast_transition({:ok, %ImportedFile{} = imported_file}) do
+    :ok = PubSub.broadcast_imported_file(imported_file)
+    {:ok, imported_file}
+  end
+
+  defp broadcast_transition({:error, reason}), do: {:error, reason}
 
   defp handle_invalid_insert_result({:ok, _row}, state),
     do: %{state | invalid_row_count: state.invalid_row_count + 1}

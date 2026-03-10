@@ -6,6 +6,7 @@ defmodule AurumFinance.IngestionTest do
   alias AurumFinance.Ingestion.Fingerprint
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportedRow
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ledger.Account
 
   describe "change_imported_file/2" do
@@ -228,6 +229,31 @@ defmodule AurumFinance.IngestionTest do
       refute first.storage_path == second.storage_path
       assert File.exists?(first.storage_path)
       assert File.exists?(second.storage_path)
+    end
+
+    test "store_imported_file/1 broadcasts a pending notification for account history" do
+      entity = insert(:entity, name: "PubSub entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "PubSub account")
+
+      assert :ok = PubSub.subscribe_account_imports(account.id)
+
+      assert {:ok, imported_file} =
+               Ingestion.store_imported_file(%{
+                 account_id: account.id,
+                 filename: "statement.csv",
+                 content: "Date,Description,Amount\n2026-03-10,Coffee,-4.50\n",
+                 content_type: "text/csv"
+               })
+
+      assert_receive {:import_updated,
+                      %{
+                        account_id: account_id,
+                        imported_file_id: imported_file_id,
+                        status: :pending
+                      }}
+
+      assert account_id == account.id
+      assert imported_file_id == imported_file.id
     end
   end
 

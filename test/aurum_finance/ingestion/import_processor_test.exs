@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
   alias AurumFinance.Ingestion
   alias AurumFinance.Ingestion.Fingerprint
   alias AurumFinance.Ingestion.ImportWorker
+  alias AurumFinance.Ingestion.PubSub
 
   describe "enqueue_import_processing/1" do
     test "processes a stored file asynchronously and summarizes ready, duplicate, and invalid rows" do
@@ -62,6 +63,8 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
                  content_type: "text/csv"
                })
 
+      assert :ok = PubSub.subscribe_imported_file(imported_file.id)
+
       assert {:ok, %Oban.Job{} = job} = Ingestion.enqueue_import_processing(imported_file)
       assert job.queue == "imports"
 
@@ -72,6 +75,26 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
       )
 
       assert %{failure: 0, success: 1, snoozed: 0} = Oban.drain_queue(queue: :imports)
+
+      assert_receive {:import_updated,
+                      %{
+                        account_id: account_id,
+                        imported_file_id: imported_file_id,
+                        status: :processing
+                      }}
+
+      assert account_id == account.id
+      assert imported_file_id == imported_file.id
+
+      assert_receive {:import_updated,
+                      %{
+                        account_id: completed_account_id,
+                        imported_file_id: completed_imported_file_id,
+                        status: :complete
+                      }}
+
+      assert completed_account_id == account.id
+      assert completed_imported_file_id == imported_file.id
 
       processed_import = Ingestion.get_imported_file!(account.id, imported_file.id)
 
@@ -128,9 +151,31 @@ defmodule AurumFinance.Ingestion.ImportProcessorTest do
                  content_type: "text/csv"
                })
 
+      assert :ok = PubSub.subscribe_imported_file(imported_file.id)
+
       assert {:ok, %Oban.Job{} = job} = Ingestion.enqueue_import_processing(imported_file)
       assert job.queue == "imports"
       assert %{failure: 0, success: 1, snoozed: 0} = Oban.drain_queue(queue: :imports)
+
+      assert_receive {:import_updated,
+                      %{
+                        account_id: processing_account_id,
+                        imported_file_id: processing_imported_file_id,
+                        status: :processing
+                      }}
+
+      assert processing_account_id == account.id
+      assert processing_imported_file_id == imported_file.id
+
+      assert_receive {:import_updated,
+                      %{
+                        account_id: failed_account_id,
+                        imported_file_id: failed_imported_file_id,
+                        status: :failed
+                      }}
+
+      assert failed_account_id == account.id
+      assert failed_imported_file_id == imported_file.id
 
       failed_import = Ingestion.get_imported_file!(account.id, imported_file.id)
 

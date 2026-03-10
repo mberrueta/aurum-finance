@@ -10,6 +10,7 @@ defmodule AurumFinance.Ingestion do
   alias AurumFinance.Ingestion.LocalFileStorage
   alias AurumFinance.Ingestion.Parser
   alias AurumFinance.Ingestion.ImportedRow
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ingestion.RowNormalizer
   alias AurumFinance.Repo
 
@@ -164,6 +165,7 @@ defmodule AurumFinance.Ingestion do
 
       case create_imported_file(imported_file_attrs) do
         {:ok, imported_file} ->
+          :ok = PubSub.broadcast_imported_file(imported_file)
           {:ok, imported_file}
 
         {:error, reason} ->
