@@ -1,7 +1,7 @@
 # Task 03: Local File Storage Abstraction
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: IMPLEMENTED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01
 - **Blocks**: Tasks 04, 07, 09, 12
@@ -44,8 +44,10 @@ Provide a local filesystem storage abstraction for uploaded CSV payloads with co
 - [ ] No parser logic or dedupe logic is added here
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added [local_file_storage.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/local_file_storage.ex) with configurable local filesystem storage, deterministic path layout under a configured base path, metadata capture (`filename`, `content_type`, `byte_size`, `sha256`, `storage_path`), and support for both in-memory `:content` and temp-file `:source_path` inputs.
+- Extended [ingestion.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion.ex) with `store_imported_file/1`, which stores the payload on disk, persists the captured metadata into `imported_files`, defaults new records to `status: :pending`, and explicitly does not reject repeated `sha256` values.
+- Added storage configuration in [config.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/config/config.exs), [test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/config/test.exs), and [runtime.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/config/runtime.exs). Production now requires `AURUM_INGESTION_STORAGE_PATH`.
+- Added tests in [local_file_storage_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ingestion/local_file_storage_test.exs) and expanded [ingestion_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ingestion_test.exs) to cover on-disk storage, metadata capture, source-path ingestion, persisted `storage_path`, and repeated identical payloads not being blocked.
 
 ## Human Review
 *[Filled by human reviewer]*
-

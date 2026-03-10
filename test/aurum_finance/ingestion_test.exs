@@ -192,6 +192,39 @@ defmodule AurumFinance.IngestionTest do
       assert updated.warnings == %{"header" => "normalized"}
       assert updated.processed_at == processed_at
     end
+
+    test "store_imported_file/1 persists storage metadata without blocking repeated sha256 values" do
+      entity = insert(:entity, name: "Stored file entity")
+
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Stored file account")
+
+      payload = "date,amount\n2026-03-10,10.00\n"
+
+      assert {:ok, first} =
+               Ingestion.store_imported_file(%{
+                 account_id: account.id,
+                 filename: "statement.csv",
+                 content: payload,
+                 content_type: "text/csv"
+               })
+
+      assert {:ok, second} =
+               Ingestion.store_imported_file(%{
+                 account_id: account.id,
+                 filename: "statement.csv",
+                 content: payload,
+                 content_type: "text/csv"
+               })
+
+      assert first.filename == "statement.csv"
+      assert first.content_type == "text/csv"
+      assert first.byte_size == byte_size(payload)
+      assert first.sha256 == second.sha256
+      refute first.storage_path == second.storage_path
+      assert File.exists?(first.storage_path)
+      assert File.exists?(second.storage_path)
+    end
   end
 
   describe "change_imported_row/2" do

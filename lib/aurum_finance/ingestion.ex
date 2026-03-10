@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Ingestion.ImportedFile
+  alias AurumFinance.Ingestion.LocalFileStorage
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Repo
 
@@ -118,6 +119,46 @@ defmodule AurumFinance.Ingestion do
     %ImportedFile{}
     |> ImportedFile.changeset(attrs)
     |> Repo.insert()
+  end
+
+  @doc """
+  Stores an uploaded file on local disk and persists its metadata in
+  `imported_files`.
+
+  This function does not reject repeated `sha256` values. File-level duplicate
+  handling remains out of scope.
+
+  ## Examples
+
+  ```elixir
+  {:ok, imported_file} =
+    AurumFinance.Ingestion.store_imported_file(%{
+      account_id: account.id,
+      filename: "statement.csv",
+      content: "date,amount\\n2026-03-10,10.00\\n",
+      content_type: "text/csv"
+    })
+  ```
+  """
+  @spec store_imported_file(map()) :: {:ok, ImportedFile.t()} | {:error, term()}
+  def store_imported_file(attrs) when is_map(attrs) do
+    with {:ok, storage_metadata} <- LocalFileStorage.store(attrs) do
+      imported_file_attrs =
+        attrs
+        |> Map.take([:account_id])
+        |> Map.merge(storage_metadata)
+        |> Map.put_new(:format, :csv)
+        |> Map.put_new(:status, :pending)
+
+      case create_imported_file(imported_file_attrs) do
+        {:ok, imported_file} ->
+          {:ok, imported_file}
+
+        {:error, reason} ->
+          _ = LocalFileStorage.delete(storage_metadata.storage_path)
+          {:error, reason}
+      end
+    end
   end
 
   @doc """
