@@ -11,7 +11,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S35: authenticated user can access /audit-log and sees the default page state", %{
       conn: conn
     } do
-      entity = entity_fixture(name: unique_name("Mount Entity"))
+      entity = insert_entity(name: unique_name("Mount Entity"))
 
       {:ok, view, html} = conn |> log_in_root() |> live("/audit-log")
 
@@ -32,10 +32,10 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
          %{
            conn: conn
          } do
-      entity_a = entity_fixture(name: unique_name("Owner A"))
-      entity_b = entity_fixture(name: unique_name("Owner B"))
-      account_a = account_fixture(entity_a, %{name: unique_name("Checking A")})
-      account_b = account_fixture(entity_b, %{name: unique_name("Checking B")})
+      entity_a = insert_entity(name: unique_name("Owner A"))
+      entity_b = insert_entity(name: unique_name("Owner B"))
+      account_a = insert_account(entity_a, %{name: unique_name("Checking A")})
+      account_b = insert_account(entity_b, %{name: unique_name("Checking B")})
 
       entity_a_event = audit_event_for!(entity_id: entity_a.id)
       account_a_event = audit_event_for!(entity_id: account_a.id)
@@ -58,8 +58,8 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S38: selecting an entity type filter patches the URL and restricts visible events", %{
       conn: conn
     } do
-      entity = entity_fixture(name: unique_name("Type Entity"))
-      account = account_fixture(entity, %{name: unique_name("Type Account")})
+      entity = insert_entity(name: unique_name("Type Entity"))
+      account = insert_account(entity, %{name: unique_name("Type Account")})
 
       entity_event = audit_event_for!(entity_id: entity.id)
       account_event = audit_event_for!(entity_id: account.id)
@@ -78,7 +78,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S39: selecting an action filter patches the URL and restricts visible events", %{
       conn: conn
     } do
-      entity = entity_fixture(name: unique_name("Action Entity"))
+      entity = insert_entity(name: unique_name("Action Entity"))
       {:ok, updated_entity} = Entities.update_entity(entity, %{notes: "updated note"})
 
       created_event = audit_event_for!(entity_id: entity.id, action: "created")
@@ -98,7 +98,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S40: selecting a channel filter patches the URL and combines correctly with action", %{
       conn: conn
     } do
-      entity = entity_fixture(name: unique_name("Channel Entity"))
+      entity = insert_entity(name: unique_name("Channel Entity"))
 
       {:ok, _web_update} =
         Entities.update_entity(entity, %{notes: "web"}, actor: "person", channel: :web)
@@ -126,7 +126,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
          %{
            conn: conn
          } do
-      entity = entity_fixture(name: unique_name("Date Entity"))
+      entity = insert_entity(name: unique_name("Date Entity"))
       visible_event = audit_event_for!(entity_id: entity.id)
 
       {:ok, view, _html} = conn |> log_in_root() |> live("/audit-log")
@@ -156,8 +156,8 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
 
   describe "url hydration" do
     test "S42: direct navigation hydrates filters from the compact query string", %{conn: conn} do
-      entity = entity_fixture(name: unique_name("Hydrate Entity"))
-      account = account_fixture(entity, %{name: unique_name("Hydrate Account")})
+      entity = insert_entity(name: unique_name("Hydrate Entity"))
+      account = insert_account(entity, %{name: unique_name("Hydrate Account")})
       account_event = audit_event_for!(entity_id: account.id, action: "created")
 
       path =
@@ -180,7 +180,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S43: invalid URL values are ignored or defaulted without breaking the page", %{
       conn: conn
     } do
-      entity = entity_fixture(name: unique_name("Fallback Entity"))
+      entity = insert_entity(name: unique_name("Fallback Entity"))
       visible_event = audit_event_for!(entity_id: entity.id)
 
       path =
@@ -208,7 +208,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     test "S44: first page shows up to 50 events and next navigates to page 2", %{conn: conn} do
       first_inserted =
         Enum.reduce(1..51, nil, fn index, first_event ->
-          entity = entity_fixture(name: unique_name("Page Entity #{index}"))
+          entity = insert_entity(name: unique_name("Page Entity #{index}"))
           audit_event = audit_event_for!(entity_id: entity.id)
           first_event || audit_event
         end)
@@ -232,7 +232,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
       conn: conn
     } do
       Enum.each(1..51, fn index ->
-        entity_fixture(name: unique_name("Boundary Entity #{index}"))
+        insert_entity(name: unique_name("Boundary Entity #{index}"))
       end)
 
       {:ok, view, _html} = conn |> log_in_root() |> live("/audit-log")
@@ -252,7 +252,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
 
   describe "expandable rows" do
     test "S46: clicking an event expands and collapses the before/after snapshots", %{conn: conn} do
-      entity = entity_fixture(name: unique_name("Expand Entity"))
+      entity = insert_entity(name: unique_name("Expand Entity"))
       {:ok, entity} = Entities.update_entity(entity, %{notes: "expanded detail"})
       updated_event = audit_event_for!(entity_id: entity.id, action: "updated")
 
@@ -275,7 +275,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
     end
 
     test "S47: created events show a placeholder when the before snapshot is nil", %{conn: conn} do
-      entity = entity_fixture(name: unique_name("Placeholder Entity"))
+      entity = insert_entity(name: unique_name("Placeholder Entity"))
       created_event = audit_event_for!(entity_id: entity.id, action: "created")
 
       {:ok, view, _html} = conn |> log_in_root() |> live("/audit-log")
@@ -295,7 +295,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
 
       assert render(empty_view) =~ "No audit events recorded yet."
 
-      entity = entity_fixture(name: unique_name("Filtered Empty Entity"))
+      entity = insert_entity(name: unique_name("Filtered Empty Entity"))
       matching_event = audit_event_for!(entity_id: entity.id)
 
       {:ok, filtered_view, _html} = conn |> log_in_root() |> live("/audit-log")
@@ -317,7 +317,7 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
 
   describe "read-only invariant" do
     test "S49: the audit log renders no mutation actions or write handlers", %{conn: conn} do
-      entity = entity_fixture(name: unique_name("Read Only Entity"))
+      entity = insert_entity(name: unique_name("Read Only Entity"))
       account = transaction_account_fixture(entity)
       transaction = create_transaction_fixture(entity, account)
       assert {:ok, %{voided: _voided, reversal: _reversal}} = Ledger.void_transaction(transaction)
@@ -338,10 +338,10 @@ defmodule AurumFinanceWeb.AuditLogLiveTest do
   end
 
   defp transaction_account_fixture(entity) do
-    checking = account_fixture(entity, %{name: unique_name("Read Only Checking")})
+    checking = insert_account(entity, %{name: unique_name("Read Only Checking")})
 
     category =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: unique_name("Read Only Category"),
         account_type: :expense,
         operational_subtype: nil,

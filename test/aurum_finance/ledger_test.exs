@@ -143,11 +143,11 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "list_accounts/1 is entity-scoped and excludes archived accounts by default" do
-      entity_a = entity_fixture(%{name: "Entity A"})
-      entity_b = entity_fixture(%{name: "Entity B"})
+      entity_a = insert_entity(%{name: "Entity A"})
+      entity_b = insert_entity(%{name: "Entity B"})
 
-      account_a = account_fixture(entity_a, %{name: "Primary checking"})
-      _account_b = account_fixture(entity_b, %{name: "Foreign checking"})
+      account_a = insert_account(entity_a, %{name: "Primary checking"})
+      _account_b = insert_account(entity_b, %{name: "Foreign checking"})
 
       assert {:ok, archived} = Ledger.archive_account(account_a)
       assert %DateTime{} = archived.archived_at
@@ -168,13 +168,13 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "lists accounts by management group using query-level filters" do
-      entity = entity_fixture(%{name: "Grouped entity"})
+      entity = insert_entity(%{name: "Grouped entity"})
 
       institution =
-        account_fixture(entity, %{name: "Checking", operational_subtype: :bank_checking})
+        insert_account(entity, %{name: "Checking", operational_subtype: :bank_checking})
 
       category =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries",
           account_type: :expense,
           operational_subtype: nil,
@@ -182,7 +182,7 @@ defmodule AurumFinance.LedgerTest do
         })
 
       system_managed =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Opening balances",
           account_type: :equity,
           operational_subtype: nil,
@@ -210,10 +210,10 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "management group listing respects archived filter" do
-      entity = entity_fixture(%{name: "Archived grouped entity"})
+      entity = insert_entity(%{name: "Archived grouped entity"})
 
       account =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Archived card",
           account_type: :liability,
           operational_subtype: :credit_card
@@ -236,9 +236,9 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "get_account!/2 enforces the ownership boundary" do
-      entity_a = entity_fixture(%{name: "Scoped entity A"})
-      entity_b = entity_fixture(%{name: "Scoped entity B"})
-      account = account_fixture(entity_a, %{name: "Scoped checking"})
+      entity_a = insert_entity(%{name: "Scoped entity A"})
+      entity_b = insert_entity(%{name: "Scoped entity B"})
+      account = insert_account(entity_a, %{name: "Scoped checking"})
 
       assert Ledger.get_account!(entity_a.id, account.id).id == account.id
 
@@ -248,8 +248,8 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "update_account/3 rejects immutable field changes" do
-      entity = entity_fixture(%{name: "Immutability entity"})
-      account = account_fixture(entity)
+      entity = insert_entity(%{name: "Immutability entity"})
+      account = insert_account(entity)
 
       assert {:error, changeset} =
                Ledger.update_account(account, %{
@@ -315,7 +315,7 @@ defmodule AurumFinance.LedgerTest do
       %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
 
       household =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Household",
           account_type: :expense,
           operational_subtype: nil,
@@ -339,11 +339,11 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "creates a multi-currency transaction when each currency group balances" do
-      entity = entity_fixture(%{name: "FX Entity"})
-      usd_checking = account_fixture(entity, %{name: "USD Checking", currency_code: "USD"})
+      entity = insert_entity(%{name: "FX Entity"})
+      usd_checking = insert_account(entity, %{name: "USD Checking", currency_code: "USD"})
 
       usd_trading =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "USD Trading",
           account_type: :equity,
           operational_subtype: nil,
@@ -352,7 +352,7 @@ defmodule AurumFinance.LedgerTest do
         })
 
       eur_trading =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "EUR Trading",
           account_type: :equity,
           operational_subtype: nil,
@@ -361,7 +361,7 @@ defmodule AurumFinance.LedgerTest do
         })
 
       eur_savings =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "EUR Savings",
           operational_subtype: :bank_savings,
           currency_code: "EUR"
@@ -422,7 +422,7 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "rejects empty postings list" do
-      entity = entity_fixture()
+      entity = insert_entity()
 
       assert {:error, changeset} =
                Ledger.create_transaction(%{
@@ -438,10 +438,10 @@ defmodule AurumFinance.LedgerTest do
 
     test "rejects posting accounts from another entity" do
       %{entity: entity, checking: checking} = transaction_accounts_fixture()
-      other_entity = entity_fixture(%{name: "Foreign Entity"})
+      other_entity = insert_entity(%{name: "Foreign Entity"})
 
       foreign_expense =
-        account_fixture(other_entity, %{
+        insert_account(other_entity, %{
           name: "Foreign expense",
           account_type: :expense,
           operational_subtype: nil,
@@ -518,7 +518,7 @@ defmodule AurumFinance.LedgerTest do
 
     test "raises when the entity scope is wrong" do
       %{entity: entity} = transaction_accounts_fixture()
-      other_entity = entity_fixture()
+      other_entity = insert_entity()
       transaction = create_balanced_transaction(entity, %{description: "Scoped"})
 
       assert_raise Ecto.NoResultsError, fn ->
@@ -527,7 +527,7 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "raises when the transaction does not exist" do
-      entity = entity_fixture()
+      entity = insert_entity()
 
       assert_raise Ecto.NoResultsError, fn ->
         Ledger.get_transaction!(entity.id, Ecto.UUID.generate())
@@ -543,8 +543,8 @@ defmodule AurumFinance.LedgerTest do
     end
 
     test "is entity scoped and excludes voided rows by default" do
-      entity = entity_fixture(%{name: "Listing Entity"})
-      other_entity = entity_fixture(%{name: "Other Listing Entity"})
+      entity = insert_entity(%{name: "Listing Entity"})
+      other_entity = insert_entity(%{name: "Other Listing Entity"})
       transaction = create_balanced_transaction(entity, %{description: "Visible Tx"})
       _other = create_balanced_transaction(other_entity, %{description: "Hidden Tx"})
 
@@ -564,7 +564,7 @@ defmodule AurumFinance.LedgerTest do
       %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
 
       savings =
-        account_fixture(entity, %{name: "Savings Filter", operational_subtype: :bank_savings})
+        insert_account(entity, %{name: "Savings Filter", operational_subtype: :bank_savings})
 
       {:ok, import_tx} =
         Ledger.create_transaction(%{
@@ -699,7 +699,7 @@ defmodule AurumFinance.LedgerTest do
 
   describe "audit events integration" do
     test "create/update/archive/unarchive emit redacted account audit events" do
-      entity = entity_fixture(%{name: "Audited entity"})
+      entity = insert_entity(%{name: "Audited entity"})
 
       assert {:ok, account} =
                Ledger.create_account(
@@ -766,11 +766,11 @@ defmodule AurumFinance.LedgerTest do
   end
 
   defp transaction_accounts_fixture do
-    entity = entity_fixture()
-    checking = account_fixture(entity, %{name: "Checking #{System.unique_integer([:positive])}"})
+    entity = insert_entity()
+    checking = insert_account(entity, %{name: "Checking #{System.unique_integer([:positive])}"})
 
     groceries =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: "Groceries #{System.unique_integer([:positive])}",
         account_type: :expense,
         operational_subtype: nil,
@@ -782,7 +782,7 @@ defmodule AurumFinance.LedgerTest do
 
   defp create_balanced_transaction(entity, attrs) when is_map(entity) do
     checking =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: "Test Checking #{System.unique_integer([:positive])}",
         account_type: :asset,
         operational_subtype: :bank_checking,
@@ -790,7 +790,7 @@ defmodule AurumFinance.LedgerTest do
       })
 
     expense =
-      account_fixture(entity, %{
+      insert_account(entity, %{
         name: "Test Expense #{System.unique_integer([:positive])}",
         account_type: :expense,
         operational_subtype: nil,

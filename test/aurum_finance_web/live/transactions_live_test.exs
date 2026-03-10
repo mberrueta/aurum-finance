@@ -7,11 +7,11 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
 
   describe "mount" do
     test "renders real transactions and expands posting detail", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Entity")
-      checking = account_fixture(entity, %{name: "Checking Live"})
+      entity = insert_entity(name: "Transactions Entity")
+      checking = insert_account(entity, %{name: "Checking Live"})
 
       groceries =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries Live",
           account_type: :expense,
           operational_subtype: nil,
@@ -50,7 +50,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
     end
 
     test "renders empty state when the selected entity has no transactions", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Empty Entity")
+      entity = insert_entity(name: "Transactions Empty Entity")
 
       {:ok, view, _html} = conn |> log_in_root() |> live("/transactions")
 
@@ -65,11 +65,11 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
 
   describe "filtering" do
     test "filters by account and date preset while keeping the page read-only", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Filter Entity")
-      checking = account_fixture(entity, %{name: "Checking Filter"})
+      entity = insert_entity(name: "Transactions Filter Entity")
+      checking = insert_account(entity, %{name: "Checking Filter"})
 
       groceries =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries Filter",
           account_type: :expense,
           operational_subtype: nil,
@@ -77,7 +77,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
         })
 
       savings =
-        account_fixture(entity, %{name: "Savings Filter", operational_subtype: :bank_savings})
+        insert_account(entity, %{name: "Savings Filter", operational_subtype: :bank_savings})
 
       {:ok, tx_a} =
         Ledger.create_transaction(%{
@@ -142,11 +142,11 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
     end
 
     test "hydrates filters from the compact query string", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Query Entity")
-      checking = account_fixture(entity, %{name: "Checking Query"})
+      entity = insert_entity(name: "Transactions Query Entity")
+      checking = insert_account(entity, %{name: "Checking Query"})
 
       groceries =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries Query",
           account_type: :expense,
           operational_subtype: nil,
@@ -154,7 +154,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
         })
 
       travel =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Travel Query",
           account_type: :expense,
           operational_subtype: nil,
@@ -196,11 +196,11 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
     end
 
     test "excludes voided transactions by default and includes them when requested", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Voided Entity")
-      checking = account_fixture(entity, %{name: "Checking Voided"})
+      entity = insert_entity(name: "Transactions Voided Entity")
+      checking = insert_account(entity, %{name: "Checking Voided"})
 
       groceries =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries Voided",
           account_type: :expense,
           operational_subtype: nil,
@@ -243,11 +243,11 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
     end
 
     test "filters by source type", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Source Entity")
-      checking = account_fixture(entity, %{name: "Checking Source"})
+      entity = insert_entity(name: "Transactions Source Entity")
+      checking = insert_account(entity, %{name: "Checking Source"})
 
       groceries =
-        account_fixture(entity, %{
+        insert_account(entity, %{
           name: "Groceries Source",
           account_type: :expense,
           operational_subtype: nil,
@@ -296,7 +296,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
 
   describe "read-only invariant" do
     test "does not render mutation buttons or mutation forms", %{conn: conn} do
-      entity = entity_fixture(name: "Transactions Readonly Entity")
+      entity = insert_entity(name: "Transactions Readonly Entity")
       {:ok, view, _html} = conn |> log_in_root() |> live("/transactions?q=entity:#{entity.id}")
 
       html = render(view)

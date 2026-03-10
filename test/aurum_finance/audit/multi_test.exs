@@ -110,7 +110,7 @@ defmodule AurumFinance.Audit.MultiTest do
 
   describe "append_event/4 update flows" do
     test "S30: records before and after snapshots for a successful update" do
-      entity = entity_fixture(%{name: unique_name("Multi update"), tax_identifier: "OLD-UPDATE"})
+      entity = insert_entity(%{name: unique_name("Multi update"), tax_identifier: "OLD-UPDATE"})
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{notes: "updated", tax_identifier: "NEW-UPDATE"})
 
@@ -137,7 +137,7 @@ defmodule AurumFinance.Audit.MultiTest do
     end
 
     test "S31: does not append an audit event when the update step fails" do
-      entity = entity_fixture(%{name: unique_name("Multi invalid update")})
+      entity = insert_entity(%{name: unique_name("Multi invalid update")})
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{name: nil})
       before_event_count = length(Audit.list_audit_events(entity_id: entity.id))
@@ -160,7 +160,7 @@ defmodule AurumFinance.Audit.MultiTest do
     end
 
     test "S32: rolls back a successful update when the audit append fails" do
-      entity = entity_fixture(%{name: unique_name("Multi update rollback")})
+      entity = insert_entity(%{name: unique_name("Multi update rollback")})
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{notes: "rolled back"})
 
@@ -184,7 +184,7 @@ defmodule AurumFinance.Audit.MultiTest do
 
   describe "append_event/4 archive-style flows" do
     test "S33: supports archive-style updates with explicit archived action" do
-      entity = entity_fixture(%{name: unique_name("Multi archive")})
+      entity = insert_entity(%{name: unique_name("Multi archive")})
       before_snapshot = entity_snapshot(entity)
       archived_at = ~U[2026-03-06 10:00:00Z]
       changeset = Entity.changeset(entity, %{archived_at: archived_at})
@@ -212,7 +212,7 @@ defmodule AurumFinance.Audit.MultiTest do
     end
 
     test "S34: rolls back an archive-style update when the audit append fails" do
-      entity = entity_fixture(%{name: unique_name("Multi archive rollback")})
+      entity = insert_entity(%{name: unique_name("Multi archive rollback")})
       before_snapshot = entity_snapshot(entity)
       changeset = Entity.changeset(entity, %{archived_at: ~U[2026-03-06 11:00:00Z]})
 

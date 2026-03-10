@@ -46,8 +46,8 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "creates imported files and allows repeated sha256 values" do
-      entity = entity_fixture(%{name: "Import entity"})
-      account = account_fixture(entity, %{name: "Import checking"})
+      entity = insert(:entity, name: "Import entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "Import checking")
 
       sha256 = String.duplicate("a", 64)
 
@@ -77,11 +77,19 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "list_imported_files/1 is account-scoped and filterable by status" do
-      entity = entity_fixture(%{name: "Scoped imports"})
-      other_entity = entity_fixture(%{name: "Other scoped imports"})
+      entity = insert(:entity, name: "Scoped imports")
+      other_entity = insert(:entity, name: "Other scoped imports")
 
-      account = account_fixture(entity, %{name: "Primary import account"})
-      other_account = account_fixture(other_entity, %{name: "Foreign import account"})
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Primary import account")
+
+      other_account =
+        insert(
+          :account,
+          entity: other_entity,
+          entity_id: other_entity.id,
+          name: "Foreign import account"
+        )
 
       assert {:ok, pending} =
                Ingestion.create_imported_file(%{
@@ -125,10 +133,12 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "get_imported_file!/2 enforces the account boundary" do
-      entity = entity_fixture(%{name: "Owner entity"})
-      other_entity = entity_fixture(%{name: "Other owner entity"})
-      account = account_fixture(entity, %{name: "Owner account"})
-      other_account = account_fixture(other_entity, %{name: "Other account"})
+      entity = insert(:entity, name: "Owner entity")
+      other_entity = insert(:entity, name: "Other owner entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "Owner account")
+
+      other_account =
+        insert(:account, entity: other_entity, entity_id: other_entity.id, name: "Other account")
 
       assert {:ok, imported_file} =
                Ingestion.create_imported_file(%{
@@ -148,8 +158,8 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "update_imported_file/2 persists summary counts and processed_at" do
-      entity = entity_fixture(%{name: "Summary entity"})
-      account = account_fixture(entity, %{name: "Summary account"})
+      entity = insert(:entity, name: "Summary entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "Summary account")
 
       assert {:ok, imported_file} =
                Ingestion.create_imported_file(%{
@@ -246,8 +256,8 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "creates immutable-style row evidence and lists rows by imported file" do
-      entity = entity_fixture(%{name: "Rows entity"})
-      account = account_fixture(entity, %{name: "Rows account"})
+      entity = insert(:entity, name: "Rows entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "Rows account")
 
       assert {:ok, imported_file} =
                Ingestion.create_imported_file(%{
@@ -297,8 +307,10 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "enforces the partial unique index for ready rows" do
-      entity = entity_fixture(%{name: "Duplicate row entity"})
-      account = account_fixture(entity, %{name: "Duplicate row account"})
+      entity = insert(:entity, name: "Duplicate row entity")
+
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Duplicate row account")
 
       assert {:ok, imported_file} =
                Ingestion.create_imported_file(%{
@@ -336,8 +348,10 @@ defmodule AurumFinance.IngestionTest do
     end
 
     test "allows duplicate and invalid rows to coexist with the same fingerprint" do
-      entity = entity_fixture(%{name: "Row coexist entity"})
-      account = account_fixture(entity, %{name: "Row coexist account"})
+      entity = insert(:entity, name: "Row coexist entity")
+
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Row coexist account")
 
       assert {:ok, imported_file} =
                Ingestion.create_imported_file(%{

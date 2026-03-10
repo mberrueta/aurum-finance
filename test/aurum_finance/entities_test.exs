@@ -66,7 +66,7 @@ defmodule AurumFinance.EntitiesTest do
 
   describe "archive and list behavior" do
     test "archive_entity/2 sets archived_at and excludes archived records by default" do
-      entity = entity_fixture(name: "Archive target")
+      entity = insert_entity(name: "Archive target")
       assert {:ok, archived} = Entities.archive_entity(entity, actor: "person", channel: :web)
       assert %DateTime{} = archived.archived_at
 
@@ -82,7 +82,7 @@ defmodule AurumFinance.EntitiesTest do
     end
 
     test "archived entities remain editable" do
-      entity = entity_fixture(name: "Editable archived")
+      entity = insert_entity(name: "Editable archived")
       assert {:ok, archived} = Entities.archive_entity(entity)
 
       assert {:ok, updated} =
@@ -97,7 +97,7 @@ defmodule AurumFinance.EntitiesTest do
     end
 
     test "unarchive_entity/2 clears archived_at and returns entity to active list" do
-      entity = entity_fixture(name: "Unarchive target")
+      entity = insert_entity(name: "Unarchive target")
       assert {:ok, archived} = Entities.archive_entity(entity)
       assert %DateTime{} = archived.archived_at
 

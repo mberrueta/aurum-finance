@@ -6,8 +6,8 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
   alias AurumFinance.Entities
 
   test "lists active entities by default and can include archived", %{conn: conn} do
-    active = entity_fixture(name: "Active visible")
-    archived = entity_fixture(name: "Archived hidden")
+    active = insert_entity(name: "Active visible")
+    archived = insert_entity(name: "Archived hidden")
     {:ok, _archived} = Entities.archive_entity(archived)
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
@@ -27,7 +27,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
   end
 
   test "opens and closes the right sidebar for entity forms", %{conn: conn} do
-    entity = entity_fixture(name: "Sidebar entity")
+    entity = insert_entity(name: "Sidebar entity")
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
 
@@ -98,7 +98,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
   end
 
   test "archives an entity from the list", %{conn: conn} do
-    entity = entity_fixture(name: "Archive from UI")
+    entity = insert_entity(name: "Archive from UI")
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")
 
     assert has_element?(view, "#archive-entity-#{entity.id}")
@@ -113,7 +113,7 @@ defmodule AurumFinanceWeb.EntitiesLiveTest do
   end
 
   test "unarchives an entity from the archived list", %{conn: conn} do
-    entity = entity_fixture(name: "Unarchive from UI")
+    entity = insert_entity(name: "Unarchive from UI")
     {:ok, _archived} = Entities.archive_entity(entity)
 
     {:ok, view, _html} = conn |> log_in_root() |> live("/entities")

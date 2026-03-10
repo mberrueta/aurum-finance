@@ -5,7 +5,9 @@ defmodule AurumFinance.Factory do
 
   use ExMachina.Ecto, repo: AurumFinance.Repo
 
+  alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
+  alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
@@ -65,4 +67,33 @@ defmodule AurumFinance.Factory do
       amount: Decimal.new("10.00")
     }
   end
+
+  def insert_entity(attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      :entity
+      |> params_for()
+      |> Map.merge(attrs)
+
+    {:ok, entity} = Entities.create_entity(params)
+    entity
+  end
+
+  def insert_account(entity, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      :account
+      |> params_for(entity_id: entity.id, entity: entity)
+      |> Map.drop([:entity])
+      |> Map.merge(%{entity_id: entity.id})
+      |> Map.merge(attrs)
+
+    {:ok, account} = Ledger.create_account(params)
+    account
+  end
+
+  defp normalize_attrs(attrs) when is_list(attrs), do: Map.new(attrs)
+  defp normalize_attrs(attrs), do: attrs
 end
