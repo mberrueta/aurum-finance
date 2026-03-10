@@ -2,8 +2,10 @@ defmodule AurumFinance.IngestionTest do
   use AurumFinance.DataCase, async: true
 
   alias AurumFinance.Ingestion
+  alias AurumFinance.Ingestion.CanonicalRowCandidate
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportedRow
+  alias AurumFinance.Ledger.Account
 
   describe "change_imported_file/2" do
     test "requires account-scoped persisted file fields" do
@@ -278,6 +280,27 @@ defmodule AurumFinance.IngestionTest do
              ).fingerprint
 
       assert invalid_changeset.valid?
+    end
+  end
+
+  describe "normalize_rows/2" do
+    test "normalizes canonical row candidates through the ingestion context" do
+      rows = [
+        %CanonicalRowCandidate{
+          row_index: 1,
+          raw_data: %{"Description" => " Uber ", "Currency" => nil},
+          canonical_data: %{description: " Uber ", currency: nil}
+        }
+      ]
+
+      account = %Account{currency_code: "brl"}
+
+      [normalized_row] =
+        rows
+        |> Ingestion.normalize_rows(account: account)
+        |> Enum.to_list()
+
+      assert normalized_row.canonical_data == %{description: "uber", currency: "BRL"}
     end
   end
 

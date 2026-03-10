@@ -1,7 +1,7 @@
 # Task 05: Row Normalization Layer
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: IMPLEMENTED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 02, Task 04
 - **Blocks**: Tasks 06, 07, 12
@@ -41,8 +41,9 @@ Implement deterministic normalization of canonical row data before dedupe. This 
 - [ ] This layer does not perform duplicate lookup itself
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added [row_normalizer.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/row_normalizer.ex) with parser-agnostic normalization for canonical row data. The normalizer trims values, applies Unicode NFC normalization, removes invisible/control characters, collapses internal whitespace, lowercases descriptive text fields, and uppercases currency fields.
+- Extended [ingestion.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion.ex) with `normalize_parsed_import/1` so downstream stages can normalize parser output through the context boundary.
+- Added focused coverage in [row_normalizer_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ingestion/row_normalizer_test.exs), including the equivalence case for `Uber ` / ` UBER` / `uber`, invisible/non-printable cleanup, and Unicode normalization consistency.
 
 ## Human Review
 *[Filled by human reviewer]*
-

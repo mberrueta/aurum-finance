@@ -9,7 +9,7 @@ defmodule AurumFinance.Ingestion do
   alias AurumFinance.Ingestion.LocalFileStorage
   alias AurumFinance.Ingestion.Parser
   alias AurumFinance.Ingestion.ImportedRow
-  alias AurumFinance.Ingestion.ParsedImport
+  alias AurumFinance.Ingestion.RowNormalizer
   alias AurumFinance.Repo
 
   @type list_opt ::
@@ -22,6 +22,11 @@ defmodule AurumFinance.Ingestion do
           | {:imported_file_id, Ecto.UUID.t()}
           | {:status, :ready | :duplicate | :invalid}
           | {:fingerprint, String.t()}
+
+  @type normalize_opt ::
+          {:account, AurumFinance.Ledger.Account.t()}
+          | {:default_currency, String.t()}
+          | {:source_locale, String.t()}
 
   @doc """
   Returns a composable query for imported files within one account scope.
@@ -191,9 +196,28 @@ defmodule AurumFinance.Ingestion do
   ```
   """
   @spec parse_imported_file(ImportedFile.t()) ::
-          {:ok, ParsedImport.t()} | {:error, AurumFinance.Ingestion.ParserError.t()}
+          {:ok, AurumFinance.Ingestion.ParsedImport.t()}
+          | {:error, AurumFinance.Ingestion.ParserError.t()}
   def parse_imported_file(%ImportedFile{} = imported_file) do
     Parser.parse_imported_file(imported_file)
+  end
+
+  @doc """
+  Returns a lazy stream that normalizes canonical row candidates one by one.
+
+  This is the preferred normalization entry point for async jobs processing
+  large imports.
+
+  ## Examples
+
+  ```elixir
+  normalized_rows =
+    AurumFinance.Ingestion.normalize_rows(parsed_import.rows, account: account)
+  ```
+  """
+  @spec normalize_rows(Enumerable.t(), [normalize_opt()]) :: Enumerable.t()
+  def normalize_rows(rows, opts \\ []) do
+    RowNormalizer.normalize_rows(rows, opts)
   end
 
   @doc """

@@ -60,6 +60,18 @@ defmodule AurumFinance.HelpersTest do
     end
   end
 
+  describe "normalize_string/2" do
+    test "normalizes unicode, removes invisible chars, and preserves case by default" do
+      assert Helpers.normalize_string("  UBER\u200B\n Eats  ") == "UBER Eats"
+    end
+
+    test "supports explicit lowercase and uppercase normalization" do
+      assert Helpers.normalize_string("  UBER\u200B\n Eats  ", case: :lower) == "uber eats"
+      assert Helpers.normalize_string(" usd ", case: :upper) == "USD"
+      assert Helpers.normalize_string(nil, case: :upper) == nil
+    end
+  end
+
   describe "map_get/2" do
     test "supports atom/string keys" do
       assert Helpers.map_get(%{name: "John"}, "name") == "John"

@@ -140,6 +140,36 @@ defmodule AurumFinance.Helpers do
   def normalize_to_upper(value), do: value
 
   @doc """
+  Normalizes text deterministically with optional case transformation.
+
+  Options:
+  - `:case` supports `:upper`, `:lower`, or `:preserve` (default)
+
+  ## Examples
+
+      iex> AurumFinance.Helpers.normalize_string("  UBER\\u200B\\n Eats  ")
+      "UBER Eats"
+
+      iex> AurumFinance.Helpers.normalize_string("  UBER\\u200B\\n Eats  ", case: :lower)
+      "uber eats"
+
+      iex> AurumFinance.Helpers.normalize_string(" usd ", case: :upper)
+      "USD"
+  """
+  @spec normalize_string(String.t() | nil, keyword()) :: String.t() | nil
+  def normalize_string(value, opts \\ [])
+  def normalize_string(nil, _opts), do: nil
+
+  def normalize_string(value, opts) when is_binary(value) do
+    value
+    |> String.normalize(:nfc)
+    |> String.replace(~r/[\p{Cc}\p{Cf}]+/u, " ")
+    |> String.replace(~r/\s+/u, " ")
+    |> String.trim()
+    |> apply_case_normalization(Keyword.get(opts, :case, :preserve))
+  end
+
+  @doc """
   Safe indifferent map access for atom/string keys.
   """
   def map_get(map, key) when is_atom(key), do: Map.get(map, key) || Map.get(map, to_string(key))
@@ -181,4 +211,8 @@ defmodule AurumFinance.Helpers do
   defp normalize_price(price) when is_integer(price), do: Decimal.new(price)
   defp normalize_price(price) when is_float(price), do: price |> to_string() |> Decimal.new()
   defp normalize_price(price) when is_binary(price), do: Decimal.new(price)
+
+  defp apply_case_normalization(value, :preserve), do: value
+  defp apply_case_normalization(value, :upper), do: String.upcase(value)
+  defp apply_case_normalization(value, :lower), do: String.downcase(value)
 end
