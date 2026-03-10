@@ -1,7 +1,7 @@
 # Task 13: Documentation and Scope Guardrails
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 10, Task 11, Task 12
 - **Blocks**: None
@@ -51,7 +51,10 @@ Document the delivered ingestion scope clearly, preserve the CSV-only boundary, 
 - [ ] ADRs/docs clearly state that the output of this milestone is immutable evidence + preview/review data, not ledger facts
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Updated canonical docs to replace the legacy `ImportBatch` / `ImportRow` language with `imported_files` / `imported_rows` where the implemented milestone supersedes the earlier design.
+- Clarified in the roadmap and domain/ADR docs that M2 is CSV-only, account-scoped, asynchronous, PubSub-updated, and preview-only.
+- Removed old descriptions of `commit_import/2`, ingestion-driven ledger writes, and ingestion-time classification from the current milestone docs.
+- Left future work clearly separated: later materialization/classification remains a separate milestone, and institution-specific CSV profiles/header mapping remain follow-up work (see GitHub issue #43).
 
 ## Human Review
 *[Filled by human reviewer]*

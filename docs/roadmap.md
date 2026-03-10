@@ -14,7 +14,7 @@ Double-entry engine, multi-entity support, accounts, currencies, basic ledger UI
 Includes single-user auth (root password guard — self-hosted, no anonymous access).
 
 ### M2 — Import Pipeline
-CSV import with column mapping, deduplication, reconciliation, import file tracking.
+Account-scoped CSV ingestion with `imported_files` / `imported_rows`, async processing via background job, PubSub-driven preview/history UI, and immutable evidence persistence. This milestone is preview-only and does not create ledger transactions, postings, or classification outcomes.
 
 ### M3 — Rules Engine
 Transaction categorization rules (grouped, prioritized, explainable).
