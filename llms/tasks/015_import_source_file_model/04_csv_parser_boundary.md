@@ -1,7 +1,7 @@
 # Task 04: CSV Parser Boundary
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: IMPLEMENTED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 03
 - **Blocks**: Tasks 05, 07, 10, 12
@@ -43,8 +43,10 @@ Define the parser abstraction and implement CSV as the only supported parser for
 - [ ] No fuzzy matching or parser-specific dedupe logic is introduced
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added the parser boundary in [parser.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/parser.ex) with explicit CSV-only support for this milestone and structured parser errors for unsupported formats and parse failures.
+- Added reusable parser output structs in [canonical_row_candidate.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/canonical_row_candidate.ex), [parsed_import.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/parsed_import.ex), and [parser_error.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/parser_error.ex). The parser output contains canonical row candidates and raw row payloads only; it does not include dedupe or row-status decisions.
+- Implemented the CSV parser in [csv.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion/parsers/csv.ex), including quoted-field handling, header validation, canonical field extraction (`posted_on`, `description`, `amount`, `currency`), and parsing from either in-memory content or stored file paths.
+- Extended [ingestion.ex](/mnt/data4/matt/code/personal_stuffs/aurum-finance/lib/aurum_finance/ingestion.ex) with `parse_imported_file/1` and added parser-focused coverage in [parser_test.exs](/mnt/data4/matt/code/personal_stuffs/aurum-finance/test/aurum_finance/ingestion/parser_test.exs).
 
 ## Human Review
 *[Filled by human reviewer]*
-

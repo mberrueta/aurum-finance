@@ -7,7 +7,9 @@ defmodule AurumFinance.Ingestion do
 
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.LocalFileStorage
+  alias AurumFinance.Ingestion.Parser
   alias AurumFinance.Ingestion.ImportedRow
+  alias AurumFinance.Ingestion.ParsedImport
   alias AurumFinance.Repo
 
   @type list_opt ::
@@ -177,6 +179,21 @@ defmodule AurumFinance.Ingestion do
     imported_file
     |> ImportedFile.changeset(attrs)
     |> Repo.update()
+  end
+
+  @doc """
+  Parses a stored imported file into canonical row candidates.
+
+  ## Examples
+
+  ```elixir
+  {:ok, parsed_import} = AurumFinance.Ingestion.parse_imported_file(imported_file)
+  ```
+  """
+  @spec parse_imported_file(ImportedFile.t()) ::
+          {:ok, ParsedImport.t()} | {:error, AurumFinance.Ingestion.ParserError.t()}
+  def parse_imported_file(%ImportedFile{} = imported_file) do
+    Parser.parse_imported_file(imported_file)
   end
 
   @doc """
