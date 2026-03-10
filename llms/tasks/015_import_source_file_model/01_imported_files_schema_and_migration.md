@@ -1,7 +1,7 @@
 # Task 01: `imported_files` Schema and Migration
 
 ## Status
-- **Status**: PENDING
+- **Status**: IMPLEMENTED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: None
 - **Blocks**: Tasks 02, 03, 07, 09, 11, 12
@@ -51,8 +51,9 @@ Create the durable uploaded-file/import-run model for the ingestion pipeline. Th
 - [ ] No transaction or posting creation path is introduced
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added `priv/repo/migrations/20260310123000_create_imported_files_and_rows.exs` with account-scoped `imported_files` persistence, lifecycle/status fields, summary counters, optional storage metadata, and DB indexes. The table does not store `entity_id`, and it does not enforce any uniqueness on `sha256`.
+- Added `AurumFinance.Ingestion.ImportedFile` and `AurumFinance.Ingestion` with required-field changesets, i18n-backed validation messages, account-scoped listing/query APIs, scoped fetch helpers, and create/update/change functions needed by the upcoming upload/processing tasks.
+- Added backend tests in `test/aurum_finance/ingestion_test.exs` covering required validations, repeated `sha256` acceptance, account-scoped querying, scoped lookup, and import summary/status updates.
 
 ## Human Review
 *[Filled by human reviewer]*
-

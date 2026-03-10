@@ -52,6 +52,14 @@ defmodule AurumFinance.HelpersTest do
     end
   end
 
+  describe "normalize_to_upper/1" do
+    test "uppercases and trims binary values" do
+      assert Helpers.normalize_to_upper(" usd ") == "USD"
+      assert Helpers.normalize_to_upper("brl") == "BRL"
+      assert Helpers.normalize_to_upper(nil) == nil
+    end
+  end
+
   describe "map_get/2" do
     test "supports atom/string keys" do
       assert Helpers.map_get(%{name: "John"}, "name") == "John"

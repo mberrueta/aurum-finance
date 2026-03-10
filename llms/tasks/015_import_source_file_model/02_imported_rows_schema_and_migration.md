@@ -1,7 +1,7 @@
 # Task 02: `imported_rows` Schema and Migration
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: IMPLEMENTED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01
 - **Blocks**: Tasks 05, 06, 07, 10, 11, 12
@@ -48,8 +48,9 @@ Create the immutable imported-row evidence model that stores parsed row results,
 - [ ] Partial unique index exists on `[:account_id, :fingerprint]` for `ready` rows
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added `imported_rows` to `priv/repo/migrations/20260310123000_create_imported_files_and_rows.exs` so `imported_files` and `imported_rows` are created together in a single migration file. The migration includes the required `[:account_id, :fingerprint]` lookup index and the partial unique index for `ready` rows.
+- Added `AurumFinance.Ingestion.ImportedRow` with immutable-evidence-oriented shape: `updated_at: false`, required traceability fields, canonical preview fields, row-level statuses `:ready | :duplicate | :invalid`, and changeset validation that requires `fingerprint` for `ready` and `duplicate` rows while allowing it to be nil for `invalid` rows.
+- Extended `AurumFinance.Ingestion` with row query and creation APIs and expanded `test/aurum_finance/ingestion_test.exs` to cover required row validations, account-scoped row listing, fingerprint rules, and DB-backed duplicate protection for `ready` rows.
 
 ## Human Review
 *[Filled by human reviewer]*
-

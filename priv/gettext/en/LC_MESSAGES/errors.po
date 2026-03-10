@@ -141,6 +141,48 @@ msgstr "Operational subtype is not allowed for this account type."
 msgid "error_account_operational_subtype_required"
 msgstr "Operational subtype is required for asset and liability accounts."
 
+msgid "error_imported_file_byte_size_must_be_non_negative"
+msgstr "Byte size must be zero or greater."
+
+msgid "error_imported_file_content_type_length_invalid"
+msgstr "Content type must be at most 255 characters."
+
+msgid "error_imported_file_count_must_be_non_negative"
+msgstr "Count must be zero or greater."
+
+msgid "error_imported_file_error_message_length_invalid"
+msgstr "Error message must be at most 2000 characters."
+
+msgid "error_imported_file_filename_length_invalid"
+msgstr "Filename must be between 1 and 255 characters."
+
+msgid "error_imported_file_sha256_length_invalid"
+msgstr "SHA256 must be exactly 64 characters."
+
+msgid "error_imported_file_storage_path_length_invalid"
+msgstr "Storage path must be between 1 and 1024 characters."
+
+msgid "error_imported_row_currency_length_invalid"
+msgstr "Currency must be exactly 3 characters."
+
+msgid "error_imported_row_description_length_invalid"
+msgstr "Description must be at most 500 characters."
+
+msgid "error_imported_row_fingerprint_length_invalid"
+msgstr "Fingerprint must be at most 255 characters."
+
+msgid "error_imported_row_fingerprint_required"
+msgstr "Fingerprint is required for ready and duplicate rows."
+
+msgid "error_imported_row_row_index_must_be_non_negative"
+msgstr "Row index must be zero or greater."
+
+msgid "error_imported_row_skip_reason_length_invalid"
+msgstr "Skip reason must be at most 500 characters."
+
+msgid "error_imported_row_validation_error_length_invalid"
+msgstr "Validation error must be at most 2000 characters."
+
 msgid "error_posting_amount_invalid"
 msgstr "Posting amount must be a valid decimal value."
 

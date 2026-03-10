@@ -120,6 +120,26 @@ defmodule AurumFinance.Helpers do
   def blank_to_nil(value), do: value
 
   @doc """
+  Normalizes binary values to trimmed uppercase, preserving non-binaries.
+
+  ## Examples
+
+      iex> AurumFinance.Helpers.normalize_to_upper(" usd ")
+      "USD"
+
+      iex> AurumFinance.Helpers.normalize_to_upper(nil)
+      nil
+  """
+  @spec normalize_to_upper(term()) :: term()
+  def normalize_to_upper(value) when is_binary(value) do
+    value
+    |> String.trim()
+    |> String.upcase()
+  end
+
+  def normalize_to_upper(value), do: value
+
+  @doc """
   Safe indifferent map access for atom/string keys.
   """
   def map_get(map, key) when is_atom(key), do: Map.get(map, key) || Map.get(map, to_string(key))
