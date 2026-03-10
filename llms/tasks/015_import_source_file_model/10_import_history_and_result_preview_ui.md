@@ -1,7 +1,7 @@
 # Task 10: Import History and Result Preview UI
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 02, Task 06, Task 07, Task 08, Task 09
 - **Blocks**: Tasks 12, 13
@@ -42,8 +42,11 @@ Implement the import history list and result preview/review UI per account. This
 - [ ] UI clearly remains preview/review only and does not create transactions
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added a dedicated import detail page at `/import/accounts/:account_id/files/:imported_file_id`.
+- Made each import in history link to the detail page from the existing import list.
+- The detail page shows persisted summary counts, status, timestamps, warnings, error details, and a preview table of imported rows.
+- Wired the detail page to imported-file PubSub updates so it refreshes from durable state while processing moves forward.
+- Added LiveView coverage for navigation from history and the detail-page preview/update flow.
 
 ## Human Review
 *[Filled by human reviewer]*
-

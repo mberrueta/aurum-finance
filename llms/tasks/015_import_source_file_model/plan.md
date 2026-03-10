@@ -6,7 +6,7 @@
 - **Created**: 2026-03-09
 - **Updated**: 2026-03-10
 - **Status**: PLANNED
-- **Current Task**: Task 08 — PubSub Notifications for LiveView
+- **Current Task**: Task 10 — Import History and Result Preview UI
 - **Depends on**: Issue #10 (Entity Model) — COMPLETED, Issue #11 (Account Model) — COMPLETED, Issue #12 (Ledger Primitives) — COMPLETED, Issue #13 (Audit Trail) — IN PROGRESS
 
 ---

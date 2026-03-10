@@ -50,6 +50,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
       |> claim_locked_import()
     end)
     |> normalize_claim_result()
+    |> maybe_broadcast_claimed_import()
   end
 
   defp process_claimed_import({:skip, %ImportedFile{} = imported_file}), do: {:ok, imported_file}
@@ -277,7 +278,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
 
   defp transition_to_processing(imported_file),
     do:
-      transition_with_audit!(
+      transition_with_audit_in_transaction!(
         imported_file,
         %{
           status: :processing,
@@ -294,7 +295,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
 
   defp complete_import(imported_file, summary),
     do:
-      transition_with_audit!(
+      transition_with_audit_in_transaction!(
         imported_file,
         completed_import_attrs(summary),
         "processing_completed"
@@ -317,13 +318,19 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
   defp format_failure(reason) when is_binary(reason), do: reason
   defp format_failure(reason), do: inspect(reason)
 
-  defp transition_with_audit!(imported_file, attrs, action) do
+  defp transition_with_audit_in_transaction!(imported_file, attrs, action) do
     imported_file
-    |> transition_with_audit(attrs, action)
+    |> update_with_audit(attrs, action)
     |> unwrap_transition_result()
   end
 
   defp transition_with_audit(imported_file, attrs, action) do
+    imported_file
+    |> update_with_audit(attrs, action)
+    |> broadcast_transition()
+  end
+
+  defp update_with_audit(imported_file, attrs, action) do
     before_snapshot = Audit.default_snapshot(imported_file)
     changeset = ImportedFile.changeset(imported_file, attrs)
 
@@ -337,7 +344,6 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
       updated_import
     end)
     |> normalize_repo_transaction_result()
-    |> broadcast_transition()
   end
 
   defp import_audit_attrs(imported_file, before_snapshot, action) do
@@ -365,7 +371,7 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
        do: {:skip, imported_file}
 
   defp handle_processing_transaction_result({:ok, completed_import}, _imported_file),
-    do: {:ok, completed_import}
+    do: broadcast_transition({:ok, completed_import})
 
   defp handle_processing_transaction_result({:error, reason}, imported_file),
     do: fail_import(imported_file, format_failure(reason))
@@ -414,6 +420,11 @@ defmodule AurumFinance.Ingestion.ImportProcessor do
 
   defp unwrap_transition_result({:ok, updated_import}), do: updated_import
   defp unwrap_transition_result({:error, reason}), do: Repo.rollback(reason)
+
+  defp maybe_broadcast_claimed_import({:ok, %ImportedFile{} = imported_file}),
+    do: broadcast_transition({:ok, imported_file})
+
+  defp maybe_broadcast_claimed_import(result), do: result
 
   defp normalize_claim_result({:ok, result}), do: result
   defp normalize_claim_result({:error, reason}), do: {:error, reason}

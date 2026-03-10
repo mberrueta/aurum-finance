@@ -1,0 +1,176 @@
+<div id="import-page" class="space-y-[14px]">
+  <.page_header title={dgettext("import", "page_title")}>
+    <:subtitle>{dgettext("import", "page_subtitle")}</:subtitle>
+    <:actions>
+      <.badge :if={@current_account} variant={:purple}>
+        {dgettext("import", "badge_account_selected", account: @current_account.name)}
+      </.badge>
+    </:actions>
+  </.page_header>
+
+  <.import_expected_format
+    selected_format={selected_upload_format(@uploads.source_file.entries)}
+    selected_filename={selected_upload_name(@uploads.source_file.entries)}
+  />
+
+  <div class="grid gap-[14px] xl:grid-cols-[1.1fr_0.9fr]">
+    <.scope_panel
+      entity_form={@entity_form}
+      account_form={@account_form}
+      entities={@entities}
+      current_entity={@current_entity}
+      accounts={@accounts}
+      current_account={@current_account}
+    />
+
+    <.upload_placeholder :if={!@current_account} accounts={@accounts} />
+
+    <div :if={@current_account} id="import-upload-panel-wrapper">
+      <div
+        id="import-upload-panel-state"
+        phx-hook=".ImportUploadSelection"
+        data-default-title={dgettext("import", "upload_title")}
+        data-selected-title={dgettext("import", "upload_title_selected")}
+        data-default-description={
+          dgettext("import", "upload_hint_account_selected", account: @current_account.name)
+        }
+        data-selected-description-template={dgettext("import", "upload_hint_selected_template")}
+        data-choose-label={dgettext("import", "btn_choose_file")}
+        data-change-label={dgettext("import", "btn_change_file")}
+      >
+        <.upload_panel
+          current_account={@current_account}
+          uploads={@uploads}
+          upload_error={upload_error(@uploads.source_file)}
+        />
+      </div>
+    </div>
+  </div>
+
+  <.import_tips selected_format={selected_upload_format(@uploads.source_file.entries)} />
+
+  <.section_panel
+    title={dgettext("import", "section_recent_imports")}
+    badge={to_string(@import_count)}
+    badge_variant={:purple}
+  >
+    <p class="mb-4 text-[13px] leading-relaxed text-white/62">
+      {history_copy(@current_account, @accounts)}
+    </p>
+
+    <div :if={is_nil(@current_account)} id="import-history-empty">
+      <.empty_state text={dgettext("import", "empty_select_account")} />
+    </div>
+
+    <div :if={!is_nil(@current_account) and @import_count == 0} id="import-history-empty">
+      <.empty_state text={dgettext("import", "empty_no_imports")} />
+    </div>
+
+    <div
+      :if={!is_nil(@current_account) and @import_count > 0}
+      id="import-history"
+      phx-update="stream"
+      class="space-y-3"
+    >
+      <.import_history_row
+        :for={{id, imported_file} <- @streams.imports}
+        id={id}
+        imported_file={imported_file}
+      />
+    </div>
+  </.section_panel>
+</div>
+
+<script :type={Phoenix.LiveView.ColocatedHook} name=".ImportUploadSelection">
+  export default {
+    mounted() {
+      this.input = this.el.querySelector("input[type='file']")
+      this.title = this.el.querySelector("#import-upload-title")
+      this.description = this.el.querySelector("#import-upload-description")
+      this.selected = this.el.querySelector("#import-upload-selected")
+      this.selectedName = this.el.querySelector("#import-upload-selected-name")
+      this.dropzone = this.el.querySelector("#import-upload-dropzone")
+      this.chooseLabel = this.el.querySelector("#import-upload-choose-label")
+      this.chooseLabelText = this.el.querySelector("#import-upload-choose-label-text")
+
+      if (this.input) {
+        this.onChange = () => this.syncSelection()
+        this.input.addEventListener("change", this.onChange)
+      }
+    },
+
+    destroyed() {
+      if (this.input && this.onChange) {
+        this.input.removeEventListener("change", this.onChange)
+      }
+    },
+
+    syncSelection() {
+      const file = this.input?.files?.[0]
+
+      if (!file) {
+        this.resetSelection()
+        return
+      }
+
+      if (this.title) {
+        this.title.textContent = this.el.dataset.selectedTitle
+      }
+
+      if (this.description) {
+        this.description.textContent =
+          this.el.dataset.selectedDescriptionTemplate.replace("__FILE__", file.name)
+      }
+
+      if (this.selected) {
+        this.selected.classList.remove("hidden")
+      }
+
+      if (this.selectedName) {
+        this.selectedName.textContent = file.name
+      }
+
+      if (this.dropzone) {
+        this.dropzone.classList.add("border-emerald-300/40", "bg-emerald-400/[0.08]")
+      }
+
+      if (this.chooseLabel) {
+        this.chooseLabel.classList.add("bg-emerald-300/15", "text-emerald-100", "hover:bg-emerald-300/20")
+      }
+
+      if (this.chooseLabelText) {
+        this.chooseLabelText.textContent = this.el.dataset.changeLabel
+      }
+    },
+
+    resetSelection() {
+      if (this.title) {
+        this.title.textContent = this.el.dataset.defaultTitle
+      }
+
+      if (this.description) {
+        this.description.textContent = this.el.dataset.defaultDescription
+      }
+
+      if (this.selected) {
+        this.selected.classList.add("hidden")
+      }
+
+      if (this.selectedName) {
+        this.selectedName.textContent = ""
+      }
+
+      if (this.dropzone) {
+        this.dropzone.classList.remove("border-emerald-300/40", "bg-emerald-400/[0.08]")
+      }
+
+      if (this.chooseLabel) {
+        this.chooseLabel.classList.remove("bg-emerald-300/15", "text-emerald-100", "hover:bg-emerald-300/20")
+      }
+
+      if (this.chooseLabelText) {
+        this.chooseLabelText.textContent = this.el.dataset.chooseLabel
+      }
+    }
+  }
+</script>

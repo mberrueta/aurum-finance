@@ -1,7 +1,7 @@
 # Task 09: Upload LiveView With Account Selection
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: DONE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 01, Task 03, Task 08
 - **Blocks**: Tasks 10, 12
@@ -45,8 +45,12 @@ Build the account-scoped import entry experience: optional entity filter, requir
 - [ ] UI reflects pending/processing state via persisted data and PubSub notifications
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Replaced the mocked import wizard in `ImportLive` with a real account-scoped upload flow.
+- Added entity and account selectors, keeping entity as an optional helper filter and account as the required upload scope.
+- Added drag-and-drop plus file-picker upload using LiveView uploads with CSV-only acceptance.
+- Wired uploads to `Ingestion.store_imported_file/1` and `Ingestion.enqueue_import_processing/1`.
+- Added account-scoped import history that reloads from persisted state and reacts to PubSub notifications.
+- Added LiveView coverage for account selection enforcement, upload enqueueing, and PubSub-driven status refresh.
 
 ## Human Review
 *[Filled by human reviewer]*
-
