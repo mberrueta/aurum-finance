@@ -4,9 +4,9 @@
 
 - **Issue**: `https://github.com/mberrueta/aurum-finance/issues/15`
 - **Created**: 2026-03-09
-- **Updated**: 2026-03-09
+- **Updated**: 2026-03-10
 - **Status**: PLANNED
-- **Current Task**: None started
+- **Current Task**: Task 08 — PubSub Notifications for LiveView
 - **Depends on**: Issue #10 (Entity Model) — COMPLETED, Issue #11 (Account Model) — COMPLETED, Issue #12 (Ledger Primitives) — COMPLETED, Issue #13 (Audit Trail) — IN PROGRESS
 
 ---
@@ -207,6 +207,11 @@ Future review/approval lifecycle events may be mentioned only as future work.
 ### D7: Async processing is required
 
 Import processing must be asynchronous.
+
+Implementation note:
+
+- use Oban as the background job mechanism for this milestone
+- enqueue one import-processing job per `imported_file`
 
 Expected lifecycle:
 
@@ -788,7 +793,7 @@ Deliverables:
 
 1. Which exact canonical parsed fields beyond `posted_on`, `amount`, `currency`, and normalized description should be first-class columns versus left in `raw_data`?
 2. What exact warning keys should be standardized in the `warnings` map for v1 so the UI and tests can rely on a stable shape?
-3. What background job mechanism should be used in implementation, given the project’s existing stack and conventions?
+3. Resolved on 2026-03-10: Oban is the background job mechanism for import processing.
 
 ---
 

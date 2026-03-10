@@ -38,6 +38,10 @@ end
 - Add `@moduledoc false` only for trivial modules; otherwise write a short `@moduledoc`.
 - Document public functions with `@doc` and typespecs (`@spec`) when behavior is non‑trivial.
 - Pipe for data transformation only. Do **not** pipe into `case`/`with`; return tuples and branch at the end.
+- Prefer pattern matching through function heads and small helpers before reaching for `case`, `if`, or `cond`.
+- Avoid `case` branches with only two simple outcomes when pattern matching in separate clauses keeps the flow flatter.
+- Prefer `with` for linear happy-path flows that would otherwise become nested branching.
+- When the same value moves through a linear sequence of transformations, prefer pipes over temporary rebinding.
 
 ```elixir
 # good
@@ -53,6 +57,24 @@ case create_and_notify(attrs) do
   {:ok, e} -> {:ok, e}
   {:error, reason} -> {:error, reason}
 end
+
+# good
+def claim_import(imported_file) do
+  imported_file
+  |> get_imported_file_for_update!()
+  |> claim_locked_import()
+end
+
+defp put_default_currency(%{currency: _} = canonical_data, _opts), do: canonical_data
+
+defp put_default_currency(canonical_data, opts) do
+  canonical_data
+  |> default_currency_from_opts(opts)
+  |> maybe_put_currency(canonical_data)
+end
+
+defp maybe_put_currency(nil, canonical_data), do: canonical_data
+defp maybe_put_currency(currency, canonical_data), do: Map.put(canonical_data, :currency, currency)
 ```
 
 ## 3) Error Handling
@@ -153,4 +175,3 @@ mix sobelow --exit
 - Avoid `Enum.map` over large lists when DB can filter/aggregate.
 
 ---
-

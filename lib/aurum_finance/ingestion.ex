@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Ingestion.ImportedFile
+  alias AurumFinance.Ingestion.ImportWorker
   alias AurumFinance.Ingestion.LocalFileStorage
   alias AurumFinance.Ingestion.Parser
   alias AurumFinance.Ingestion.ImportedRow
@@ -170,6 +171,27 @@ defmodule AurumFinance.Ingestion do
           {:error, reason}
       end
     end
+  end
+
+  @doc """
+  Enqueues asynchronous processing for one imported file through Oban.
+
+  ## Examples
+
+      iex> imported_file = %AurumFinance.Ingestion.ImportedFile{
+      ...>   id: Ecto.UUID.generate(),
+      ...>   account_id: Ecto.UUID.generate()
+      ...> }
+      iex> {:ok, %Oban.Job{worker: worker}} =
+      ...>   AurumFinance.Ingestion.enqueue_import_processing(imported_file)
+      iex> worker
+      "Elixir.AurumFinance.Ingestion.ImportWorker"
+  """
+  @spec enqueue_import_processing(ImportedFile.t()) :: {:ok, Oban.Job.t()} | {:error, term()}
+  def enqueue_import_processing(%ImportedFile{} = imported_file) do
+    imported_file
+    |> ImportWorker.new_job()
+    |> Oban.insert()
   end
 
   @doc """

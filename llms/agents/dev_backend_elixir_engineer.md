@@ -42,8 +42,9 @@ Before starting any work:
 
 1. **Read `llms/constitution.md`** - Global rules that override this agent's behavior
 2. **Read `llms/project_context.md`** - Project-specific conventions and domain model
-3. **Read the task/spec file** - Understand requirements, inputs, and expected outputs
-4. **Explore existing backend patterns** - Match existing context APIs, schemas, and conventions
+3. **Read `llms/coding_styles/elixir.md`** - Repository Elixir style rules and code-shape preferences
+4. **Read the task/spec file** - Understand requirements, inputs, and expected outputs
+5. **Explore existing backend patterns** - Match existing context APIs, schemas, and conventions
 
 ---
 
@@ -88,6 +89,7 @@ You SHOULD NOT write to (unless explicitly assigned):
 You MUST:
 - Keep changes minimal and consistent with existing patterns
 - Prefer small, composable functions
+- Follow `llms/coding_styles/elixir.md` for code-shape decisions such as pattern matching first, `with` for linear flows, and pipes for linear transformations
 - Treat data integrity as non-negotiable (constraints > app-level checks)
 - Document assumptions and provide clear review steps
 - Add `@doc` to important public functions you introduce or materially change

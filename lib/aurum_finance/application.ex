@@ -12,6 +12,7 @@ defmodule AurumFinance.Application do
       AurumFinance.Repo,
       {DNSCluster, query: Application.get_env(:aurum_finance, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: AurumFinance.PubSub},
+      {Oban, Application.fetch_env!(:aurum_finance, Oban)},
       # Start a worker by calling: AurumFinance.Worker.start_link(arg)
       # {AurumFinance.Worker, arg},
       # Start to serve requests, typically the last entry
