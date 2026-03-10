@@ -28,6 +28,10 @@ defmodule AurumFinance.Ingestion do
           | {:default_currency, String.t()}
           | {:source_locale, String.t()}
 
+  @type duplicate_lookup_opt ::
+          {:account_id, Ecto.UUID.t()}
+          | {:fingerprints, [String.t()]}
+
   @doc """
   Returns a composable query for imported files within one account scope.
 
@@ -221,6 +225,37 @@ defmodule AurumFinance.Ingestion do
   end
 
   @doc """
+  Returns the subset of a fingerprint batch that already exists as `ready`
+  imported rows for the given account.
+
+  This is the batch duplicate lookup entry point for exact-match import dedupe.
+  The intended flow is:
+
+  1. build fingerprints for a chunk of normalized rows
+  2. pass the chunk fingerprints to this function in one query
+  3. mark rows as duplicate when their fingerprint is present in the returned `MapSet`
+
+  This avoids one query per row during import processing.
+
+  ## Examples
+
+      iex> AurumFinance.Ingestion.list_duplicate_fingerprints(
+      ...>   account_id: Ecto.UUID.generate(),
+      ...>   fingerprints: ["abc123", "def456"]
+      ...> )
+      MapSet.new()
+  """
+  @spec list_duplicate_fingerprints([duplicate_lookup_opt()]) :: MapSet.t(String.t())
+  def list_duplicate_fingerprints(opts) do
+    opts = require_account_scope!(opts, "list_duplicate_fingerprints/1")
+
+    opts
+    |> duplicate_fingerprints_query()
+    |> Repo.all()
+    |> MapSet.new()
+  end
+
+  @doc """
   Returns a changeset for imported file form handling.
 
   ## Examples
@@ -373,6 +408,26 @@ defmodule AurumFinance.Ingestion do
     case Keyword.fetch(opts, :account_id) do
       {:ok, account_id} when not is_nil(account_id) -> opts
       _ -> raise ArgumentError, "#{function_name} requires :account_id"
+    end
+  end
+
+  defp duplicate_fingerprints_query(opts) do
+    opts = require_fingerprints!(opts)
+
+    ImportedRow
+    |> where(
+      [imported_row],
+      imported_row.account_id == ^Keyword.fetch!(opts, :account_id) and
+        imported_row.status == :ready and
+        imported_row.fingerprint in ^Keyword.fetch!(opts, :fingerprints)
+    )
+    |> select([imported_row], imported_row.fingerprint)
+  end
+
+  defp require_fingerprints!(opts) do
+    case Keyword.fetch(opts, :fingerprints) do
+      {:ok, fingerprints} when is_list(fingerprints) -> opts
+      _ -> raise ArgumentError, "list_duplicate_fingerprints/1 requires :fingerprints"
     end
   end
 

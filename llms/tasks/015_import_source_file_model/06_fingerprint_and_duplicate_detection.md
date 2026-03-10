@@ -1,7 +1,7 @@
 # Task 06: Fingerprint and Duplicate Detection Layer
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: DONE
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 02, Task 05
 - **Blocks**: Tasks 07, 10, 12
@@ -23,28 +23,30 @@ Implement the stable fingerprint builder and account-scoped duplicate detection 
 
 ## Inputs Required
 
-- [ ] `llms/tasks/015_import_source_file_model/plan.md`
-- [ ] Tasks 02 and 05 outputs
-- [ ] `llms/constitution.md`
+- [x] `llms/tasks/015_import_source_file_model/plan.md`
+- [x] Tasks 02 and 05 outputs
+- [x] `llms/constitution.md`
 
 ## Expected Outputs
 
-- [ ] Fingerprint module
-- [ ] Duplicate detection helpers/services
-- [ ] Tests for exact-match dedupe and overlapping imports
+- [x] Fingerprint module
+- [x] Duplicate detection helpers/services
+- [x] Tests for exact-match dedupe and overlapping imports
 
 ## Acceptance Criteria
 
-- [ ] Fingerprints are built from normalized canonical row data
-- [ ] Dedupe is exact-match only
-- [ ] Duplicate lookup is scoped by account
-- [ ] Same fingerprint may exist in different accounts without conflict
-- [ ] DB uniqueness strategy prevents concurrent duplicate `ready` rows
-- [ ] No fuzzy matching is introduced
+- [x] Fingerprints are built from normalized canonical row data
+- [x] Dedupe is exact-match only
+- [x] Duplicate lookup is scoped by account
+- [x] Same fingerprint may exist in different accounts without conflict
+- [x] DB uniqueness strategy prevents concurrent duplicate `ready` rows
+- [x] No fuzzy matching is introduced
 
 ## Execution Summary
-*[Filled by executing agent]*
+- Added `AurumFinance.Ingestion.Fingerprint` to build deterministic SHA-256 fingerprints from normalized canonical row data using a stable recursive canonical term representation.
+- Exposed `Ingestion.build_fingerprint/1`, `Ingestion.list_duplicate_fingerprints/1`, and `Ingestion.duplicate_fingerprint?/2` as the parser-agnostic dedupe entry points.
+- Duplicate lookup is account-scoped and checks existing `ready` imported rows only, relying on the previously-added partial unique index on `[:account_id, :fingerprint]` for concurrent insert protection.
+- Added tests covering stable exact-match fingerprinting, account scoping, and overlapping imports that produce duplicate rows without blocking repeated file uploads.
 
 ## Human Review
 *[Filled by human reviewer]*
-

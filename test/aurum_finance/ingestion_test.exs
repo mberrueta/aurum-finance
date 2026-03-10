@@ -3,6 +3,7 @@ defmodule AurumFinance.IngestionTest do
 
   alias AurumFinance.Ingestion
   alias AurumFinance.Ingestion.CanonicalRowCandidate
+  alias AurumFinance.Ingestion.Fingerprint
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ledger.Account
@@ -34,9 +35,10 @@ defmodule AurumFinance.IngestionTest do
         })
 
       refute changeset.valid?
-      assert "SHA256 must be exactly 64 characters." in errors_on(changeset).sha256
-      assert "Count must be zero or greater." in errors_on(changeset).row_count
-      assert "Byte size must be zero or greater." in errors_on(changeset).byte_size
+      assert "error_imported_file_sha256_length_invalid" in errors_on(changeset).sha256
+      assert "error_imported_file_count_must_be_non_negative" in errors_on(changeset).row_count
+
+      assert "error_imported_file_byte_size_must_be_non_negative" in errors_on(changeset).byte_size
     end
   end
 
@@ -273,11 +275,9 @@ defmodule AurumFinance.IngestionTest do
       refute ready_changeset.valid?
       refute duplicate_changeset.valid?
 
-      assert "Fingerprint is required for ready and duplicate rows." in errors_on(ready_changeset).fingerprint
+      assert "error_imported_row_fingerprint_required" in errors_on(ready_changeset).fingerprint
 
-      assert "Fingerprint is required for ready and duplicate rows." in errors_on(
-               duplicate_changeset
-             ).fingerprint
+      assert "error_imported_row_fingerprint_required" in errors_on(duplicate_changeset).fingerprint
 
       assert invalid_changeset.valid?
     end
@@ -301,6 +301,186 @@ defmodule AurumFinance.IngestionTest do
         |> Enum.to_list()
 
       assert normalized_row.canonical_data == %{description: "uber", currency: "BRL"}
+    end
+  end
+
+  describe "fingerprint and duplicate detection" do
+    test "Fingerprint.build/1 is exact-match and stable for normalized canonical data" do
+      first =
+        Fingerprint.build(%{
+          description: "uber",
+          amount: Decimal.new("-4.50"),
+          currency: "USD",
+          posted_on: ~D[2026-03-10]
+        })
+
+      second =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-10],
+          currency: "USD",
+          amount: Decimal.new("-4.50"),
+          description: "uber"
+        })
+
+      different =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-10],
+          currency: "USD",
+          amount: Decimal.new("-5.00"),
+          description: "uber"
+        })
+
+      assert first == second
+      refute first == different
+    end
+
+    test "list_duplicate_fingerprints/1 is account-scoped" do
+      entity = insert(:entity, name: "Duplicate lookup entity")
+      other_entity = insert(:entity, name: "Other duplicate lookup entity")
+      account = insert(:account, entity: entity, entity_id: entity.id, name: "Duplicate lookup")
+
+      other_account =
+        insert(:account, entity: other_entity, entity_id: other_entity.id, name: "Other lookup")
+
+      assert {:ok, imported_file} =
+               Ingestion.create_imported_file(%{
+                 account_id: account.id,
+                 filename: "dedupe-source.csv",
+                 sha256: String.duplicate("3", 64),
+                 format: :csv,
+                 status: :pending,
+                 storage_path: "/tmp/imports/dedupe-source.csv"
+               })
+
+      assert {:ok, other_imported_file} =
+               Ingestion.create_imported_file(%{
+                 account_id: other_account.id,
+                 filename: "dedupe-other.csv",
+                 sha256: String.duplicate("4", 64),
+                 format: :csv,
+                 status: :pending,
+                 storage_path: "/tmp/imports/dedupe-other.csv"
+               })
+
+      duplicate_fingerprint =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-10],
+          amount: Decimal.new("-4.50"),
+          currency: "USD",
+          description: "coffee"
+        })
+
+      other_fingerprint =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-11],
+          amount: Decimal.new("-8.00"),
+          currency: "USD",
+          description: "groceries"
+        })
+
+      assert {:ok, _row} =
+               Ingestion.create_imported_row(%{
+                 imported_file_id: imported_file.id,
+                 account_id: account.id,
+                 row_index: 0,
+                 raw_data: %{"description" => "Coffee"},
+                 fingerprint: duplicate_fingerprint,
+                 status: :ready
+               })
+
+      assert {:ok, _other_row} =
+               Ingestion.create_imported_row(%{
+                 imported_file_id: other_imported_file.id,
+                 account_id: other_account.id,
+                 row_index: 0,
+                 raw_data: %{"description" => "Coffee"},
+                 fingerprint: duplicate_fingerprint,
+                 status: :ready
+               })
+
+      assert Ingestion.list_duplicate_fingerprints(
+               account_id: account.id,
+               fingerprints: [duplicate_fingerprint, other_fingerprint]
+             ) == MapSet.new([duplicate_fingerprint])
+    end
+
+    test "detects overlapping uploads from previous ready rows in the same account" do
+      entity = insert(:entity, name: "Overlapping entity")
+
+      account =
+        insert(:account, entity: entity, entity_id: entity.id, name: "Overlapping account")
+
+      assert {:ok, first_import} =
+               Ingestion.create_imported_file(%{
+                 account_id: account.id,
+                 filename: "week-1.csv",
+                 sha256: String.duplicate("5", 64),
+                 format: :csv,
+                 status: :complete,
+                 storage_path: "/tmp/imports/week-1.csv"
+               })
+
+      assert {:ok, second_import} =
+               Ingestion.create_imported_file(%{
+                 account_id: account.id,
+                 filename: "week-2.csv",
+                 sha256: String.duplicate("6", 64),
+                 format: :csv,
+                 status: :pending,
+                 storage_path: "/tmp/imports/week-2.csv"
+               })
+
+      overlapping_fingerprint =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-10],
+          amount: Decimal.new("-4.50"),
+          currency: "USD",
+          description: "coffee"
+        })
+
+      new_fingerprint =
+        Fingerprint.build(%{
+          posted_on: ~D[2026-03-12],
+          amount: Decimal.new("-12.00"),
+          currency: "USD",
+          description: "fuel"
+        })
+
+      assert {:ok, _existing_row} =
+               Ingestion.create_imported_row(%{
+                 imported_file_id: first_import.id,
+                 account_id: account.id,
+                 row_index: 0,
+                 raw_data: %{"description" => "Coffee"},
+                 fingerprint: overlapping_fingerprint,
+                 status: :ready
+               })
+
+      assert {:ok, _duplicate_row} =
+               Ingestion.create_imported_row(%{
+                 imported_file_id: second_import.id,
+                 account_id: account.id,
+                 row_index: 0,
+                 raw_data: %{"description" => "Coffee"},
+                 fingerprint: overlapping_fingerprint,
+                 status: :duplicate,
+                 skip_reason: "already imported"
+               })
+
+      assert {:ok, _new_row} =
+               Ingestion.create_imported_row(%{
+                 imported_file_id: second_import.id,
+                 account_id: account.id,
+                 row_index: 1,
+                 raw_data: %{"description" => "Fuel"},
+                 fingerprint: new_fingerprint,
+                 status: :ready
+               })
+
+      assert Ingestion.list_duplicate_fingerprints(
+               account_id: account.id,
+               fingerprints: [overlapping_fingerprint, new_fingerprint]
+             ) == MapSet.new([overlapping_fingerprint, new_fingerprint])
     end
   end
 
