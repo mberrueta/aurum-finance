@@ -90,7 +90,7 @@ graph TD
 | **Ledger** | Account, Transaction, Posting (implemented), BalanceSnapshot (deferred) | Account and transaction reads require explicit entity scope; posting currency is derived from the joined account; balances are derived from postings on read | Entity-scoped |
 | **ExchangeRates** | RateSeries, RateRecord, TaxRateSnapshot, Currency | Tax snapshots immutable; rate types are string keys; arbitrary jurisdictions | Mixed (rates global, snapshots entity-scoped) |
 | **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog (deferred) | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
-| **Ingestion** | ImportedFile, ImportedRow | Account-scoped async ingestion; immutable evidence + preview/review only; no ledger mutation in M2 | Account-scoped within an entity |
+| **Ingestion** | ImportedFile, ImportedRow, ImportMaterialization, ImportRowMaterialization | Account-scoped async ingestion; immutable evidence plus async materialization and durable row outcomes | Account-scoped within an entity |
 | **Reconciliation** | ReconciliationSession, MatchResult, Discrepancy | State machine: unreconciled -> cleared -> reconciled; corrections reset state | Entity-scoped |
 | **Reporting** | RecurringPattern, Projection, AnomalyAlert | Read-only over primary data; projections labeled with evidence base | Entity-scoped (+ cross-entity) |
 
@@ -132,6 +132,10 @@ erDiagram
     ENTITY ||--o{ IMPORTED_FILE : owns_via_account
     ACCOUNT ||--o{ IMPORTED_FILE : targets
     IMPORTED_FILE ||--|{ IMPORTED_ROW : contains
+    IMPORTED_FILE ||--o{ IMPORT_MATERIALIZATION : materializes_via
+    IMPORTED_ROW ||--o{ IMPORT_ROW_MATERIALIZATION : evaluates_as
+    IMPORT_MATERIALIZATION ||--|{ IMPORT_ROW_MATERIALIZATION : contains
+    TRANSACTION ||--o{ IMPORT_ROW_MATERIALIZATION : traced_from
 
     RULE_GROUP ||--|{ RULE : contains
     RULE ||--|{ CONDITION : has
@@ -496,27 +500,31 @@ an entity UUID in the URL query.
 ### Ingestion and Normalization
 
 The Ingestion context (`AurumFinance.Ingestion`) manages the import pipeline
-from uploaded source file to immutable preview/review evidence. The current
-implemented milestone is CSV-only, account-scoped, asynchronous, and explicitly
-does not create ledger transactions, postings, or classification outcomes.
+from uploaded source file to immutable evidence and, in CSV v1, async durable
+materialization into ledger transactions.
 
 #### Pipeline Overview
 
-Data flows through five sequential stages:
+Data flows through two durable phases:
 
 ```
 Upload & Store --> Parse & Extract --> Normalize & Validate --> Deduplicate
                                                                        |
                                                                        v
-                                                                    Persist
-                                                              imported_rows +
-                                                               preview state
+                                                         Persist immutable evidence
+                                                         imported_files + imported_rows
+                                                                       |
+                                                                       v
+                                                         Request async materialization
+                                                                       |
+                                                                       v
+                                                         Persist runs and row outcomes
+                                              import_materializations + import_row_materializations
 ```
 
-The output of this milestone is immutable import evidence. Parsed rows are
-stored as `imported_rows` linked to one `imported_file`, and the UI renders
-preview/review state from that durable data. Materialization into ledger facts
-and any later classification step are future work.
+Preview and inspection are rendered from immutable evidence. Materialization is
+modeled separately as workflow state and row outcomes, preserving evidence
+immutability while allowing async, idempotent ledger writes.
 
 #### Domain Objects
 
@@ -524,12 +532,18 @@ and any later classification step are future work.
 |---------------|-------------|------------|
 | **ImportedFile** | One uploaded source file plus async processing lifecycle and summary. | `account_id`, `filename`, `sha256`, `format`, `status`, `row_count`, `imported_row_count`, `skipped_row_count`, `invalid_row_count`, `error_message`, `warnings`, `storage_path`, `processed_at` |
 | **ImportedRow** | One immutable parsed row from the file, persisted as evidence and preview data. | `imported_file_id`, `account_id`, `row_index`, `raw_data`, `description`, `normalized_description`, `posted_on`, `amount`, `currency`, `fingerprint`, `status`, `skip_reason`, `validation_error` |
+| **ImportMaterialization** | One async ledger materialization run for one imported file. | `imported_file_id`, `account_id`, `status`, `requested_by`, `rows_considered`, `rows_materialized`, `rows_skipped_duplicate`, `rows_failed`, `error_message`, `started_at`, `finished_at` |
+| **ImportRowMaterialization** | One durable row-level materialization outcome. | `import_materialization_id`, `imported_row_id`, `transaction_id`, `status`, `outcome_reason`, `inserted_at` |
 
 #### Relationships
 
 - Account 1--* ImportedFile (target account for the import)
 - ImportedFile 1--+ ImportedRow (one file contains many persisted row evidences)
 - ImportedRow belongs to one account explicitly for account-scoped dedupe and review
+- ImportedFile 1--* ImportMaterialization
+- ImportMaterialization 1--* ImportRowMaterialization
+- ImportedRow 1--* ImportRowMaterialization
+- ImportRowMaterialization optionally links to one committed Transaction
 
 #### ImportedFile Status Lifecycle
 
@@ -553,8 +567,31 @@ Preview is rendered from persisted `imported_files` and `imported_rows`.
 History and detail pages survive page reloads and browser disconnects because
 the source of truth is durable state, with LiveView updates driven by PubSub.
 
-This milestone stops at preview/review. There is no `commit_import/2`, no
-ledger write phase, and no classification preview in the current ingestion flow.
+CSV v1 does not introduce row-level approval or duplicate override. The user
+either materializes eligible rows or deletes the imported file and re-imports a
+corrected CSV.
+
+#### Materialization Model
+
+Materialization is async and durable:
+
+- one `ImportMaterialization` is created before worker execution
+- one `ImportRowMaterialization` is stored for every evaluated row, including
+  `skipped`
+- row outcomes are `committed`, `skipped`, or `failed`
+- run outcomes are `pending`, `processing`, `completed`,
+  `completed_with_errors`, or `failed`
+
+Eligibility is determined directly from imported-row evidence:
+
+- `ready` + not already committed + no currency mismatch => materializable
+- `duplicate` => skipped
+- `invalid` => skipped
+- already committed => skipped
+- currency mismatch => failed
+
+Committed rows create ledger transactions with `source_type: :import` and keep
+row-to-transaction traceability through `ImportRowMaterialization.transaction_id`.
 
 #### Format Extensibility
 
@@ -570,8 +607,9 @@ pipeline stages.
 1. **Raw data preservation:** `ImportedRow.raw_data` is immutable — original
    file data is never modified.
 2. **Repeated uploads are allowed:** same file imported twice may create a new `imported_file`, but row-level dedupe prevents duplicate `ready` evidence.
-3. **Preview only:** No data enters the Ledger in this milestone.
-4. **Full provenance:** File -> row evidence. Every persisted preview row is traceable to its source file.
+3. **No row-review overlay:** imported rows never become approved/rejected workflow records.
+4. **Full provenance:** file -> imported row -> row outcome -> transaction for committed rows.
+5. **Native-currency-only materialization:** `account.currency_code` is the only posting currency source of truth; no FX conversion occurs in ingestion materialization.
 
 ### Rule Groups and Classification Outcomes
 

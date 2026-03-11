@@ -37,6 +37,24 @@ enable safe refactoring, and ensure CI readiness.
 Rationale: Consistent, composable APIs and queries improve readability,
 maintainability, and testability across contexts.
 
+### Coding Style Baselines For Elixir Work
+
+- Any agent changing Elixir production code MUST read
+  `llms/coding_styles/elixir.md` before editing.
+- Any agent changing Elixir tests MUST read
+  `llms/coding_styles/elixir_tests.md` before editing.
+- Agents MUST prefer pattern matching in function heads and small helpers over
+  simple `if`/`case` branching whenever that keeps the flow flatter.
+- Agents SHOULD prefer `with` for linear happy-path flows instead of nested
+  `case` chains.
+- Tests MUST use factories as the default test-data mechanism and MUST NOT
+  introduce fixture-style helpers or `*_fixture` naming.
+- Public backend functions added or materially changed MUST include `@doc`
+  documentation with executable-style examples when the behavior is non-trivial.
+
+Rationale: Explicit style baselines reduce repeated review churn and keep agent
+output aligned with the project's expected Elixir and test conventions.
+
 ### Schema Changesets & I18n Validation
 
 - Schemas MUST declare `@required` and `@optional` field lists.

@@ -20,7 +20,8 @@ config :aurum_finance, Oban,
     {Oban.Plugins.Pruner, max_age: 60 * 60 * 24}
   ],
   queues: [
-    imports: 5
+    imports: 5,
+    materializations: 5
   ]
 
 # Configure the endpoint

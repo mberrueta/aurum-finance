@@ -49,6 +49,38 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
       assert render(view) =~ "USD"
     end
 
+    test "expands a transaction when the compact query includes tx", %{conn: conn} do
+      entity = insert_entity(name: "Transactions Deep Link Entity")
+      checking = insert_account(entity, %{name: "Checking Deep Link"})
+
+      groceries =
+        insert_account(entity, %{
+          name: "Groceries Deep Link",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      {:ok, transaction} =
+        Ledger.create_transaction(%{
+          entity_id: entity.id,
+          date: ~D[2026-03-07],
+          description: "Deep link groceries",
+          source_type: :import,
+          postings: [
+            %{account_id: checking.id, amount: Decimal.new("-45.00")},
+            %{account_id: groceries.id, amount: Decimal.new("45.00")}
+          ]
+        })
+
+      path = "/transactions?q=entity:#{entity.id}&tx:#{transaction.id}"
+
+      {:ok, view, _html} = conn |> log_in_root() |> live(path)
+
+      assert has_element?(view, "#transaction-#{transaction.id}")
+      assert has_element?(view, "#transaction-#{transaction.id}-detail")
+    end
+
     test "renders empty state when the selected entity has no transactions", %{conn: conn} do
       entity = insert_entity(name: "Transactions Empty Entity")
 

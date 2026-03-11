@@ -9,6 +9,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
 
   alias AurumFinance.Helpers
   alias AurumFinance.Ingestion.ImportedFile
+  alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ledger.Account
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -45,6 +46,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
 
     belongs_to :imported_file, ImportedFile
     belongs_to :account, Account
+    has_many :row_materializations, ImportRowMaterialization
 
     timestamps(type: :utc_datetime_usec, updated_at: false)
   end

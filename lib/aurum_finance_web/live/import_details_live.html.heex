@@ -4,6 +4,20 @@
       {dgettext("import", "details_page_subtitle")}
     </:subtitle>
     <:actions>
+      <button
+        :if={@imported_file}
+        id="import-materialize-btn"
+        type="button"
+        class={[
+          "au-btn au-btn-primary",
+          @materializable_row_count == 0 && "cursor-not-allowed opacity-50"
+        ]}
+        phx-click="request_materialization"
+        disabled={@materializable_row_count == 0}
+      >
+        {dgettext("import", "btn_materialize")}
+      </button>
+
       <.link navigate={~p"/import"} class="au-btn" id="import-details-back-link">
         {dgettext("import", "btn_back_to_imports")}
       </.link>
@@ -16,11 +30,85 @@
 
   <.section_panel
     :if={@imported_file}
+    title={dgettext("import", "section_review_workflow")}
+    badge={Integer.to_string(@materializable_row_count)}
+    badge_variant={if(@materializable_row_count > 0, do: :good, else: :default)}
+  >
+    <div id="import-review-workflow" class="grid gap-3 xl:grid-cols-[1.6fr_1fr]">
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-sm font-semibold text-white/92">
+          {dgettext("import", "details_materialize_title")}
+        </p>
+        <p class="mt-2 text-sm leading-6 text-white/68">
+          {dgettext("import", "details_materialize_body")}
+        </p>
+
+        <div class="mt-4 flex flex-wrap items-center gap-3">
+          <.badge variant={if(@materializable_row_count > 0, do: :good, else: :default)}>
+            {dgettext("import", "details_materializable_rows_badge",
+              count: @materializable_row_count
+            )}
+          </.badge>
+          <span class="text-xs uppercase tracking-[0.16em] text-white/38">
+            {dgettext("import", "details_duplicates_no_override")}
+          </span>
+        </div>
+      </div>
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <p class="text-sm font-semibold text-white/92">
+          {dgettext("import", "details_delete_title")}
+        </p>
+        <p class="mt-2 text-sm leading-6 text-white/68">
+          {dgettext("import", "details_delete_body")}
+        </p>
+
+        <div :if={@imported_file_deletable?} class="mt-4">
+          <button
+            id="import-delete-btn"
+            type="button"
+            class="au-btn border border-rose-300/30 bg-rose-400/10 text-rose-100 hover:bg-rose-400/16"
+            phx-click="delete_imported_file"
+            data-confirm={dgettext("import", "confirm_delete_import")}
+          >
+            {dgettext("import", "btn_delete_import")}
+          </button>
+        </div>
+
+        <div :if={!@imported_file_deletable?} id="import-delete-blocked" class="mt-4">
+          <.info_callout title={dgettext("import", "details_delete_blocked_title")} tone={:warn}>
+            <p>{@imported_file_delete_block_reason}</p>
+          </.info_callout>
+        </div>
+      </div>
+    </div>
+  </.section_panel>
+
+  <.section_panel
+    :if={@imported_file}
     title={dgettext("import", "section_import_summary")}
     badge={import_status_label(@imported_file.status)}
     badge_variant={import_status_variant(@imported_file.status)}
   >
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
+      <div class="rounded-2xl border border-cyan-300/18 bg-cyan-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-cyan-100/65">
+          {dgettext("import", "label_entity")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-cyan-50">
+          {imported_file_entity_name(@imported_file)}
+        </p>
+      </div>
+
+      <div class="rounded-2xl border border-sky-300/18 bg-sky-300/[0.07] p-4">
+        <p class="text-[11px] uppercase tracking-[0.16em] text-sky-100/65">
+          {dgettext("import", "label_target_account")}
+        </p>
+        <p class="mt-2 text-sm font-semibold text-sky-50">
+          {imported_file_account_name(@imported_file)}
+        </p>
+      </div>
+
       <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
         <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
           {dgettext("import", "label_file")}
@@ -114,39 +202,256 @@
       <.empty_state text={dgettext("import", "empty_import_rows")} />
     </div>
 
-    <div :if={@imported_row_count > 0} class="overflow-x-auto">
-      <table class="min-w-full text-left text-sm">
-        <thead class="border-b border-white/10 text-[11px] uppercase tracking-[0.16em] text-white/38">
-          <tr>
-            <th class="px-3 py-3">{dgettext("import", "label_row_index")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_status")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_date")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_description")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_amount")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_currency")}</th>
-            <th class="px-3 py-3">{dgettext("import", "label_row_note")}</th>
-          </tr>
-        </thead>
-        <tbody id="import-rows-table" phx-update="stream" class="divide-y divide-white/5">
-          <tr :for={{id, row} <- @streams.imported_rows} id={id}>
-            <td class="px-3 py-3 font-mono text-white/72">{row.row_index}</td>
-            <td class="px-3 py-3">
+    <div
+      :if={@imported_row_count > 0}
+      id="import-rows-list"
+      phx-update="stream"
+      class="space-y-3"
+    >
+      <article
+        :for={{id, row} <- @streams.imported_rows}
+        id={id}
+        class="rounded-[28px] border border-white/10 bg-white/[0.035] p-4 shadow-[0_18px_60px_rgba(0,0,0,0.18)]"
+      >
+        <div class="flex flex-wrap items-start justify-between gap-3">
+          <div class="space-y-2">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="font-mono text-xs uppercase tracking-[0.16em] text-white/42">
+                {dgettext("import", "label_row_index")} {row.row_index}
+              </span>
               <.badge variant={imported_row_status_variant(row.status)}>
                 {imported_row_status_label(row.status)}
               </.badge>
-            </td>
-            <td class="px-3 py-3 text-white/72">{format_date(row.posted_on)}</td>
-            <td class="px-3 py-3 text-white/92">
+            </div>
+
+            <h3 class="text-base font-semibold text-white/92">
               {row.description || row.normalized_description || "—"}
-            </td>
-            <td class="px-3 py-3 text-white/92">
-              {format_amount(row.amount)}
-            </td>
-            <td class="px-3 py-3 text-white/72">{row.currency || "—"}</td>
-            <td class="px-3 py-3 text-white/60">{row_note(row)}</td>
-          </tr>
-        </tbody>
-      </table>
+            </h3>
+          </div>
+
+          <div class="rounded-2xl border border-white/8 bg-black/10 px-3 py-2 text-right">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-white/34">
+              {dgettext("import", "label_amount")}
+            </p>
+            <p class="mt-1 text-lg font-semibold text-white/92">{format_amount(row.amount)}</p>
+          </div>
+        </div>
+
+        <div class="mt-4 grid gap-3 md:grid-cols-4">
+          <div class="rounded-2xl border border-white/8 bg-black/10 p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-white/34">
+              {dgettext("import", "label_date")}
+            </p>
+            <p class="mt-2 text-sm font-medium text-white/78">{format_date(row.posted_on)}</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/8 bg-black/10 p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-white/34">
+              {dgettext("import", "label_currency")}
+            </p>
+            <p class="mt-2 text-sm font-medium text-white/78">{row.currency || "—"}</p>
+          </div>
+
+          <div class="rounded-2xl border border-white/8 bg-black/10 p-3 md:col-span-2">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-white/34">
+              {dgettext("import", "label_row_note")}
+            </p>
+            <p class="mt-2 text-sm leading-6 text-white/66">{row_note(row)}</p>
+          </div>
+        </div>
+
+        <div
+          :if={row.status == :duplicate}
+          id={"duplicate-visibility-#{row.id}"}
+          class="mt-4 rounded-2xl border border-amber-300/20 bg-amber-300/[0.08] px-4 py-3 text-sm leading-6 text-amber-50/88"
+        >
+          <p>{duplicate_visibility_copy(row)}</p>
+          <p
+            :if={duplicate_fingerprint(row)}
+            class="mt-2 font-mono text-[11px] text-amber-100/72"
+          >
+            {dgettext("import", "label_duplicate_fingerprint")}: {duplicate_fingerprint(row)}
+          </p>
+        </div>
+
+        <details
+          :if={
+            row_materializations_for_row(
+              @import_row_materializations_by_row_id,
+              row,
+              @import_materializations_by_id
+            ) != []
+          }
+          id={"imported-row-materializations-#{row.id}"}
+          class="group mt-4 rounded-2xl border border-white/8 bg-white/[0.02] p-4"
+        >
+          <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+            <div class="space-y-1">
+              <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+                {dgettext("import", "details_row_history_title")}
+              </p>
+              <p class="text-sm text-white/60">
+                {dgettext("import", "details_row_history_caption")}
+              </p>
+            </div>
+
+            <div class="flex items-center gap-3">
+              <span class="text-xs uppercase tracking-[0.16em] text-white/32">
+                {dgettext("import", "details_row_history_collapsed")}
+              </span>
+              <.icon
+                name="hero-chevron-down"
+                class="h-4 w-4 text-white/34 transition group-open:rotate-180"
+              />
+            </div>
+          </summary>
+
+          <div class="mt-4 space-y-2 border-t border-white/8 pt-4">
+            <div
+              :for={
+                row_materialization <-
+                  row_materializations_for_row(
+                    @import_row_materializations_by_row_id,
+                    row,
+                    @import_materializations_by_id
+                  )
+              }
+              id={"imported-row-materialization-#{row_materialization.id}"}
+              class="rounded-xl border border-white/6 bg-black/10 px-3 py-3"
+            >
+              <div class="flex flex-wrap items-center gap-2">
+                <span class="text-xs uppercase tracking-[0.16em] text-white/38">
+                  {materialization_outcome_label(
+                    row_materialization,
+                    @import_materialization_sequence_by_id
+                  )}
+                </span>
+                <.badge variant={row_materialization_status_variant(row_materialization.status)}>
+                  {row_materialization_status_label(row_materialization.status)}
+                </.badge>
+                <span class="text-xs text-white/48">
+                  {materialization_outcome_meta(
+                    row_materialization,
+                    @import_materializations_by_id
+                  )}
+                </span>
+              </div>
+
+              <div class="mt-2 flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-white/68">
+                <span>{row_materialization_reason(row_materialization)}</span>
+                <.link
+                  :if={row_materialization.transaction_id}
+                  navigate={
+                    row_materialization_transaction_path(row_materialization, @imported_file)
+                  }
+                  class="font-mono text-white/76 underline decoration-white/20 underline-offset-4 transition hover:text-white hover:decoration-white/60"
+                >
+                  {dgettext("import", "label_transaction_reference")}: {row_materialization_transaction_reference(
+                    row_materialization
+                  )}
+                </.link>
+              </div>
+            </div>
+          </div>
+        </details>
+      </article>
+    </div>
+  </.section_panel>
+
+  <.section_panel
+    :if={@imported_file}
+    title={dgettext("import", "section_materialization_runs")}
+    badge={to_string(length(@import_materializations))}
+    badge_variant={:purple}
+  >
+    <div :if={@import_materializations == []} id="import-materializations-empty">
+      <.empty_state text={dgettext("import", "empty_materialization_runs")} />
+    </div>
+
+    <div :if={@import_materializations != []} id="import-materializations-list" class="space-y-3">
+      <details
+        :for={materialization <- @import_materializations}
+        id={"import-materialization-#{materialization.id}"}
+        open={
+          materialization_summary_open?(
+            materialization,
+            @latest_import_materialization_id
+          )
+        }
+        class="group rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+      >
+        <summary class="flex cursor-pointer list-none flex-wrap items-center justify-between gap-3">
+          <div class="space-y-1">
+            <div class="flex flex-wrap items-center gap-2">
+              <span class="text-xs uppercase tracking-[0.16em] text-white/38">
+                {materialization_label(materialization, @import_materialization_sequence_by_id)}
+              </span>
+              <.badge variant={materialization_status_variant(materialization.status)}>
+                {materialization_status_label(materialization.status)}
+              </.badge>
+              <span class="text-xs uppercase tracking-[0.16em] text-white/38">
+                {dgettext("import", "label_requested_by")} {materialization.requested_by}
+              </span>
+            </div>
+            <p class="text-sm text-white/68">
+              {dgettext("import", "details_materialization_run_meta",
+                inserted_at: format_timestamp(materialization.inserted_at),
+                finished_at: format_timestamp(materialization.finished_at)
+              )}
+            </p>
+          </div>
+
+          <div class="flex items-center gap-3">
+            <span class="text-xs uppercase tracking-[0.16em] text-white/32">
+              {dgettext("import", "details_materialization_summary_only")}
+            </span>
+            <.icon
+              name="hero-chevron-down"
+              class="h-4 w-4 text-white/34 transition group-open:rotate-180"
+            />
+          </div>
+        </summary>
+
+        <div class="mt-4 grid gap-3 border-t border-white/8 pt-4 md:grid-cols-2 xl:grid-cols-4">
+          <div class="rounded-2xl border border-white/8 bg-black/10 p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+              {dgettext("import", "label_rows_considered")}
+            </p>
+            <p class="mt-2 text-lg font-semibold text-white/90">
+              {materialization.rows_considered}
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-emerald-300/15 bg-emerald-300/[0.06] p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-emerald-100/60">
+              {dgettext("import", "label_rows_materialized")}
+            </p>
+            <p class="mt-2 text-lg font-semibold text-emerald-50">
+              {materialization.rows_materialized}
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-amber-100/60">
+              {dgettext("import", "label_rows_duplicates")}
+            </p>
+            <p class="mt-2 text-lg font-semibold text-amber-50">
+              {materialization.rows_skipped_duplicate}
+            </p>
+          </div>
+
+          <div class="rounded-2xl border border-rose-300/15 bg-rose-300/[0.06] p-3">
+            <p class="text-[11px] uppercase tracking-[0.16em] text-rose-100/60">
+              {dgettext("import", "label_rows_failed")}
+            </p>
+            <p class="mt-2 text-lg font-semibold text-rose-50">{materialization.rows_failed}</p>
+          </div>
+        </div>
+
+        <div :if={materialization.error_message} class="mt-3 text-sm text-rose-100/88">
+          {materialization.error_message}
+        </div>
+      </details>
     </div>
   </.section_panel>
 </div>
