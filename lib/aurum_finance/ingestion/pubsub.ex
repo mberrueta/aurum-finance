@@ -6,12 +6,26 @@ defmodule AurumFinance.Ingestion.PubSub do
   persisted state after receiving them.
   """
 
+  alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedFile
 
   @type notification :: %{
           account_id: Ecto.UUID.t(),
           imported_file_id: Ecto.UUID.t(),
           status: :pending | :processing | :complete | :failed
+        }
+
+  @type materialization_event ::
+          :materialization_requested
+          | :materialization_processing
+          | :materialization_completed
+          | :materialization_failed
+
+  @type materialization_notification :: %{
+          account_id: Ecto.UUID.t(),
+          imported_file_id: Ecto.UUID.t(),
+          import_materialization_id: Ecto.UUID.t(),
+          status: :pending | :processing | :completed | :completed_with_errors | :failed
         }
 
   @doc """
@@ -57,6 +71,38 @@ defmodule AurumFinance.Ingestion.PubSub do
     |> broadcast({:import_updated, notification})
   end
 
+  @doc """
+  Broadcasts a newly requested materialization run.
+  """
+  @spec broadcast_materialization_requested(ImportMaterialization.t()) :: :ok
+  def broadcast_materialization_requested(%ImportMaterialization{} = materialization) do
+    broadcast_materialization(:materialization_requested, materialization)
+  end
+
+  @doc """
+  Broadcasts that a materialization run moved into processing.
+  """
+  @spec broadcast_materialization_processing(ImportMaterialization.t()) :: :ok
+  def broadcast_materialization_processing(%ImportMaterialization{} = materialization) do
+    broadcast_materialization(:materialization_processing, materialization)
+  end
+
+  @doc """
+  Broadcasts that a materialization run reached a completed terminal state.
+  """
+  @spec broadcast_materialization_completed(ImportMaterialization.t()) :: :ok
+  def broadcast_materialization_completed(%ImportMaterialization{} = materialization) do
+    broadcast_materialization(:materialization_completed, materialization)
+  end
+
+  @doc """
+  Broadcasts that a materialization run failed terminally.
+  """
+  @spec broadcast_materialization_failed(ImportMaterialization.t()) :: :ok
+  def broadcast_materialization_failed(%ImportMaterialization{} = materialization) do
+    broadcast_materialization(:materialization_failed, materialization)
+  end
+
   defp notification(%ImportedFile{} = imported_file) do
     %{
       account_id: imported_file.account_id,
@@ -65,10 +111,38 @@ defmodule AurumFinance.Ingestion.PubSub do
     }
   end
 
+  defp materialization_notification(%ImportMaterialization{} = materialization) do
+    %{
+      account_id: materialization.account_id,
+      imported_file_id: materialization.imported_file_id,
+      import_materialization_id: materialization.id,
+      status: materialization.status
+    }
+  end
+
+  defp broadcast_materialization(event, %ImportMaterialization{} = materialization) do
+    notification = materialization_notification(materialization)
+
+    materialization
+    |> account_topic()
+    |> broadcast({event, notification})
+
+    materialization
+    |> imported_file_topic()
+    |> broadcast({event, notification})
+  end
+
   defp account_topic(%ImportedFile{account_id: account_id}), do: account_topic(account_id)
+
+  defp account_topic(%ImportMaterialization{account_id: account_id}),
+    do: account_topic(account_id)
+
   defp account_topic(account_id), do: "ingestion:account_imports:#{account_id}"
 
   defp imported_file_topic(%ImportedFile{id: imported_file_id}),
+    do: imported_file_topic(imported_file_id)
+
+  defp imported_file_topic(%ImportMaterialization{imported_file_id: imported_file_id}),
     do: imported_file_topic(imported_file_id)
 
   defp imported_file_topic(imported_file_id), do: "ingestion:imported_file:#{imported_file_id}"

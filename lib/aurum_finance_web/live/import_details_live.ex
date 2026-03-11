@@ -46,7 +46,22 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
     {:noreply, load_import(socket, account_id, imported_file_id)}
   end
 
+  def handle_info(
+        {event, %{imported_file_id: imported_file_id}},
+        %{assigns: %{imported_file: %ImportedFile{id: imported_file_id, account_id: account_id}}} =
+          socket
+      )
+      when event in [
+             :materialization_requested,
+             :materialization_processing,
+             :materialization_completed,
+             :materialization_failed
+           ] do
+    {:noreply, load_import(socket, account_id, imported_file_id)}
+  end
+
   def handle_info({:import_updated, _payload}, socket), do: {:noreply, socket}
+  def handle_info({_event, _payload}, socket), do: {:noreply, socket}
 
   defp load_import(socket, account_id, imported_file_id) do
     imported_file = Ingestion.get_imported_file!(account_id, imported_file_id)

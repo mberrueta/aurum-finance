@@ -1,7 +1,7 @@
 # Task 07: PubSub Notifications for Materialization
 
 ## Status
-- **Status**: UPDATED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 
 ## Objective

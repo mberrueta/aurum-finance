@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.MaterializationWorker
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Repo
 
@@ -71,6 +72,9 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
     test "persists a pending run and enqueues the worker for ready rows" do
       %{account: account, imported_file: imported_file} = build_import_context()
 
+      assert :ok = PubSub.subscribe_account_imports(account.id)
+      assert :ok = PubSub.subscribe_imported_file(imported_file.id)
+
       _ready_row =
         insert_imported_row(imported_file, account, %{
           row_index: 0,
@@ -100,12 +104,32 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
                  requested_by: "reviewer@example.com"
                )
 
+      account_id = account.id
+      imported_file_id = imported_file.id
+      materialization_id = materialization.id
+
       assert materialization.status == :pending
       assert materialization.requested_by == "reviewer@example.com"
       assert materialization.rows_considered == 2
       assert materialization.rows_skipped_duplicate == 1
       assert materialization.rows_materialized == 0
       assert materialization.rows_failed == 0
+
+      assert_receive {:materialization_requested,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :pending
+                      }}
+
+      assert_receive {:materialization_requested,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :pending
+                      }}
 
       assert_enqueued(
         worker: MaterializationWorker,

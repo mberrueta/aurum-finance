@@ -777,7 +777,11 @@ defmodule AurumFinance.Ingestion do
   defp fetch_imported_file_result(%ImportedFile{} = imported_file), do: {:ok, imported_file}
   defp fetch_imported_file_result(nil), do: {:error, :not_found}
 
-  defp insert_materialization_request_result({:ok, materialization}), do: {:ok, materialization}
+  defp insert_materialization_request_result({:ok, %ImportMaterialization{} = materialization}) do
+    :ok = PubSub.broadcast_materialization_requested(materialization)
+    {:ok, materialization}
+  end
+
   defp insert_materialization_request_result({:error, reason}), do: {:error, reason}
 
   defp count_skipped_duplicate_rows(account_id, imported_file_id) do

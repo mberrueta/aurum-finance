@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.MaterializationWorker
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Repo
@@ -14,6 +15,9 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
     test "commits ready rows and records skipped and failed outcomes durably" do
       %{account: account, entity: entity, imported_file: imported_file} =
         build_materialization_context()
+
+      assert :ok = PubSub.subscribe_account_imports(account.id)
+      assert :ok = PubSub.subscribe_imported_file(imported_file.id)
 
       initial_transaction_count =
         Repo.aggregate(
@@ -75,6 +79,10 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
                  requested_by: "reviewer@example.com"
                )
 
+      account_id = account.id
+      imported_file_id = imported_file.id
+      materialization_id = materialization.id
+
       args = %{
         "account_id" => account.id,
         "import_materialization_id" => materialization.id,
@@ -82,6 +90,38 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
       }
 
       assert :ok = MaterializationWorker.perform(%Oban.Job{args: args})
+
+      assert_receive {:materialization_processing,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :processing
+                      }}
+
+      assert_receive {:materialization_processing,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :processing
+                      }}
+
+      assert_receive {:materialization_completed,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :completed_with_errors
+                      }}
+
+      assert_receive {:materialization_completed,
+                      %{
+                        account_id: ^account_id,
+                        imported_file_id: ^imported_file_id,
+                        import_materialization_id: ^materialization_id,
+                        status: :completed_with_errors
+                      }}
 
       materialization = Repo.get!(ImportMaterialization, materialization.id)
 

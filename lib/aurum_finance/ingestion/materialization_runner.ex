@@ -44,6 +44,7 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.ImportedRow
+  alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
@@ -95,22 +96,30 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   @spec run(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t()) :: :ok | {:error, term()}
   def run(account_id, imported_file_id, import_materialization_id) do
     with {:ok, materialization} <-
-           fetch_materialization(account_id, imported_file_id, import_materialization_id),
-         {:ok, materialization} <- ensure_processing(materialization),
-         {:ok, summary} <- process_rows(materialization),
+           fetch_materialization(account_id, imported_file_id, import_materialization_id) do
+      run_materialization(materialization)
+    end
+  end
+
+  defp run_materialization(%ImportMaterialization{} = materialization) do
+    materialization
+    |> ensure_processing()
+    |> run_processing_result()
+  end
+
+  defp run_processing_result({:ok, :already_finished}), do: :ok
+
+  defp run_processing_result({:ok, %ImportMaterialization{} = materialization}) do
+    with {:ok, summary} <- process_rows(materialization),
          {:ok, _materialization} <- finalize_success(materialization, summary) do
       :ok
     else
-      {:ok, :already_finished} ->
-        :ok
-
-      {:error, reason, %ImportMaterialization{} = materialization} ->
-        finalize_failure(materialization, reason)
-
       {:error, reason} ->
-        {:error, reason}
+        finalize_failure(materialization, reason)
     end
   end
+
+  defp run_processing_result({:error, reason}), do: {:error, reason}
 
   defp fetch_materialization(account_id, imported_file_id, import_materialization_id) do
     ImportMaterialization
@@ -148,7 +157,15 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
       error_message: nil
     })
     |> Repo.update()
+    |> ensure_processing_result()
   end
+
+  defp ensure_processing_result({:ok, %ImportMaterialization{} = materialization}) do
+    :ok = PubSub.broadcast_materialization_processing(materialization)
+    {:ok, materialization}
+  end
+
+  defp ensure_processing_result({:error, reason}), do: {:error, reason}
 
   defp process_rows(%ImportMaterialization{} = materialization) do
     rows = list_materialization_rows(materialization)
@@ -573,10 +590,18 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
       status: final_status(summary)
     })
     |> Repo.update()
+    |> finalize_success_result()
   end
 
   defp final_status(%{rows_failed: 0}), do: :completed
   defp final_status(%{rows_failed: rows_failed}) when rows_failed > 0, do: :completed_with_errors
+
+  defp finalize_success_result({:ok, %ImportMaterialization{} = materialization}) do
+    :ok = PubSub.broadcast_materialization_completed(materialization)
+    {:ok, materialization}
+  end
+
+  defp finalize_success_result({:error, reason}), do: {:error, reason}
 
   defp finalize_failure(%ImportMaterialization{} = materialization, reason) do
     materialization
@@ -589,7 +614,11 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
     |> finalize_failure_result(reason)
   end
 
-  defp finalize_failure_result({:ok, _materialization}, reason), do: {:error, reason}
+  defp finalize_failure_result({:ok, %ImportMaterialization{} = materialization}, reason) do
+    :ok = PubSub.broadcast_materialization_failed(materialization)
+    {:error, reason}
+  end
+
   defp finalize_failure_result({:error, reason}, _original_reason), do: {:error, reason}
 
   defp duplicate_reason(%ImportedRow{skip_reason: nil}), do: @default_duplicate_reason
