@@ -92,7 +92,7 @@ graph TD
 | `Ledger` | Double-entry records and balance derivation | Account, Transaction, Posting, BalanceSnapshot | Entity-scoped |
 | `ExchangeRates` | FX series/records, lookup policies, tax snapshots | RateSeries, RateRecord, TaxRateSnapshot, FxIngestionBatch | Mixed (rates global, snapshots entity-scoped) |
 | `Classification` | Grouped rules evaluation and mutable overlays | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog | Mixed (rules global, outcomes entity-scoped) |
-| `Ingestion` | File-to-ledger pipeline and provenance | ImportBatch, ImportRow, DeduplicationRecord | Entity-scoped |
+| `Ingestion` | File-to-ledger pipeline and provenance | ImportedFile, ImportedRow, ImportMaterialization, ImportRowMaterialization | Entity-scoped |
 | `Reconciliation` | Statement matching and reconciliation lifecycle | ReconciliationSession, MatchResult, Discrepancy, ReconciliationAuditLog | Entity-scoped |
 | `Reporting` | Retrospective/projection analytics | Read models (derived) | Entity-scoped + cross-entity aggregates |
 
@@ -138,7 +138,7 @@ Notes:
 
 ## Primary data flows
 
-### 1) Import to posting to classification
+### 1) Import to materialization to posting
 
 ```mermaid
 sequenceDiagram
@@ -146,26 +146,25 @@ sequenceDiagram
     participant W as Web/UI
     participant I as Ingestion
     participant L as Ledger
-    participant C as Classification
 
     U->>W: Upload file + select target account/entity
-    W->>I: Start import batch
+    W->>I: Store imported file
     I->>I: Detect -> Parse -> Normalize -> Validate -> Dedup
-    I->>C: preview_classification(rows)
-    C-->>I: Proposed classification outcomes
-    I-->>W: Preview (ready/duplicate/error + proposals)
-    U->>W: Approve/override rows
-    W->>I: Commit approved rows
-    I->>L: Create Transaction + Postings (source_type=import)
-    I->>C: classify_transaction(transaction)
-    C-->>I: ClassificationRecord + audit
-    I-->>W: Commit result + provenance links
+    I-->>W: Imported file details (ready/duplicate/invalid evidence)
+    U->>W: Request materialization
+    W->>I: Create ImportMaterialization
+    I-->>W: Pending run
+    I->>I: Async worker evaluates rows
+    I->>L: Create Transaction + Postings for eligible ready rows
+    I->>I: Persist ImportRowMaterialization outcomes
+    I-->>W: Run summary + row traceability
 ```
 
 Key architecture points:
-- Fact/classification split happens before commit.
-- Ledger facts are written first; classification is an overlay.
-- Every committed row is traceable file -> batch -> row -> transaction.
+- imported evidence is immutable and separate from workflow state
+- materialization is async and durable before ledger mutation begins
+- every evaluated row produces a durable row outcome
+- every committed row is traceable file -> imported row -> row outcome -> transaction
 
 ### 2) Reconciliation workflow
 
@@ -242,8 +241,8 @@ Key architecture points:
 
 ## Operational behavior and failure boundaries
 
-1. Import preview is mandatory; ledger writes occur only on commit.
-2. Import commit is atomic at batch scope.
+1. Import preview is mandatory; ledger writes occur only through durable materialization runs.
+2. Materialization is async and row-traceable; idempotency is enforced through durable row outcomes.
 3. Deduplication (ingestion) and reconciliation (statement correctness) are
    separate mechanisms.
 4. Missing FX rates are surfaced explicitly to callers as typed errors.

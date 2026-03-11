@@ -4,9 +4,9 @@
 - **Issue**: `https://github.com/mberrueta/aurum-finance/issues/17`
 - **Created**: 2026-03-10
 - **Updated**: 2026-03-11
-- **Status**: IN PROGRESS
-- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11
-- **Next Task**: 12
+- **Status**: COMPLETED
+- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10, 11, 12, 13
+- **Next Task**: none
 - **Depends on**: Issue #12 completed, Issue #13 in progress, Issue #15 completed
 
 ## Context
@@ -238,7 +238,7 @@ Implement the agreed tests and document scope boundaries against future import/c
 4. Async retries can still create double-commit risk unless uniqueness stays anchored in durable row materialization records.
 
 ## Open Questions
-1. Should imported-file hard delete emit a narrow workflow audit event in v1?
+- none blocking for Issue #17 v1 design
 
 ## Future Note
 A future row note/comment feature may make sense for ambiguous descriptions such as broker activity, crypto rows, or merchant labels like `BUY IN MARKET`. That would be informational metadata only, separate from review/materialization workflow, and is out of scope for Issue #17.
@@ -253,3 +253,4 @@ A future row note/comment feature may make sense for ambiguous descriptions such
 - Duplicate rows are visible but not overrideable.
 - Bad CSV imports can be corrected through hard delete plus re-import under explicit boundary rules.
 - Traceability and no-double-commit guarantees are in place.
+- Deterministic tests and scope guardrails are documented and aligned with implementation.
