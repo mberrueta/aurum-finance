@@ -183,6 +183,62 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
     end
   end
 
+  describe "delete_imported_file/2" do
+    test "hard-deletes the imported file and its imported rows before materialization exists" do
+      %{account: account, imported_file: imported_file} = build_import_context()
+
+      _ready_row =
+        insert_imported_row(imported_file, account, %{
+          row_index: 0,
+          fingerprint: "fp-delete-ready"
+        })
+
+      _duplicate_row =
+        insert_imported_row(imported_file, account, %{
+          row_index: 1,
+          fingerprint: "fp-delete-duplicate",
+          status: :duplicate,
+          skip_reason: "already imported"
+        })
+
+      assert {:ok, %AurumFinance.Ingestion.ImportedFile{id: deleted_id}} =
+               Ingestion.delete_imported_file(account.id, imported_file.id)
+
+      assert deleted_id == imported_file.id
+      assert Repo.get(AurumFinance.Ingestion.ImportedFile, imported_file.id) == nil
+
+      assert Repo.aggregate(
+               from(imported_row in AurumFinance.Ingestion.ImportedRow,
+                 where: imported_row.imported_file_id == ^imported_file.id
+               ),
+               :count,
+               :id
+             ) == 0
+    end
+
+    test "returns a localized error after any materialization workflow state exists" do
+      %{account: account, imported_file: imported_file} = build_import_context()
+
+      _ready_row =
+        insert_imported_row(imported_file, account, %{
+          row_index: 0,
+          fingerprint: "fp-delete-blocked"
+        })
+
+      assert {:ok, _materialization} =
+               Ingestion.request_materialization(account.id, imported_file.id,
+                 requested_by: "reviewer@example.com"
+               )
+
+      assert {:error, reason} = Ingestion.delete_imported_file(account.id, imported_file.id)
+
+      assert reason ==
+               "This import can no longer be deleted because materialization workflow state already exists."
+
+      assert Repo.get!(AurumFinance.Ingestion.ImportedFile, imported_file.id)
+    end
+  end
+
   defp build_import_context do
     entity = insert(:entity, name: "Review entity")
     account = insert(:account, entity: entity, entity_id: entity.id, name: "Review account")

@@ -188,12 +188,90 @@ msgstr "Import details"
 #: lib/aurum_finance_web/live/import_details_live.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "details_preview_body"
-msgstr "This page is preview-only evidence. It does not create ledger transactions or postings."
+msgstr "Review the imported CSV evidence, materialize eligible rows, or delete and re-import if the file is wrong."
 
 #: lib/aurum_finance_web/live/import_details_live.html.heex:13
 #, elixir-autogen, elixir-format
 msgid "details_preview_title"
-msgstr "Preview only"
+msgstr "CSV review surface"
+
+msgid "btn_delete_import"
+msgstr "Delete import"
+
+msgid "btn_materialize"
+msgstr "Materialize"
+
+msgid "confirm_delete_import"
+msgstr "Delete this imported file and all of its imported rows?"
+
+msgid "details_delete_blocked_materialization"
+msgstr "This import can no longer be deleted because materialization workflow state already exists."
+
+msgid "details_delete_blocked_title"
+msgstr "Delete unavailable"
+
+msgid "details_delete_body"
+msgstr "If the CSV is wrong in v1, delete the import and re-import the corrected file."
+
+msgid "details_delete_title"
+msgstr "Wrong CSV?"
+
+msgid "details_duplicates_no_override"
+msgstr "Duplicates stay visible and are skipped in v1."
+
+msgid "details_materializable_rows_badge"
+msgstr "%{count} materializable rows"
+
+msgid "details_materialization_run_meta"
+msgstr "Requested %{inserted_at}. Finished %{finished_at}."
+
+msgid "details_materialize_body"
+msgstr "Ready rows materialize by default. Duplicates and invalid rows remain visible but are not manually overrideable."
+
+msgid "details_materialize_title"
+msgstr "Ledger materialization"
+
+msgid "empty_materialization_runs"
+msgstr "No materialization runs have been requested for this import yet."
+
+msgid "error_import_delete_blocked_by_materialization"
+msgstr "This import can no longer be deleted because materialization workflow state already exists."
+
+msgid "flash_import_delete_failed"
+msgstr "Import could not be deleted: %{reason}"
+
+msgid "flash_import_deleted"
+msgstr "Imported file deleted: %{file}."
+
+msgid "flash_materialization_request_failed"
+msgstr "Materialization could not be requested: %{reason}"
+
+msgid "flash_materialization_requested"
+msgstr "Materialization requested."
+
+msgid "label_requested_by"
+msgstr "Requested by:"
+
+msgid "label_rows_considered"
+msgstr "Rows considered"
+
+msgid "label_rows_failed"
+msgstr "Rows failed"
+
+msgid "label_rows_materialized"
+msgstr "Rows materialized"
+
+msgid "section_materialization_runs"
+msgstr "Materialization runs"
+
+msgid "section_review_workflow"
+msgstr "Review workflow"
+
+msgid "status_completed"
+msgstr "Completed"
+
+msgid "status_completed_with_errors"
+msgstr "Completed with errors"
 
 #: lib/aurum_finance_web/live/import_details_live.html.heex:96
 #, elixir-autogen, elixir-format

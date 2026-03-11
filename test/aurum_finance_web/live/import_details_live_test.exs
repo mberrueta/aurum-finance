@@ -1,12 +1,16 @@
 defmodule AurumFinanceWeb.ImportDetailsLiveTest do
   use AurumFinanceWeb.ConnCase, async: true
+  use Oban.Testing, repo: AurumFinance.Repo
 
   import Phoenix.LiveViewTest
 
   alias AurumFinance.Ingestion
+  alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.PubSub
+  alias AurumFinance.Ingestion.MaterializationWorker
+  alias AurumFinance.Repo
 
-  test "shows summary and imported rows for one completed import", %{conn: conn} do
+  test "shows review workflow actions and imported rows for one completed import", %{conn: conn} do
     entity = insert_entity(name: "Import detail entity")
     account = insert_account(entity, %{name: "Import detail account", currency_code: "USD"})
 
@@ -75,13 +79,83 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
       |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
 
     assert has_element?(view, "#import-details-page")
+    assert has_element?(view, "#import-review-workflow")
     assert has_element?(view, "#import-rows-table")
+    assert has_element?(view, "#import-materialize-btn")
+    assert has_element?(view, "#import-delete-btn")
+    assert has_element?(view, "#import-materializations-empty")
     assert render(view) =~ "Import details"
     assert render(view) =~ "detail.csv"
     assert render(view) =~ "Salary"
     assert render(view) =~ "already imported"
     assert render(view) =~ "missing description"
     assert render(view) =~ "Rows read"
+  end
+
+  test "requests materialization from the details page and shows the pending run", %{conn: conn} do
+    entity = insert_entity(name: "Materialize from details entity")
+
+    account =
+      insert_account(entity, %{name: "Materialize from details account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "materialize-from-details.csv",
+               sha256: String.duplicate("f", 64),
+               format: :csv,
+               status: :complete,
+               row_count: 1,
+               imported_row_count: 1,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/materialize-from-details.csv"
+             })
+
+    assert {:ok, _ready_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 0,
+               raw_data: %{"Description" => "Bonus"},
+               description: "Bonus",
+               normalized_description: "bonus",
+               posted_on: ~D[2026-03-04],
+               amount: Decimal.new("100.00"),
+               currency: "USD",
+               fingerprint: "fp-materialize-from-details",
+               status: :ready
+             })
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    view
+    |> element("#import-materialize-btn")
+    |> render_click()
+
+    assert render(view) =~ "Materialization requested."
+    assert has_element?(view, "#import-materializations-list")
+    assert render(view) =~ "Pending"
+
+    [materialization] =
+      Ingestion.list_import_materializations(
+        account_id: account.id,
+        imported_file_id: imported_file.id
+      )
+
+    assert_enqueued(
+      worker: MaterializationWorker,
+      queue: :materializations,
+      args: %{
+        "account_id" => account.id,
+        "import_materialization_id" => materialization.id,
+        "imported_file_id" => imported_file.id
+      }
+    )
   end
 
   test "refreshes the import details when a PubSub update arrives", %{conn: conn} do
@@ -137,6 +211,111 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
     assert has_element?(view, "#import-rows-table")
     assert render(view) =~ "Complete"
     assert render(view) =~ "Dinner"
+  end
+
+  test "redirects back to imports after deleting a deletable imported file", %{conn: conn} do
+    entity = insert_entity(name: "Delete detail entity")
+    account = insert_account(entity, %{name: "Delete detail account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "delete-detail.csv",
+               sha256: String.duplicate("g", 64),
+               format: :csv,
+               status: :complete,
+               row_count: 1,
+               imported_row_count: 1,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/delete-detail.csv"
+             })
+
+    assert {:ok, _ready_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 0,
+               raw_data: %{"Description" => "Delete me"},
+               description: "Delete me",
+               normalized_description: "delete me",
+               posted_on: ~D[2026-03-05],
+               amount: Decimal.new("-10.00"),
+               currency: "USD",
+               fingerprint: "fp-delete-detail",
+               status: :ready
+             })
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    assert has_element?(view, "#import-delete-btn")
+
+    view
+    |> element("#import-delete-btn")
+    |> render_click()
+
+    assert_redirect(view, "/import")
+    assert Repo.get(AurumFinance.Ingestion.ImportedFile, imported_file.id) == nil
+  end
+
+  test "shows delete blocked copy when materialization workflow state already exists", %{
+    conn: conn
+  } do
+    entity = insert_entity(name: "Delete blocked entity")
+    account = insert_account(entity, %{name: "Delete blocked account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "delete-blocked.csv",
+               sha256: String.duplicate("h", 64),
+               format: :csv,
+               status: :complete,
+               row_count: 1,
+               imported_row_count: 1,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/delete-blocked.csv"
+             })
+
+    assert {:ok, _ready_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 0,
+               raw_data: %{"Description" => "Protected"},
+               description: "Protected",
+               normalized_description: "protected",
+               posted_on: ~D[2026-03-06],
+               amount: Decimal.new("-20.00"),
+               currency: "USD",
+               fingerprint: "fp-delete-blocked",
+               status: :ready
+             })
+
+    assert {:ok, _materialization} =
+             %ImportMaterialization{}
+             |> ImportMaterialization.changeset(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               status: :pending,
+               requested_by: "root"
+             })
+             |> Repo.insert()
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    assert has_element?(view, "#import-delete-blocked")
+    refute has_element?(view, "#import-delete-btn")
+    assert render(view) =~ "This import can no longer be deleted"
   end
 
   test "shows error details for a failed import", %{conn: conn} do

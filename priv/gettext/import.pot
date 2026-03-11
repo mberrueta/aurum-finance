@@ -204,6 +204,84 @@ msgstr ""
 msgid "details_preview_title"
 msgstr ""
 
+msgid "btn_delete_import"
+msgstr ""
+
+msgid "btn_materialize"
+msgstr ""
+
+msgid "confirm_delete_import"
+msgstr ""
+
+msgid "details_delete_blocked_materialization"
+msgstr ""
+
+msgid "details_delete_blocked_title"
+msgstr ""
+
+msgid "details_delete_body"
+msgstr ""
+
+msgid "details_delete_title"
+msgstr ""
+
+msgid "details_duplicates_no_override"
+msgstr ""
+
+msgid "details_materializable_rows_badge"
+msgstr ""
+
+msgid "details_materialization_run_meta"
+msgstr ""
+
+msgid "details_materialize_body"
+msgstr ""
+
+msgid "details_materialize_title"
+msgstr ""
+
+msgid "empty_materialization_runs"
+msgstr ""
+
+msgid "error_import_delete_blocked_by_materialization"
+msgstr ""
+
+msgid "flash_import_delete_failed"
+msgstr ""
+
+msgid "flash_import_deleted"
+msgstr ""
+
+msgid "flash_materialization_request_failed"
+msgstr ""
+
+msgid "flash_materialization_requested"
+msgstr ""
+
+msgid "label_requested_by"
+msgstr ""
+
+msgid "label_rows_considered"
+msgstr ""
+
+msgid "label_rows_failed"
+msgstr ""
+
+msgid "label_rows_materialized"
+msgstr ""
+
+msgid "section_materialization_runs"
+msgstr ""
+
+msgid "section_review_workflow"
+msgstr ""
+
+msgid "status_completed"
+msgstr ""
+
+msgid "status_completed_with_errors"
+msgstr ""
+
 #: lib/aurum_finance_web/live/import_details_live.html.heex:96
 #, elixir-autogen, elixir-format
 msgid "details_warnings_title"

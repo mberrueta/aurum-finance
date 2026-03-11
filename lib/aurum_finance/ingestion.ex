@@ -486,6 +486,34 @@ defmodule AurumFinance.Ingestion do
     end
   end
 
+  @doc """
+  Hard-deletes one imported CSV and its imported rows before any materialization
+  workflow state exists for that file.
+
+  This is the supported v1 recovery path when a CSV import was wrong and needs
+  to be re-imported correctly.
+
+  ## Examples
+
+  ```elixir
+  {:ok, imported_file} =
+    AurumFinance.Ingestion.delete_imported_file(account.id, imported_file.id)
+  ```
+
+  Error path:
+
+      iex> AurumFinance.Ingestion.delete_imported_file(Ecto.UUID.generate(), Ecto.UUID.generate())
+      {:error, :not_found}
+  """
+  @spec delete_imported_file(Ecto.UUID.t(), Ecto.UUID.t()) ::
+          {:ok, ImportedFile.t()} | {:error, term()}
+  def delete_imported_file(account_id, imported_file_id) do
+    with {:ok, imported_file} <- fetch_imported_file(account_id, imported_file_id),
+         :ok <- ensure_imported_file_deletable(imported_file) do
+      delete_imported_file_record(imported_file)
+    end
+  end
+
   defp list_imported_files_query(opts) do
     opts = require_account_scope!(opts, "list_imported_files_query/1")
 
@@ -760,6 +788,44 @@ defmodule AurumFinance.Ingestion do
 
   defp maybe_return_materialization_request_rows(rows), do: {:ok, rows}
 
+  defp ensure_imported_file_deletable(%ImportedFile{} = imported_file) do
+    imported_file
+    |> imported_file_has_materializations?()
+    |> ensure_imported_file_deletable_result()
+  end
+
+  defp delete_imported_file_record(%ImportedFile{} = imported_file) do
+    Repo.transaction(fn ->
+      imported_file
+      |> delete_imported_rows()
+      |> delete_imported_file_step(imported_file)
+      |> delete_imported_file_storage_step(imported_file)
+    end)
+    |> delete_imported_file_record_result()
+  end
+
+  defp delete_imported_rows(%ImportedFile{} = imported_file) do
+    from(imported_row in ImportedRow, where: imported_row.imported_file_id == ^imported_file.id)
+    |> Repo.delete_all()
+  end
+
+  defp delete_imported_file_step({_count, nil}, %ImportedFile{} = imported_file) do
+    case Repo.delete(imported_file) do
+      {:ok, deleted_imported_file} -> deleted_imported_file
+      {:error, reason} -> Repo.rollback(reason)
+    end
+  end
+
+  defp delete_imported_file_storage_step(
+         %ImportedFile{} = deleted_imported_file,
+         %ImportedFile{} = imported_file
+       ) do
+    case LocalFileStorage.delete(imported_file.storage_path) do
+      :ok -> deleted_imported_file
+      {:error, reason} -> Repo.rollback(reason)
+    end
+  end
+
   defp require_account_scope_result({:ok, account_id}, opts, _function_name)
        when not is_nil(account_id),
        do: opts
@@ -783,6 +849,31 @@ defmodule AurumFinance.Ingestion do
   end
 
   defp insert_materialization_request_result({:error, reason}), do: {:error, reason}
+
+  defp ensure_imported_file_deletable_result(false), do: :ok
+
+  defp ensure_imported_file_deletable_result(true) do
+    {:error,
+     Gettext.dgettext(
+       AurumFinanceWeb.Gettext,
+       "import",
+       "error_import_delete_blocked_by_materialization"
+     )}
+  end
+
+  defp imported_file_has_materializations?(%ImportedFile{} = imported_file) do
+    from(materialization in ImportMaterialization,
+      where: materialization.imported_file_id == ^imported_file.id,
+      select: 1
+    )
+    |> Repo.exists?()
+  end
+
+  defp delete_imported_file_record_result({:ok, %ImportedFile{} = imported_file}) do
+    {:ok, imported_file}
+  end
+
+  defp delete_imported_file_record_result({:error, reason}), do: {:error, reason}
 
   defp count_skipped_duplicate_rows(account_id, imported_file_id) do
     from(imported_row in ImportedRow, as: :imported_row)
