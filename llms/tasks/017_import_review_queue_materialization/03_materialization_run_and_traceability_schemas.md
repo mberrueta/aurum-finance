@@ -1,134 +1,67 @@
 # Task 03: Materialization Run and Traceability Schemas
 
 ## Status
-- **Status**: PLANNED
-- **Approved**: [ ] Human sign-off
-- **Blocked by**: Tasks 01, 02
-- **Blocks**: Tasks 05, 06, 07, 08, 09, 10, 11, 12, 13
-
-## Assigned Agent
-`dev-db-performance-architect` - Database architect for schema design and performance. Handles indexes, migrations, constraints, and persistence tradeoffs.
-
-## Agent Invocation
-Activate `dev-db-performance-architect` with:
-
-> Act as `dev-db-performance-architect` following `llms/constitution.md`.
->
-> Execute Task 03 from `llms/tasks/017_import_review_queue_materialization/03_materialization_run_and_traceability_schemas.md`.
->
-> Read the full milestone plan and Tasks 01-02 outputs first. Design the durable materialization-run and row-to-transaction traceability schemas. Do not implement backend logic or UI in this step.
+- **Status**: COMPLETED
+- **Approved**: [x] Human sign-off
 
 ## Objective
-Design the persistence contract for async materialization runs and row-level commit traceability, including idempotency guards that prevent double-commit under retries or concurrent requests.
+Define the durable schemas for async run tracking and row-level traceability.
 
-## Inputs Required
+## In Scope
+- `import_materializations`
+- `import_row_materializations`
 
-- [ ] `llms/tasks/017_import_review_queue_materialization/plan.md`
-- [ ] Tasks 01-02 outputs
-- [ ] `llms/constitution.md`
-- [ ] `llms/project_context.md`
-- [ ] `lib/aurum_finance/ledger/transaction.ex`
-- [ ] `lib/aurum_finance/ingestion/imported_file.ex`
-- [ ] `lib/aurum_finance/ingestion/imported_row.ex`
+## Explicitly Out of Scope
+- `import_row_reviews`
+- any schema that stores manual row approval state
 
-## Expected Outputs
+## `import_materializations`
 
-- [ ] Migration design for `import_materializations`
-- [ ] Migration design for row-level materialization linkage/traceability
-- [ ] Uniqueness strategy preventing the same imported row from being committed twice
-- [ ] Queryability notes for imported-file detail UI and worker retry behavior
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `imported_file_id` | UUID FK | One run belongs to one imported file |
+| `account_id` | UUID FK | Explicit scope boundary |
+| `status` | enum | `pending`, `processing`, `completed`, `completed_with_errors`, `failed` |
+| `requested_by` | string | Actor identifier |
+| `rows_considered` | integer | Rows evaluated by the run |
+| `rows_materialized` | integer | Rows committed successfully |
+| `rows_skipped_duplicate` | integer | Duplicate rows skipped by policy |
+| `rows_failed` | integer | Row-level failures such as currency mismatch |
+| `error_message` | string | Run-wide failure detail when needed |
+| `started_at` | utc datetime | Worker start time |
+| `finished_at` | utc datetime | Worker completion time |
 
-## Acceptance Criteria
+Notes:
 
-- [ ] Materialization runs can be tracked independently from imported files
-- [ ] Row-level materialization outcomes can be persisted durably
-- [ ] There is a durable linkage from imported row to transaction
-- [ ] The schema design supports the approved top-level run state model defined in Task 01
-- [ ] Database constraints support retry-safe/idempotent materialization
+- `rows_rejected` is removed.
+- `completed_with_errors` stays because row-level `failed` outcomes are part of the design.
 
-## Technical Notes
+## `import_row_materializations`
 
-### Relevant Code Locations
-```text
-lib/aurum_finance/ingestion/imported_file.ex     # Existing async import-run pattern
-lib/aurum_finance/ledger/transaction.ex          # Target ledger facts
-lib/aurum_finance/ledger/posting.ex              # Target posting facts
-priv/repo/migrations/                            # Migration and index patterns
-```
+| Field | Type | Notes |
+|---|---|---|
+| `id` | UUID | Primary key |
+| `import_materialization_id` | UUID FK | Belongs to one run |
+| `imported_row_id` | UUID FK | Source evidence row |
+| `transaction_id` | UUID FK nullable | Present only when committed |
+| `status` | enum | `committed`, `skipped`, `failed` |
+| `outcome_reason` | string nullable | Reason for `skipped` or `failed` outcomes |
 
-### Patterns to Follow
-- Mirror the durable run-tracking pattern already used for imports
-- Enforce idempotency with DB-backed uniqueness, not only app checks
-- Keep row-level traceability queryable from the imported-file detail page
+## Constraints and Indexes
+- unique committed guard on `imported_row_id` so one row cannot commit twice
+- unique optional guard on `transaction_id` so one row outcome cannot point to multiple transactions
+- indexes by `imported_file_id`, `account_id`, and run `status`
 
-### Constraints
-- Do not redesign the ledger schemas themselves
-- Do not fold materialization state into `imported_files`
+## Queryability Expectations
+- list runs by account or imported file
+- fetch row outcomes for one run
+- answer “did this row already commit?”
+- answer “which transaction did this row create?”
 
-## Execution Instructions
+No query in this task depends on a review overlay join.
 
-### For the Agent
-1. Read all inputs listed above.
-2. Propose schemas, indexes, and constraints for run tracking and row-level linkage.
-3. Explicitly document the idempotency guarantees.
-4. Document all assumptions in "Execution Summary".
-5. List any blockers or questions.
+## Locked Decision
+Reruns record explicit `skipped` row outcomes for duplicates, invalid rows, and already committed rows.
 
-### For the Human Reviewer
-After agent completes:
-1. Review outputs against acceptance criteria.
-2. Verify that the traceability model is sufficient for debugging and UI needs.
-3. Confirm the uniqueness strategy is strict enough for Oban retries.
-4. If approved: mark `[x]` on "Approved" and update plan.md status.
-5. If rejected: add rejection reason and specific feedback.
-
----
-
-## Execution Summary
-*[Filled by executing agent after completion]*
-
-### Work Performed
-- 
-
-### Outputs Created
-- 
-
-### Assumptions Made
-| Assumption | Rationale |
-|------------|-----------|
-|  |  |
-
-### Decisions Made
-| Decision | Alternatives Considered | Rationale |
-|----------|------------------------|-----------|
-|  |  |  |
-
-### Blockers Encountered
-- 
-
-### Questions for Human
-1. 
-
-### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
-
----
-
-## Human Review
-*[Filled by human reviewer]*
-
-### Review Date
-[YYYY-MM-DD]
-
-### Decision
-- [ ] ✅ APPROVED - Proceed to next task
-- [ ] ❌ REJECTED - See feedback below
-
-### Feedback
-
-### Git Operations Performed
-```bash
-# Human-only commands, if any
-```
+Counters summarize the run, but do not replace row-level durable outcomes.

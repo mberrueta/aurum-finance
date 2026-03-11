@@ -7,6 +7,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
 
   import Ecto.Changeset
 
+  alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ledger.Account
 
@@ -49,6 +50,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
 
     belongs_to :account, Account
     has_many :imported_rows, ImportedRow
+    has_many :materializations, ImportMaterialization
 
     timestamps(type: :utc_datetime_usec)
   end

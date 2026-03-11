@@ -164,3 +164,24 @@ msgstr ""
 
 msgid "error_transaction_unbalanced"
 msgstr ""
+
+msgid "error_import_materialization_count_must_be_non_negative"
+msgstr ""
+
+msgid "error_import_materialization_error_message_length_invalid"
+msgstr ""
+
+msgid "error_import_materialization_no_rows_to_materialize"
+msgstr ""
+
+msgid "error_import_materialization_requested_by_length_invalid"
+msgstr ""
+
+msgid "error_import_row_materialization_outcome_reason_length_invalid"
+msgstr ""
+
+msgid "error_import_row_materialization_transaction_forbidden"
+msgstr ""
+
+msgid "error_import_row_materialization_transaction_required"
+msgstr ""

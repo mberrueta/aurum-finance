@@ -1,132 +1,53 @@
-# Task 02: Review Workflow Schema and Migration
+# Task 02: Imported File Hard Delete Semantics
 
 ## Status
-- **Status**: PLANNED
-- **Approved**: [ ] Human sign-off
-- **Blocked by**: Task 01
-- **Blocks**: Tasks 03, 05, 07, 09, 10, 11, 12, 13
-
-## Assigned Agent
-`dev-db-performance-architect` - Database architect for schema design and performance. Handles indexes, migrations, constraints, and persistence tradeoffs.
-
-## Agent Invocation
-Activate `dev-db-performance-architect` with:
-
-> Act as `dev-db-performance-architect` following `llms/constitution.md`.
->
-> Execute Task 02 from `llms/tasks/017_import_review_queue_materialization/02_review_workflow_schema_and_migration.md`.
->
-> Read the full milestone plan and Task 01 output first. Design the review workflow persistence, constraints, and migration strategy. Do not implement context logic or UI in this step.
+- **Status**: COMPLETED
+- **Approved**: [x] Human sign-off
 
 ## Objective
-Design the schema and migration for durable row-review decisions without mutating the imported-row evidence model introduced in issue #15.
+Replace the removed review-workflow task with the CSV v1 deletion boundary for bad imports.
 
-## Inputs Required
+## Why This Replaced The Old Task
+`import_row_reviews` is no longer part of the design. The useful v1 replacement is defining how users recover from a wrong CSV import.
 
-- [ ] `llms/tasks/017_import_review_queue_materialization/plan.md`
-- [ ] Task 01 output
-- [ ] `llms/constitution.md`
-- [ ] `llms/project_context.md`
-- [ ] `lib/aurum_finance/ingestion/imported_row.ex`
-- [ ] `priv/repo/migrations/*create_imported_files_and_rows*.exs`
+## V1 Recovery Rule
+If a CSV import is wrong, the supported correction path is:
 
-## Expected Outputs
+1. hard delete the `imported_file`
+2. hard delete all associated `imported_rows`
+3. re-import the corrected CSV
 
-- [ ] Migration design for review workflow persistence
-- [ ] Schema contract for `import_row_reviews` or approved equivalent naming
-- [ ] Index/constraint plan for one coherent current decision per row
-- [ ] Notes on append-only vs latest-state persistence strategy
+No soft delete. No row-level correction workflow.
 
-## Acceptance Criteria
+## V1 Deletion Boundary
 
-- [ ] Review decisions are persisted separately from `imported_rows`
-- [ ] The schema supports at least `approved`, `rejected`, and `force_approved` decisions
-- [ ] The schema supports actor attribution for review actions
-- [ ] Constraints prevent ambiguous or conflicting current review state per row
-- [ ] The design does not repurpose imported-row evidence status for mutable workflow decisions
+In v1, an imported file may be hard-deleted only before any materialization workflow state exists.
+If ledger facts were already materialized from that file, the user must first remove the dependent materialization outputs through a dedicated rollback/unmaterialize workflow, which is out of scope for Issue #17.
 
-## Technical Notes
+### Allowed
+- imported file has no materialization workflow state
 
-### Relevant Code Locations
-```text
-lib/aurum_finance/ingestion/imported_row.ex      # Existing immutable evidence model
-priv/repo/migrations/                            # Existing import persistence patterns
-lib/aurum_finance/audit.ex                       # Workflow actions will eventually need audit
-```
+### Blocked
+- any `import_materializations` record exists for the imported file
 
-### Patterns to Follow
-- Keep durable workflow overlays separate from immutable evidence
-- Prefer database constraints over application-only assumptions
-- Follow existing UUID + account-scoped migration conventions
+This is the strict v1 rule. It avoids ambiguous cleanup once async workflow state exists and makes rollback/unmaterialize an explicit future workflow instead of an implicit side effect of delete.
 
-### Constraints
-- No implementation outside schema/migration design
-- No UI or Oban orchestration in this task
+## Expected Cascade Behavior
+- delete `imported_file`
+- delete all `imported_rows` for that file
+- delete stored source file from local storage
 
-## Execution Instructions
+The delete operation should not attempt to unwind ledger writes. If any materialization state exists, deletion is blocked instead.
 
-### For the Agent
-1. Read all inputs listed above.
-2. Propose the review schema, fields, indexes, and constraints.
-3. Document tradeoffs for append-only history vs latest-state updates.
-4. Document all assumptions in "Execution Summary".
-5. List any blockers or questions.
+## Scope Boundaries
+- This task does not introduce archival or soft delete
+- This task does not delete materialized transactions
+- This task is CSV-specific
+- This task does not add a replacement table
 
-### For the Human Reviewer
-After agent completes:
-1. Review outputs against acceptance criteria.
-2. Verify persistence strategy matches desired auditability.
-3. Check that the design stays consistent with issue #15 immutability.
-4. If approved: mark `[x]` on "Approved" and update plan.md status.
-5. If rejected: add rejection reason and specific feedback.
+## API/UX Implications
+- The details page may show a destructive delete action only when allowed
+- If blocked, the UI should explain that the file can no longer be deleted because workflow state already exists
 
----
-
-## Execution Summary
-*[Filled by executing agent after completion]*
-
-### Work Performed
-- 
-
-### Outputs Created
-- 
-
-### Assumptions Made
-| Assumption | Rationale |
-|------------|-----------|
-|  |  |
-
-### Decisions Made
-| Decision | Alternatives Considered | Rationale |
-|----------|------------------------|-----------|
-|  |  |  |
-
-### Blockers Encountered
-- 
-
-### Questions for Human
-1. 
-
-### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
-
----
-
-## Human Review
-*[Filled by human reviewer]*
-
-### Review Date
-[YYYY-MM-DD]
-
-### Decision
-- [ ] ✅ APPROVED - Proceed to next task
-- [ ] ❌ REJECTED - See feedback below
-
-### Feedback
-
-### Git Operations Performed
-```bash
-# Human-only commands, if any
-```
+## Locked Decision
+Hard delete is blocked as soon as any materialization workflow state exists for the imported file.

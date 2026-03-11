@@ -167,3 +167,24 @@ msgstr "A transaction must contain at least two postings."
 
 msgid "error_transaction_unbalanced"
 msgstr "Transaction postings must balance to zero within each currency."
+
+msgid "error_import_materialization_count_must_be_non_negative"
+msgstr "Materialization counts must be non-negative."
+
+msgid "error_import_materialization_error_message_length_invalid"
+msgstr "Materialization error details must be at most 2000 characters."
+
+msgid "error_import_materialization_no_rows_to_materialize"
+msgstr "There are no rows eligible for materialization."
+
+msgid "error_import_materialization_requested_by_length_invalid"
+msgstr "Requested by must be between 1 and 255 characters."
+
+msgid "error_import_row_materialization_outcome_reason_length_invalid"
+msgstr "Row materialization outcome details must be at most 2000 characters."
+
+msgid "error_import_row_materialization_transaction_forbidden"
+msgstr "Only committed row materializations may reference a transaction."
+
+msgid "error_import_row_materialization_transaction_required"
+msgstr "Committed row materializations must reference a transaction."

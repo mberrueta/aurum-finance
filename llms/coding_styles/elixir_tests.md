@@ -12,7 +12,8 @@
 
 ## 1) Structure & Naming
 - One `describe` per function/behavior; meaningful test names.
-- Use factories/fixtures; never seed data with raw SQL in tests.
+- Use factories as the default test-data mechanism; avoid `*_fixture` helpers and fixture-style naming in tests.
+- Never seed data with raw SQL in tests.
 
 ```elixir
 # test/aurum_finance/medical_test.exs
@@ -41,9 +42,10 @@ defmodule AurumFinance.MedicalTest do
 end
 ```
 
-## 2) ExMachina Factories (or fixtures)
+## 2) ExMachina Factories
 - Centralize valid attrs; override per test.
 - Prefer `build/2` + `insert/2` over hand‑built structs.
+- If a context API must be used to create a record, wrap that in a narrowly named helper that still starts from factory-backed entities/accounts instead of introducing fixture terminology.
 
 ```elixir
 # test/support/factory.ex
@@ -135,4 +137,3 @@ assert html |> find("[role=heading]") |> text() =~ "Dra."
 - Coverage goal: pragmatic; prefer meaningful tests over %.
 
 ---
-

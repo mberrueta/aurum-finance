@@ -6,9 +6,11 @@ defmodule AurumFinance.Ingestion do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Audit
+  alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportWorker
   alias AurumFinance.Ingestion.LocalFileStorage
+  alias AurumFinance.Ingestion.MaterializationWorker
   alias AurumFinance.Ingestion.Parser
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ingestion.PubSub
@@ -26,6 +28,13 @@ defmodule AurumFinance.Ingestion do
           | {:status, :ready | :duplicate | :invalid}
           | {:fingerprint, String.t()}
 
+  @type materialization_list_opt ::
+          {:account_id, Ecto.UUID.t()}
+          | {:imported_file_id, Ecto.UUID.t()}
+          | {:status, :pending | :processing | :completed | :completed_with_errors | :failed}
+
+  @type request_materialization_opt :: {:requested_by, String.t()}
+
   @type normalize_opt ::
           {:account, AurumFinance.Ledger.Account.t()}
           | {:default_currency, String.t()}
@@ -39,30 +48,6 @@ defmodule AurumFinance.Ingestion do
   @audit_channel :system
   @audit_entity_type "imported_file"
   @upload_audit_action "uploaded"
-
-  @doc """
-  Returns a composable query for imported files within one account scope.
-
-  ## Examples
-
-  ```elixir
-  query = AurumFinance.Ingestion.list_imported_files_query(account_id: account.id, status: :complete)
-  Repo.all(query)
-  ```
-
-  Error path:
-
-      iex> AurumFinance.Ingestion.list_imported_files_query()
-      ** (ArgumentError) list_imported_files_query/1 requires :account_id
-  """
-  @spec list_imported_files_query([list_opt()]) :: Ecto.Query.t()
-  def list_imported_files_query(opts \\ []) do
-    opts = require_account_scope!(opts, "list_imported_files_query/1")
-
-    ImportedFile
-    |> filter_query(opts)
-    |> order_by([imported_file], desc: imported_file.inserted_at)
-  end
 
   @doc """
   Lists imported files within one account scope with optional filters.
@@ -307,47 +292,6 @@ defmodule AurumFinance.Ingestion do
     ImportedFile.changeset(imported_file, attrs)
   end
 
-  defp imported_file_changeset(attrs) do
-    %ImportedFile{}
-    |> ImportedFile.changeset(attrs)
-  end
-
-  defp create_audited_imported_file(attrs) do
-    attrs
-    |> imported_file_changeset()
-    |> Audit.insert_and_log(%{
-      actor: @audit_actor,
-      channel: @audit_channel,
-      entity_type: @audit_entity_type,
-      action: @upload_audit_action,
-      metadata: %{account_id: Map.fetch!(attrs, :account_id)}
-    })
-  end
-
-  @doc """
-  Returns a composable query for imported rows within one account scope.
-
-  ## Examples
-
-  ```elixir
-  query =
-    AurumFinance.Ingestion.list_imported_rows_query(
-      account_id: account.id,
-      imported_file_id: imported_file.id
-    )
-
-  Repo.all(query)
-  ```
-  """
-  @spec list_imported_rows_query([row_list_opt()]) :: Ecto.Query.t()
-  def list_imported_rows_query(opts \\ []) do
-    opts = require_account_scope!(opts, "list_imported_rows_query/1")
-
-    ImportedRow
-    |> row_filter_query(opts)
-    |> order_by([imported_row], asc: imported_row.row_index, asc: imported_row.inserted_at)
-  end
-
   @doc """
   Lists imported rows within one account scope with optional filters.
 
@@ -451,11 +395,168 @@ defmodule AurumFinance.Ingestion do
     ImportedRow.changeset(imported_row, attrs)
   end
 
-  defp require_account_scope!(opts, function_name) do
-    case Keyword.fetch(opts, :account_id) do
-      {:ok, account_id} when not is_nil(account_id) -> opts
-      _ -> raise ArgumentError, "#{function_name} requires :account_id"
+  @doc """
+  Lists currently materializable imported rows.
+
+  Only returns rows that are:
+
+  - `ready`
+  - not already committed
+  - currency-safe for the imported account
+
+  ## Examples
+
+  ```elixir
+  rows =
+    AurumFinance.Ingestion.list_materializable_imported_rows(
+      account_id: account.id,
+      imported_file_id: imported_file.id
+    )
+  ```
+
+  Error path:
+
+      iex> AurumFinance.Ingestion.list_materializable_imported_rows()
+      ** (ArgumentError) list_materializable_imported_rows/1 requires :account_id
+  """
+  @spec list_materializable_imported_rows([row_list_opt()]) :: [ImportedRow.t()]
+  def list_materializable_imported_rows(opts \\ []) do
+    opts = require_account_scope!(opts, "list_materializable_imported_rows/1")
+
+    opts
+    |> list_materializable_imported_rows_query()
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists materialization runs within one account scope.
+
+  ## Examples
+
+  ```elixir
+  materializations =
+    AurumFinance.Ingestion.list_import_materializations(
+      account_id: account.id,
+      imported_file_id: imported_file.id
+    )
+  ```
+
+  Error path:
+
+      iex> AurumFinance.Ingestion.list_import_materializations()
+      ** (ArgumentError) list_import_materializations/1 requires :account_id
+  """
+  @spec list_import_materializations([materialization_list_opt()]) :: [ImportMaterialization.t()]
+  def list_import_materializations(opts \\ []) do
+    opts = require_account_scope!(opts, "list_import_materializations/1")
+
+    opts
+    |> list_import_materializations_query()
+    |> Repo.all()
+  end
+
+  @doc """
+  Persists a pending materialization run and enqueues the async worker.
+
+  ## Examples
+
+  ```elixir
+  {:ok, materialization} =
+    AurumFinance.Ingestion.request_materialization(account.id, imported_file.id,
+      requested_by: "reviewer@example.com"
+    )
+  ```
+
+  Error path:
+
+      iex> AurumFinance.Ingestion.request_materialization(Ecto.UUID.generate(), Ecto.UUID.generate())
+      {:error, :not_found}
+  """
+  @spec request_materialization(Ecto.UUID.t(), Ecto.UUID.t(), [request_materialization_opt()]) ::
+          {:ok, ImportMaterialization.t()} | {:error, term()}
+  def request_materialization(account_id, imported_file_id, opts \\ []) do
+    requested_by = Keyword.get(opts, :requested_by, @audit_actor)
+
+    with {:ok, imported_file} <- fetch_imported_file(account_id, imported_file_id),
+         {:ok, rows_considered} <-
+           build_materialization_request_rows(account_id, imported_file.id) do
+      imported_file
+      |> materialization_request_attrs(account_id, requested_by, rows_considered)
+      |> insert_materialization_request()
     end
+  end
+
+  defp list_imported_files_query(opts) do
+    opts = require_account_scope!(opts, "list_imported_files_query/1")
+
+    ImportedFile
+    |> filter_query(opts)
+    |> order_by([imported_file], desc: imported_file.inserted_at)
+  end
+
+  defp imported_file_changeset(attrs) do
+    %ImportedFile{}
+    |> ImportedFile.changeset(attrs)
+  end
+
+  defp create_audited_imported_file(attrs) do
+    attrs
+    |> imported_file_changeset()
+    |> Audit.insert_and_log(%{
+      actor: @audit_actor,
+      channel: @audit_channel,
+      entity_type: @audit_entity_type,
+      action: @upload_audit_action,
+      metadata: %{account_id: Map.fetch!(attrs, :account_id)}
+    })
+  end
+
+  defp list_imported_rows_query(opts) do
+    opts = require_account_scope!(opts, "list_imported_rows_query/1")
+
+    ImportedRow
+    |> row_filter_query(opts)
+    |> order_by([imported_row], asc: imported_row.row_index, asc: imported_row.inserted_at)
+  end
+
+  defp list_materializable_imported_rows_query(opts) do
+    opts = require_account_scope!(opts, "list_materializable_imported_rows_query/1")
+
+    from(imported_row in ImportedRow, as: :imported_row)
+    |> join(:inner, [imported_row], account in assoc(imported_row, :account), as: :account)
+    |> join(
+      :left,
+      [imported_row],
+      committed in assoc(imported_row, :row_materializations),
+      on: committed.status == :committed,
+      as: :committed_materialization
+    )
+    |> preload([account: account], account: account)
+    |> materializable_row_filter_query(opts)
+    |> where([committed_materialization: committed], is_nil(committed.id))
+    |> where(
+      [account: account, imported_row: imported_row],
+      is_nil(imported_row.currency) or imported_row.currency == account.currency_code
+    )
+    |> where([imported_row: imported_row], imported_row.status == :ready)
+    |> order_by([imported_row: imported_row],
+      asc: imported_row.row_index,
+      asc: imported_row.inserted_at
+    )
+  end
+
+  defp list_import_materializations_query(opts) do
+    opts = require_account_scope!(opts, "list_import_materializations_query/1")
+
+    ImportMaterialization
+    |> materialization_filter_query(opts)
+    |> order_by([materialization], desc: materialization.inserted_at)
+  end
+
+  defp require_account_scope!(opts, function_name) do
+    opts
+    |> Keyword.fetch(:account_id)
+    |> require_account_scope_result(opts, function_name)
   end
 
   defp duplicate_fingerprints_query(opts) do
@@ -472,10 +573,9 @@ defmodule AurumFinance.Ingestion do
   end
 
   defp require_fingerprints!(opts) do
-    case Keyword.fetch(opts, :fingerprints) do
-      {:ok, fingerprints} when is_list(fingerprints) -> opts
-      _ -> raise ArgumentError, "list_duplicate_fingerprints/1 requires :fingerprints"
-    end
+    opts
+    |> Keyword.fetch(:fingerprints)
+    |> require_fingerprints_result(opts)
   end
 
   defp filter_query(query, []), do: query
@@ -530,5 +630,172 @@ defmodule AurumFinance.Ingestion do
 
   defp row_filter_query(query, [_unknown_filter | rest]) do
     row_filter_query(query, rest)
+  end
+
+  defp materializable_row_filter_query(query, []), do: query
+
+  defp materializable_row_filter_query(query, [{:account_id, account_id} | rest]) do
+    query
+    |> where([imported_row: imported_row], imported_row.account_id == ^account_id)
+    |> materializable_row_filter_query(rest)
+  end
+
+  defp materializable_row_filter_query(query, [{:imported_file_id, imported_file_id} | rest]) do
+    query
+    |> where([imported_row: imported_row], imported_row.imported_file_id == ^imported_file_id)
+    |> materializable_row_filter_query(rest)
+  end
+
+  defp materializable_row_filter_query(query, [_unknown_filter | rest]) do
+    materializable_row_filter_query(query, rest)
+  end
+
+  defp materialization_filter_query(query, []), do: query
+
+  defp materialization_filter_query(query, [{:account_id, account_id} | rest]) do
+    query
+    |> where([materialization], materialization.account_id == ^account_id)
+    |> materialization_filter_query(rest)
+  end
+
+  defp materialization_filter_query(query, [{:imported_file_id, imported_file_id} | rest]) do
+    query
+    |> where([materialization], materialization.imported_file_id == ^imported_file_id)
+    |> materialization_filter_query(rest)
+  end
+
+  defp materialization_filter_query(query, [{:status, status} | rest]) do
+    query
+    |> where([materialization], materialization.status == ^status)
+    |> materialization_filter_query(rest)
+  end
+
+  defp materialization_filter_query(query, [_unknown_filter | rest]) do
+    materialization_filter_query(query, rest)
+  end
+
+  defp fetch_imported_file(account_id, imported_file_id) do
+    account_id
+    |> get_imported_file(imported_file_id)
+    |> fetch_imported_file_result()
+  end
+
+  defp build_materialization_request_rows(account_id, imported_file_id) do
+    account_id
+    |> materialization_request_rows_query(imported_file_id)
+    |> Repo.all()
+    |> maybe_return_materialization_request_rows()
+  end
+
+  defp materialization_request_attrs(
+         %ImportedFile{} = imported_file,
+         account_id,
+         requested_by,
+         rows_considered
+       ) do
+    %{
+      imported_file_id: imported_file.id,
+      account_id: account_id,
+      status: :pending,
+      requested_by: requested_by,
+      rows_considered: length(rows_considered),
+      rows_skipped_duplicate: count_skipped_duplicate_rows(account_id, imported_file.id)
+    }
+  end
+
+  defp insert_materialization_request(attrs) do
+    Repo.transaction(fn ->
+      with {:ok, materialization} <- insert_import_materialization(attrs),
+           {:ok, _job} <- enqueue_materialization_request(materialization) do
+        materialization
+      else
+        {:error, reason} ->
+          Repo.rollback(reason)
+      end
+    end)
+    |> insert_materialization_request_result()
+  end
+
+  defp insert_import_materialization(attrs) do
+    %ImportMaterialization{}
+    |> ImportMaterialization.changeset(attrs)
+    |> Repo.insert()
+  end
+
+  defp enqueue_materialization_request(%ImportMaterialization{} = materialization) do
+    materialization
+    |> MaterializationWorker.new_job()
+    |> Oban.insert()
+  end
+
+  defp materialization_request_rows_query(account_id, imported_file_id) do
+    from(imported_row in ImportedRow, as: :imported_row)
+    |> join(:inner, [imported_row], account in assoc(imported_row, :account), as: :account)
+    |> join(
+      :left,
+      [imported_row],
+      committed in assoc(imported_row, :row_materializations),
+      on: committed.status == :committed,
+      as: :committed_materialization
+    )
+    |> where(
+      [imported_row: imported_row, committed_materialization: committed],
+      imported_row.account_id == ^account_id and
+        imported_row.imported_file_id == ^imported_file_id and
+        imported_row.status == :ready and
+        is_nil(committed.id)
+    )
+    |> preload([account: account], account: account)
+    |> order_by([imported_row: imported_row], asc: imported_row.row_index)
+  end
+
+  defp maybe_return_materialization_request_rows([]),
+    do:
+      {:error,
+       Gettext.dgettext(
+         AurumFinanceWeb.Gettext,
+         "errors",
+         "error_import_materialization_no_rows_to_materialize"
+       )}
+
+  defp maybe_return_materialization_request_rows(rows), do: {:ok, rows}
+
+  defp require_account_scope_result({:ok, account_id}, opts, _function_name)
+       when not is_nil(account_id),
+       do: opts
+
+  defp require_account_scope_result(_result, _opts, function_name) do
+    raise ArgumentError, "#{function_name} requires :account_id"
+  end
+
+  defp require_fingerprints_result({:ok, fingerprints}, opts) when is_list(fingerprints), do: opts
+
+  defp require_fingerprints_result(_result, _opts) do
+    raise ArgumentError, "list_duplicate_fingerprints/1 requires :fingerprints"
+  end
+
+  defp fetch_imported_file_result(%ImportedFile{} = imported_file), do: {:ok, imported_file}
+  defp fetch_imported_file_result(nil), do: {:error, :not_found}
+
+  defp insert_materialization_request_result({:ok, materialization}), do: {:ok, materialization}
+  defp insert_materialization_request_result({:error, reason}), do: {:error, reason}
+
+  defp count_skipped_duplicate_rows(account_id, imported_file_id) do
+    from(imported_row in ImportedRow, as: :imported_row)
+    |> join(
+      :left,
+      [imported_row],
+      committed in assoc(imported_row, :row_materializations),
+      on: committed.status == :committed,
+      as: :committed_materialization
+    )
+    |> where(
+      [imported_row: imported_row, committed_materialization: committed],
+      imported_row.account_id == ^account_id and
+        imported_row.imported_file_id == ^imported_file_id and
+        imported_row.status == :duplicate and
+        is_nil(committed.id)
+    )
+    |> Repo.aggregate(:count)
   end
 end

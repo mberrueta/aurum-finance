@@ -2,329 +2,572 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-msgid "badge_account_selected"
-msgstr "Account: %{account}"
-
-msgid "badge_csv_only"
-msgstr "CSV only"
-
-msgid "badge_simple_flow"
-msgstr "Simple flow"
-
-msgid "badge_scope"
-msgstr "Required"
-
-msgid "btn_choose_file"
-msgstr "Choose CSV file"
-
-msgid "btn_change_file"
-msgstr "Change file"
-
-msgid "btn_queue_import"
-msgstr "Queue import"
-
-msgid "btn_back_to_imports"
-msgstr "Back to imports"
-
-msgid "btn_view_details"
-msgstr "View details"
-
-msgid "empty_no_imports"
-msgstr "No imports yet for this account."
-
-msgid "empty_import_rows"
-msgstr "No imported rows are available yet for this file."
-
-msgid "empty_select_account"
-msgstr "Select an account to see import history and queue a new file."
-
-msgid "flash_account_required"
-msgstr "Select an account before queueing an import."
-
-msgid "flash_file_required"
-msgstr "Choose a CSV file before queueing an import."
-
-msgid "flash_import_enqueued"
-msgstr "Import queued for %{file}."
-
-msgid "flash_import_failed"
-msgstr "Import could not be queued: %{reason}"
-
-msgid "callout_checks_body_csv"
-msgstr "This file looks like CSV, which matches the only supported parser in this milestone."
-
-msgid "callout_checks_body_default"
-msgstr "At queue time we only accept supported formats, then validate canonical fields, duplicate fingerprints, and row-level validity during background processing."
-
-msgid "callout_checks_body_other"
-msgstr "The selected file looks like %{format}. This milestone currently only accepts CSV uploads."
-
-msgid "callout_checks_item_1"
-msgstr "Account selection is mandatory before the file is queued."
-
-msgid "callout_checks_item_2"
-msgstr "Rows can finish as ready, duplicate, or invalid after processing."
-
-msgid "callout_checks_title"
-msgstr "Format checks"
-
-msgid "callout_expected_body_default"
-msgstr "We currently expect one documented source-file shape. If your bank export differs, adapt it before upload until account-specific profiles exist."
-
-msgid "callout_expected_body_selected"
-msgstr "The selected file `%{file}` looks like %{format}. We currently process one documented source-file shape and derive canonical rows from it."
-
-msgid "callout_expected_item_1"
-msgstr "Date, description, and amount should be present in the source data."
-
-msgid "callout_expected_item_2"
-msgstr "Currency may be omitted when the target account already defines it."
-
-msgid "callout_expected_item_3"
-msgstr "Entity only narrows the account list; the real scope is the selected account."
-
-msgid "callout_expected_title"
-msgstr "Expected format"
-
-msgid "callout_tips_body_csv"
-msgstr "If this CSV came from your bank but uses different headers or column order, adapt it to the documented shape before queueing it."
-
-msgid "callout_tips_body_default"
-msgstr "Use these tips to prepare files before queueing them. This keeps the import UI simple and makes processing outcomes easier to understand."
-
-msgid "callout_tips_body_other"
-msgstr "Because %{format} is not supported yet, the safest path today is exporting or converting it to the documented CSV shape first."
-
-msgid "callout_tips_item_1"
-msgstr "Use small sample files first when validating a new institution export."
-
-msgid "callout_tips_item_2"
-msgstr "A sample canonical file can be linked here later once we add import profiles and mappings."
-
-msgid "callout_tips_title"
-msgstr "Tips"
-
-msgid "hint_entity_scope"
-msgstr "Entity filtering only narrows the target account list."
-
-msgid "hint_target_account_empty"
-msgstr "This entity has no institution accounts available for imports yet."
-
-msgid "hint_target_account_required"
-msgstr "Choose the exact account that should own the imported rows."
-
-msgid "hint_target_account_selected"
-msgstr "New uploads will be stored and processed under %{account}."
-
-msgid "history_copy_no_accounts"
-msgstr "Create an institution account first, then come back here to upload a statement."
-
-msgid "history_copy_select_account"
-msgstr "Select a target account to see recent imports and queue a CSV."
-
-msgid "history_copy_selected"
-msgstr "Recent imports for %{account}. This list updates from persisted state when processing moves forward."
-
-msgid "label_account"
-msgstr "Account"
-
-msgid "label_amount"
-msgstr "Amount"
-
-msgid "label_currency"
-msgstr "Currency"
-
-msgid "label_date"
-msgstr "Date"
-
-msgid "label_description"
-msgstr "Description"
-
-msgid "label_entity"
-msgstr "Entity"
-
-msgid "label_entity_scope"
-msgstr "Entity scope"
-
-msgid "label_format"
-msgstr "Format"
-
-msgid "label_file"
-msgstr "File"
-
-msgid "label_progress"
-msgstr "Progress"
-
-msgid "label_processed_at"
-msgstr "Processed at"
-
-msgid "label_row_index"
-msgstr "Row"
-
-msgid "label_row_note"
-msgstr "Note"
-
-msgid "label_rows"
-msgstr "Rows"
-
-msgid "label_rows_duplicates"
-msgstr "Duplicates"
-
-msgid "label_rows_invalid"
-msgstr "Invalid"
-
-msgid "label_rows_ready"
-msgstr "Ready"
-
-msgid "label_rows_total"
-msgstr "Rows read"
-
-msgid "label_size"
-msgstr "Size"
-
-msgid "label_status"
-msgstr "Status"
-
-msgid "label_target_account"
-msgstr "Target account"
-
-msgid "label_uploaded_at"
-msgstr "Uploaded at"
-
-msgid "option_select_account"
-msgstr "Select account"
-
-msgid "option_select_entity"
-msgstr "Select entity"
-
+#: lib/aurum_finance_web/live/import_live.html.heex:3
+#, elixir-autogen, elixir-format
 msgid "page_subtitle"
 msgstr "Select the target account, drop a CSV, and let the async importer take it from there."
 
+#: lib/aurum_finance_web/live/import_live.ex:25
+#: lib/aurum_finance_web/live/import_live.html.heex:2
+#, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr "Import"
 
-msgid "details_error_title"
-msgstr "Processing error"
-
-msgid "details_page_subtitle"
-msgstr "Review one imported file and inspect the persisted rows produced by the async pipeline."
-
-msgid "details_page_title"
-msgstr "Import details"
-
-msgid "details_preview_body"
-msgstr "This page is preview-only evidence. It does not create ledger transactions or postings."
-
-msgid "details_preview_title"
-msgstr "Preview only"
-
-msgid "details_warnings_title"
-msgstr "Warnings"
-
-msgid "progress_complete"
-msgstr "Processed and ready for preview"
-
-msgid "progress_failed"
-msgstr "Processing failed"
-
-msgid "progress_pending"
-msgstr "Queued and waiting for the worker"
-
-msgid "progress_processing"
-msgstr "Worker is parsing and normalizing rows"
-
-msgid "section_recent_imports"
-msgstr "Recent imports"
-
-msgid "section_expectations"
-msgstr "Import tips"
-
-msgid "section_import_rows"
-msgstr "Imported rows"
-
-msgid "section_import_summary"
-msgstr "Import summary"
-
-msgid "section_scope"
-msgstr "Import scope"
-
-msgid "section_upload"
-msgstr "Upload"
-
-msgid "status_complete"
-msgstr "Complete"
-
+#: lib/aurum_finance_web/components/import_components.ex:462
+#: lib/aurum_finance_web/live/import_details_live.ex:115
+#, elixir-autogen, elixir-format
 msgid "status_duplicate"
 msgstr "Duplicate"
 
+#: lib/aurum_finance_web/components/import_components.ex:463
+#, elixir-autogen, elixir-format
 msgid "status_error"
 msgstr "Error"
 
-msgid "status_failed"
-msgstr "Failed"
-
-msgid "status_invalid"
-msgstr "Invalid"
-
-msgid "status_pending"
-msgstr "Pending"
-
-msgid "status_processing"
-msgstr "Processing"
-
+#: lib/aurum_finance_web/components/import_components.ex:461
+#: lib/aurum_finance_web/live/import_details_live.ex:114
+#, elixir-autogen, elixir-format
 msgid "status_ready"
 msgstr "Ready"
 
+#: lib/aurum_finance_web/live/import_live.html.heex:6
+#, elixir-autogen, elixir-format
+msgid "badge_account_selected"
+msgstr "Account: %{account}"
+
+#: lib/aurum_finance_web/components/import_components.ex:133
+#, elixir-autogen, elixir-format
+msgid "badge_csv_only"
+msgstr "CSV only"
+
+#: lib/aurum_finance_web/components/import_components.ex:35
+#: lib/aurum_finance_web/components/import_components.ex:97
+#, elixir-autogen, elixir-format
+msgid "badge_scope"
+msgstr "Required"
+
+#: lib/aurum_finance_web/components/import_components.ex:251
+#, elixir-autogen, elixir-format
+msgid "badge_simple_flow"
+msgstr "Simple flow"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "btn_back_to_imports"
+msgstr "Back to imports"
+
+#: lib/aurum_finance_web/components/import_components.ex:501
+#: lib/aurum_finance_web/live/import_live.html.heex:39
+#, elixir-autogen, elixir-format
+msgid "btn_change_file"
+msgstr "Change file"
+
+#: lib/aurum_finance_web/components/import_components.ex:500
+#: lib/aurum_finance_web/live/import_live.html.heex:38
+#, elixir-autogen, elixir-format
+msgid "btn_choose_file"
+msgstr "Choose CSV file"
+
+#: lib/aurum_finance_web/components/import_components.ex:234
+#, elixir-autogen, elixir-format
+msgid "btn_queue_import"
+msgstr "Queue import"
+
+#: lib/aurum_finance_web/components/import_components.ex:377
+#, elixir-autogen, elixir-format
+msgid "btn_view_details"
+msgstr "View details"
+
+#: lib/aurum_finance_web/components/import_components.ex:544
+#, elixir-autogen, elixir-format
+msgid "callout_checks_body_csv"
+msgstr "This file looks like CSV, which matches the only supported parser in this milestone."
+
+#: lib/aurum_finance_web/components/import_components.ex:543
+#, elixir-autogen, elixir-format
+msgid "callout_checks_body_default"
+msgstr "At queue time we only accept supported formats, then validate canonical fields, duplicate fingerprints, and row-level validity during background processing."
+
+#: lib/aurum_finance_web/components/import_components.ex:547
+#, elixir-autogen, elixir-format
+msgid "callout_checks_body_other"
+msgstr "The selected file looks like %{format}. This milestone currently only accepts CSV uploads."
+
+#: lib/aurum_finance_web/components/import_components.ex:284
+#, elixir-autogen, elixir-format
+msgid "callout_checks_item_1"
+msgstr "Account selection is mandatory before the file is queued."
+
+#: lib/aurum_finance_web/components/import_components.ex:285
+#, elixir-autogen, elixir-format
+msgid "callout_checks_item_2"
+msgstr "Rows can finish as ready, duplicate, or invalid after processing."
+
+#: lib/aurum_finance_web/components/import_components.ex:281
+#, elixir-autogen, elixir-format
+msgid "callout_checks_title"
+msgstr "Format checks"
+
+#: lib/aurum_finance_web/components/import_components.ex:534
+#, elixir-autogen, elixir-format
+msgid "callout_expected_body_default"
+msgstr "We currently expect one documented source-file shape. If your bank export differs, adapt it before upload until account-specific profiles exist."
+
+#: lib/aurum_finance_web/components/import_components.ex:537
+#, elixir-autogen, elixir-format
+msgid "callout_expected_body_selected"
+msgstr "The selected file `%{file}` looks like %{format}. We currently process one documented source-file shape and derive canonical rows from it."
+
+#: lib/aurum_finance_web/components/import_components.ex:258
+#, elixir-autogen, elixir-format
+msgid "callout_expected_item_1"
+msgstr "Date, description, and amount should be present in the source data."
+
+#: lib/aurum_finance_web/components/import_components.ex:259
+#, elixir-autogen, elixir-format
+msgid "callout_expected_item_2"
+msgstr "Currency may be omitted when the target account already defines it."
+
+#: lib/aurum_finance_web/components/import_components.ex:260
+#, elixir-autogen, elixir-format
+msgid "callout_expected_item_3"
+msgstr "Entity only narrows the account list; the real scope is the selected account."
+
+#: lib/aurum_finance_web/components/import_components.ex:255
+#, elixir-autogen, elixir-format
+msgid "callout_expected_title"
+msgstr "Expected format"
+
+#: lib/aurum_finance_web/components/import_components.ex:551
+#, elixir-autogen, elixir-format
+msgid "callout_tips_body_csv"
+msgstr "If this CSV came from your bank but uses different headers or column order, adapt it to the documented shape before queueing it."
+
+#: lib/aurum_finance_web/components/import_components.ex:550
+#, elixir-autogen, elixir-format
+msgid "callout_tips_body_default"
+msgstr "Use these tips to prepare files before queueing them. This keeps the import UI simple and makes processing outcomes easier to understand."
+
+#: lib/aurum_finance_web/components/import_components.ex:554
+#, elixir-autogen, elixir-format
+msgid "callout_tips_body_other"
+msgstr "Because %{format} is not supported yet, the safest path today is exporting or converting it to the documented CSV shape first."
+
+#: lib/aurum_finance_web/components/import_components.ex:294
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_1"
+msgstr "Use small sample files first when validating a new institution export."
+
+#: lib/aurum_finance_web/components/import_components.ex:295
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_2"
+msgstr "A sample canonical file can be linked here later once we add import profiles and mappings."
+
+#: lib/aurum_finance_web/components/import_components.ex:291
+#, elixir-autogen, elixir-format
+msgid "callout_tips_title"
+msgstr "Tips"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:90
+#, elixir-autogen, elixir-format
+msgid "details_error_title"
+msgstr "Processing error"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "details_page_subtitle"
+msgstr "Review one imported file and inspect the persisted rows produced by the async pipeline."
+
+#: lib/aurum_finance_web/live/import_details_live.ex:18
+#: lib/aurum_finance_web/live/import_details_live.ex:61
+#: lib/aurum_finance_web/live/import_details_live.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "details_page_title"
+msgstr "Import details"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:14
+#, elixir-autogen, elixir-format
+msgid "details_preview_body"
+msgstr "This page is preview-only evidence. It does not create ledger transactions or postings."
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "details_preview_title"
+msgstr "Preview only"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:96
+#, elixir-autogen, elixir-format
+msgid "details_warnings_title"
+msgstr "Warnings"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:114
+#, elixir-autogen, elixir-format
+msgid "empty_import_rows"
+msgstr "No imported rows are available yet for this file."
+
+#: lib/aurum_finance_web/live/import_live.html.heex:66
+#, elixir-autogen, elixir-format
+msgid "empty_no_imports"
+msgstr "No imports yet for this account."
+
+#: lib/aurum_finance_web/live/import_live.html.heex:62
+#, elixir-autogen, elixir-format
+msgid "empty_select_account"
+msgstr "Select an account to see import history and queue a new file."
+
+#: lib/aurum_finance_web/live/import_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "flash_account_required"
+msgstr "Select an account before queueing an import."
+
+#: lib/aurum_finance_web/live/import_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "flash_file_required"
+msgstr "Choose a CSV file before queueing an import."
+
+#: lib/aurum_finance_web/live/import_live.ex:208
+#, elixir-autogen, elixir-format
+msgid "flash_import_enqueued"
+msgstr "Import queued for %{file}."
+
+#: lib/aurum_finance_web/live/import_live.ex:218
+#, elixir-autogen, elixir-format
+msgid "flash_import_failed"
+msgstr "Import could not be queued: %{reason}"
+
+#: lib/aurum_finance_web/components/import_components.ex:71
+#, elixir-autogen, elixir-format
+msgid "hint_entity_scope"
+msgstr "Entity filtering only narrows the target account list."
+
+#: lib/aurum_finance_web/components/import_components.ex:480
+#, elixir-autogen, elixir-format
+msgid "hint_target_account_empty"
+msgstr "This entity has no institution accounts available for imports yet."
+
+#: lib/aurum_finance_web/components/import_components.ex:481
+#, elixir-autogen, elixir-format
+msgid "hint_target_account_required"
+msgstr "Choose the exact account that should own the imported rows."
+
+#: lib/aurum_finance_web/components/import_components.ex:484
+#, elixir-autogen, elixir-format
+msgid "hint_target_account_selected"
+msgstr "New uploads will be stored and processed under %{account}."
+
+#: lib/aurum_finance_web/live/import_live.ex:223
+#, elixir-autogen, elixir-format
+msgid "history_copy_no_accounts"
+msgstr "Create an institution account first, then come back here to upload a statement."
+
+#: lib/aurum_finance_web/live/import_live.ex:225
+#, elixir-autogen, elixir-format
+msgid "history_copy_select_account"
+msgstr "Select a target account to see recent imports and queue a CSV."
+
+#: lib/aurum_finance_web/live/import_live.ex:228
+#, elixir-autogen, elixir-format
+msgid "history_copy_selected"
+msgstr "Recent imports for %{account}. This list updates from persisted state when processing moves forward."
+
+#: lib/aurum_finance_web/components/import_components.ex:54
+#, elixir-autogen, elixir-format
+msgid "label_account"
+msgstr "Account"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:125
+#, elixir-autogen, elixir-format
+msgid "label_amount"
+msgstr "Amount"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:126
+#, elixir-autogen, elixir-format
+msgid "label_currency"
+msgstr "Currency"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:123
+#, elixir-autogen, elixir-format
+msgid "label_date"
+msgstr "Date"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:124
+#, elixir-autogen, elixir-format
+msgid "label_description"
+msgstr "Description"
+
+#: lib/aurum_finance_web/components/import_components.ex:43
+#, elixir-autogen, elixir-format
+msgid "label_entity"
+msgstr "Entity"
+
+#: lib/aurum_finance_web/components/import_components.ex:65
+#, elixir-autogen, elixir-format
+msgid "label_entity_scope"
+msgstr "Entity scope"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "label_file"
+msgstr "File"
+
+#: lib/aurum_finance_web/components/import_components.ex:343
+#, elixir-autogen, elixir-format
+msgid "label_format"
+msgstr "Format"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:42
+#, elixir-autogen, elixir-format
+msgid "label_processed_at"
+msgstr "Processed at"
+
+#: lib/aurum_finance_web/components/import_components.ex:367
+#, elixir-autogen, elixir-format
+msgid "label_progress"
+msgstr "Progress"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:121
+#, elixir-autogen, elixir-format
+msgid "label_row_index"
+msgstr "Row"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:127
+#, elixir-autogen, elixir-format
+msgid "label_row_note"
+msgstr "Note"
+
+#: lib/aurum_finance_web/components/import_components.ex:336
+#, elixir-autogen, elixir-format
+msgid "label_rows"
+msgstr "Rows"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:76
+#, elixir-autogen, elixir-format
+msgid "label_rows_duplicates"
+msgstr "Duplicates"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:83
+#, elixir-autogen, elixir-format
+msgid "label_rows_invalid"
+msgstr "Invalid"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:69
+#, elixir-autogen, elixir-format
+msgid "label_rows_ready"
+msgstr "Ready"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:62
+#, elixir-autogen, elixir-format
+msgid "label_rows_total"
+msgstr "Rows read"
+
+#: lib/aurum_finance_web/components/import_components.ex:352
+#: lib/aurum_finance_web/live/import_details_live.html.heex:51
+#, elixir-autogen, elixir-format
+msgid "label_size"
+msgstr "Size"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "label_status"
+msgstr "Status"
+
+#: lib/aurum_finance_web/components/import_components.ex:77
+#: lib/aurum_finance_web/components/import_components.ex:106
+#, elixir-autogen, elixir-format
+msgid "label_target_account"
+msgstr "Target account"
+
+#: lib/aurum_finance_web/components/import_components.ex:327
+#: lib/aurum_finance_web/live/import_details_live.html.heex:33
+#, elixir-autogen, elixir-format
+msgid "label_uploaded_at"
+msgstr "Uploaded at"
+
+#: lib/aurum_finance_web/components/import_components.ex:56
+#, elixir-autogen, elixir-format
+msgid "option_select_account"
+msgstr "Select account"
+
+#: lib/aurum_finance_web/components/import_components.ex:45
+#, elixir-autogen, elixir-format
+msgid "option_select_entity"
+msgstr "Select entity"
+
+#: lib/aurum_finance_web/components/import_components.ex:516
+#, elixir-autogen, elixir-format
+msgid "progress_complete"
+msgstr "Processed and ready for preview"
+
+#: lib/aurum_finance_web/components/import_components.ex:517
+#, elixir-autogen, elixir-format
+msgid "progress_failed"
+msgstr "Processing failed"
+
+#: lib/aurum_finance_web/components/import_components.ex:514
+#: lib/aurum_finance_web/components/import_components.ex:518
+#, elixir-autogen, elixir-format
+msgid "progress_pending"
+msgstr "Queued and waiting for the worker"
+
+#: lib/aurum_finance_web/components/import_components.ex:515
+#, elixir-autogen, elixir-format
+msgid "progress_processing"
+msgstr "Worker is parsing and normalizing rows"
+
+#: lib/aurum_finance_web/components/import_components.ex:276
+#, elixir-autogen, elixir-format
+msgid "section_expectations"
+msgstr "Import tips"
+
+#: lib/aurum_finance_web/components/import_components.ex:250
+#, elixir-autogen, elixir-format
+msgid "section_expected_format"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:109
+#, elixir-autogen, elixir-format
+msgid "section_import_rows"
+msgstr "Imported rows"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "section_import_summary"
+msgstr "Import summary"
+
+#: lib/aurum_finance_web/live/import_live.html.heex:53
+#, elixir-autogen, elixir-format
+msgid "section_recent_imports"
+msgstr "Recent imports"
+
+#: lib/aurum_finance_web/components/import_components.ex:34
+#, elixir-autogen, elixir-format
+msgid "section_scope"
+msgstr "Import scope"
+
+#: lib/aurum_finance_web/components/import_components.ex:96
+#: lib/aurum_finance_web/components/import_components.ex:132
+#, elixir-autogen, elixir-format
+msgid "section_upload"
+msgstr "Upload"
+
+#: lib/aurum_finance_web/components/import_components.ex:457
+#: lib/aurum_finance_web/live/import_details_live.ex:105
+#, elixir-autogen, elixir-format
+msgid "status_complete"
+msgstr "Complete"
+
+#: lib/aurum_finance_web/components/import_components.ex:458
+#: lib/aurum_finance_web/live/import_details_live.ex:106
+#, elixir-autogen, elixir-format
+msgid "status_failed"
+msgstr "Failed"
+
+#: lib/aurum_finance_web/live/import_details_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "status_invalid"
+msgstr "Invalid"
+
+#: lib/aurum_finance_web/components/import_components.ex:455
+#: lib/aurum_finance_web/live/import_details_live.ex:103
+#, elixir-autogen, elixir-format
+msgid "status_pending"
+msgstr "Pending"
+
+#: lib/aurum_finance_web/components/import_components.ex:456
+#: lib/aurum_finance_web/live/import_details_live.ex:104
+#, elixir-autogen, elixir-format
+msgid "status_processing"
+msgstr "Processing"
+
+#: lib/aurum_finance_web/live/import_live.ex:245
+#, elixir-autogen, elixir-format
 msgid "upload_error_generic"
 msgstr "The selected file could not be uploaded."
 
+#: lib/aurum_finance_web/live/import_live.ex:243
+#, elixir-autogen, elixir-format
 msgid "upload_error_not_accepted"
 msgstr "Only CSV files are accepted in this milestone."
 
+#: lib/aurum_finance_web/live/import_live.ex:238
+#, elixir-autogen, elixir-format
 msgid "upload_error_too_large"
 msgstr "The selected file is too large."
 
+#: lib/aurum_finance_web/live/import_live.ex:241
+#, elixir-autogen, elixir-format
 msgid "upload_error_too_many_files"
 msgstr "Only one file can be queued at a time."
 
+#: lib/aurum_finance_web/components/import_components.ex:225
+#, elixir-autogen, elixir-format
 msgid "upload_footer"
 msgstr "This step only stores the source file and enqueues background processing. No ledger facts are created yet."
 
+#: lib/aurum_finance_web/components/import_components.ex:486
+#, elixir-autogen, elixir-format
 msgid "upload_hint_account_required"
 msgstr "Pick the destination account first. Drag and drop remains available after that."
 
+#: lib/aurum_finance_web/components/import_components.ex:489
+#: lib/aurum_finance_web/live/import_live.html.heex:35
+#, elixir-autogen, elixir-format
 msgid "upload_hint_account_selected"
 msgstr "Drop a CSV statement for %{account} or use the file picker."
 
+#: lib/aurum_finance_web/components/import_components.ex:497
+#, elixir-autogen, elixir-format
 msgid "upload_hint_selected_file"
 msgstr "Selected file: %{file}. You can queue it now or replace it before uploading."
 
+#: lib/aurum_finance_web/live/import_live.html.heex:37
+#, elixir-autogen, elixir-format
 msgid "upload_hint_selected_template"
 msgstr "Selected file: __FILE__. You can queue it now or replace it before uploading."
 
+#: lib/aurum_finance_web/components/import_components.ex:101
+#, elixir-autogen, elixir-format
 msgid "upload_placeholder_body"
 msgstr "Select the target account first. The upload dropzone appears only after the import scope is fully defined."
 
+#: lib/aurum_finance_web/components/import_components.ex:100
+#, elixir-autogen, elixir-format
 msgid "upload_placeholder_title"
 msgstr "Select an account"
 
+#: lib/aurum_finance_web/components/import_components.ex:213
+#, elixir-autogen, elixir-format
 msgid "upload_ready_label"
 msgstr "Ready to queue"
 
+#: lib/aurum_finance_web/components/import_components.ex:491
+#: lib/aurum_finance_web/live/import_live.html.heex:32
+#, elixir-autogen, elixir-format
 msgid "upload_title"
 msgstr "Drop a source file"
 
+#: lib/aurum_finance_web/components/import_components.ex:492
+#: lib/aurum_finance_web/live/import_live.html.heex:33
+#, elixir-autogen, elixir-format
 msgid "upload_title_selected"
 msgstr "Selected file"
 
+#: lib/aurum_finance_web/components/import_components.ex:477
+#, elixir-autogen, elixir-format
 msgid "value_no_account_selected"
 msgstr "No account selected"
 
+#: lib/aurum_finance_web/components/import_components.ex:474
+#, elixir-autogen, elixir-format
 msgid "value_no_entity_selected"
 msgstr "No entity selected"
 
+#: lib/aurum_finance_web/components/import_components.ex:503
+#, elixir-autogen, elixir-format
 msgid "value_rows_pending"
 msgstr "Waiting for processing"
 
+#: lib/aurum_finance_web/components/import_components.ex:506
+#, elixir-autogen, elixir-format
 msgid "value_rows_summary"
 msgstr "%{rows} total · %{ready} ready · %{duplicates} duplicates · %{invalid} invalid"
