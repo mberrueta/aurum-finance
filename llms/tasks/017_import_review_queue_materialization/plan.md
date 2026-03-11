@@ -5,8 +5,8 @@
 - **Created**: 2026-03-10
 - **Updated**: 2026-03-11
 - **Status**: IN PROGRESS
-- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08, 09
-- **Next Task**: 10
+- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08, 09, 10
+- **Next Task**: 11
 - **Depends on**: Issue #12 completed, Issue #13 in progress, Issue #15 completed
 
 ## Context
@@ -180,7 +180,7 @@ If `imported_row.currency` conflicts with `account.currency_code`, that row must
 9. Duplicate rows have visibility but no override path.
 10. Currency mismatch rows never create ledger postings and are recorded as row-level `failed`.
 11. Committed rows cannot be committed twice.
-12. Imported-row to transaction traceability is queryable from durable storage.
+12. Imported-row to transaction traceability is queryable from durable storage and visible from the imported-file details page.
 13. Deleting a bad CSV removes the imported file and its imported rows without introducing soft delete.
 
 ### Non-Functional

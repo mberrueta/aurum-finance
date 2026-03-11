@@ -722,3 +722,53 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "value_rows_summary"
 msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:245
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_caption"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:254
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_empty"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:250
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_pending"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:246
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_processing"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:242
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:265
+#, elixir-autogen, elixir-format
+msgid "label_outcome"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:266
+#, elixir-autogen, elixir-format
+msgid "label_outcome_reason"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:267
+#, elixir-autogen, elixir-format
+msgid "label_transaction_reference"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "status_committed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:194
+#, elixir-autogen, elixir-format
+msgid "status_skipped"
+msgstr ""

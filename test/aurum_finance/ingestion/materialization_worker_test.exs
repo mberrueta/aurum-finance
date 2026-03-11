@@ -238,6 +238,59 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
       [clearing_account] = Ledger.list_system_managed_accounts(entity_id: entity.id)
       assert clearing_account.currency_code == "USD"
     end
+
+    test "ignores unrelated system-managed equity accounts when resolving the import clearing account" do
+      %{account: account, entity: entity, imported_file: imported_file} =
+        build_materialization_context()
+
+      {:ok, _opening_balance_account} =
+        Ledger.create_account(
+          %{
+            entity_id: entity.id,
+            name: "Opening balance",
+            account_type: :equity,
+            management_group: :system_managed,
+            currency_code: "USD",
+            notes: "System-managed opening balance account"
+          },
+          actor: "reviewer@example.com",
+          channel: :system
+        )
+
+      _ready_row =
+        insert_imported_row(imported_file, account, %{
+          row_index: 0,
+          fingerprint: "fp-unrelated-system-managed-equity"
+        })
+
+      assert {:ok, materialization} =
+               Ingestion.request_materialization(account.id, imported_file.id,
+                 requested_by: "reviewer@example.com"
+               )
+
+      args = %{
+        "account_id" => account.id,
+        "import_materialization_id" => materialization.id,
+        "imported_file_id" => imported_file.id
+      }
+
+      assert :ok = MaterializationWorker.perform(%Oban.Job{args: args})
+
+      materialization = Repo.get!(ImportMaterialization, materialization.id)
+      assert materialization.status == :completed
+      assert materialization.rows_materialized == 1
+      assert materialization.rows_failed == 0
+
+      system_managed_accounts = Ledger.list_system_managed_accounts(entity_id: entity.id)
+
+      assert Enum.any?(system_managed_accounts, &(&1.name == "Opening balance"))
+
+      assert Enum.any?(system_managed_accounts, fn clearing_account ->
+               clearing_account.name == "Import clearing (USD)" and
+                 clearing_account.notes ==
+                   "System-managed clearing account for CSV import materialization"
+             end)
+    end
   end
 
   defp build_materialization_context do

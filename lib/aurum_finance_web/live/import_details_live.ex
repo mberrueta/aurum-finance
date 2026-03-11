@@ -6,6 +6,7 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
   alias AurumFinance.Ingestion
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedFile
+  alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ingestion.PubSub
 
@@ -23,6 +24,7 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
         imported_file_deletable?: false,
         imported_file_delete_block_reason: nil,
         import_materializations: [],
+        import_row_materializations_by_run_id: %{},
         subscribed_imported_file_id: nil
       )
       |> stream(:imported_rows, [], reset: true)
@@ -108,6 +110,13 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
         imported_file_id: imported_file_id
       )
 
+    import_row_materializations_by_run_id =
+      Ingestion.list_import_row_materializations(
+        account_id: account_id,
+        imported_file_id: imported_file_id
+      )
+      |> group_materialization_outcomes_by_run_id()
+
     socket
     |> assign(
       imported_file: imported_file,
@@ -116,6 +125,7 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
       imported_file_deletable?: import_materializations == [],
       imported_file_delete_block_reason: delete_block_reason(import_materializations),
       import_materializations: import_materializations,
+      import_row_materializations_by_run_id: import_row_materializations_by_run_id,
       page_title: dgettext("import", "details_page_title")
     )
     |> stream(:imported_rows, imported_rows, reset: true)
@@ -191,6 +201,18 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
   defp materialization_status_label(:failed), do: dgettext("import", "status_failed")
   defp materialization_status_label(status), do: to_string(status)
 
+  defp row_materialization_status_variant(:committed), do: :good
+  defp row_materialization_status_variant(:skipped), do: :warn
+  defp row_materialization_status_variant(:failed), do: :bad
+  defp row_materialization_status_variant(_), do: :default
+
+  defp row_materialization_status_label(:committed),
+    do: dgettext("import", "status_committed")
+
+  defp row_materialization_status_label(:skipped), do: dgettext("import", "status_skipped")
+  defp row_materialization_status_label(:failed), do: dgettext("import", "status_failed")
+  defp row_materialization_status_label(status), do: to_string(status)
+
   defp format_timestamp(nil), do: "—"
 
   defp format_timestamp(%DateTime{} = timestamp),
@@ -229,6 +251,40 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
        do: fingerprint
 
   defp duplicate_fingerprint(%ImportedRow{}), do: nil
+
+  defp row_materialization_reason(%ImportRowMaterialization{outcome_reason: nil}), do: "—"
+  defp row_materialization_reason(%ImportRowMaterialization{outcome_reason: reason}), do: reason
+
+  defp row_materialization_transaction_reference(%ImportRowMaterialization{transaction_id: nil}),
+    do: "—"
+
+  defp row_materialization_transaction_reference(%ImportRowMaterialization{
+         transaction_id: transaction_id
+       }),
+       do: transaction_id
+
+  defp materialization_outcomes_empty_message(%ImportMaterialization{status: :pending}) do
+    dgettext("import", "details_materialization_outcomes_pending")
+  end
+
+  defp materialization_outcomes_empty_message(%ImportMaterialization{status: :processing}) do
+    dgettext("import", "details_materialization_outcomes_processing")
+  end
+
+  defp materialization_outcomes_empty_message(%ImportMaterialization{}) do
+    dgettext("import", "details_materialization_outcomes_empty")
+  end
+
+  defp materialization_outcomes_for_run(
+         import_row_materializations_by_run_id,
+         %ImportMaterialization{id: materialization_id}
+       ) do
+    Map.get(import_row_materializations_by_run_id, materialization_id, [])
+  end
+
+  defp group_materialization_outcomes_by_run_id(import_row_materializations) do
+    Enum.group_by(import_row_materializations, & &1.import_materialization_id)
+  end
 
   defp request_materialization_result({:ok, %ImportMaterialization{}}, socket) do
     put_flash(socket, :info, dgettext("import", "flash_materialization_requested"))

@@ -6,6 +6,7 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
 
   alias AurumFinance.Ingestion
   alias AurumFinance.Ingestion.ImportMaterialization
+  alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.PubSub
   alias AurumFinance.Ingestion.MaterializationWorker
   alias AurumFinance.Repo
@@ -158,6 +159,165 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
         "imported_file_id" => imported_file.id
       }
     )
+  end
+
+  test "shows durable row outcomes and transaction traceability for a completed run", %{
+    conn: conn
+  } do
+    entity = insert_entity(name: "Materialization results entity")
+
+    account =
+      insert_account(entity, %{name: "Materialization results account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "materialization-results.csv",
+               sha256: String.duplicate("m", 64),
+               format: :csv,
+               status: :complete,
+               row_count: 3,
+               imported_row_count: 3,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/materialization-results.csv"
+             })
+
+    assert {:ok, committed_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 0,
+               raw_data: %{"Description" => "Salary"},
+               description: "Salary",
+               normalized_description: "salary",
+               posted_on: ~D[2026-03-07],
+               amount: Decimal.new("2500.00"),
+               currency: "USD",
+               fingerprint: "fp-materialization-committed",
+               status: :ready
+             })
+
+    assert {:ok, skipped_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 1,
+               raw_data: %{"Description" => "Coffee"},
+               description: "Coffee",
+               normalized_description: "coffee",
+               posted_on: ~D[2026-03-08],
+               amount: Decimal.new("-4.50"),
+               currency: "USD",
+               fingerprint: "fp-materialization-skipped",
+               status: :duplicate,
+               skip_reason: "already imported"
+             })
+
+    assert {:ok, failed_row} =
+             Ingestion.create_imported_row(%{
+               imported_file_id: imported_file.id,
+               account_id: account.id,
+               row_index: 2,
+               raw_data: %{"Description" => "Broker transfer"},
+               description: "Broker transfer",
+               normalized_description: "broker transfer",
+               posted_on: ~D[2026-03-09],
+               amount: Decimal.new("50.00"),
+               currency: "EUR",
+               fingerprint: "fp-materialization-failed",
+               status: :ready
+             })
+
+    materialization =
+      %ImportMaterialization{}
+      |> ImportMaterialization.changeset(%{
+        imported_file_id: imported_file.id,
+        account_id: account.id,
+        status: :completed_with_errors,
+        requested_by: "root",
+        rows_considered: 3,
+        rows_materialized: 1,
+        rows_skipped_duplicate: 1,
+        rows_failed: 1,
+        started_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+        finished_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+      })
+      |> Repo.insert!()
+
+    transaction =
+      insert(:transaction,
+        entity: entity,
+        entity_id: entity.id,
+        source_type: :import,
+        date: ~D[2026-03-07],
+        description: "Salary"
+      )
+
+    committed_outcome =
+      %ImportRowMaterialization{}
+      |> ImportRowMaterialization.changeset(%{
+        import_materialization_id: materialization.id,
+        imported_row_id: committed_row.id,
+        transaction_id: transaction.id,
+        status: :committed
+      })
+      |> Repo.insert!()
+
+    skipped_outcome =
+      %ImportRowMaterialization{}
+      |> ImportRowMaterialization.changeset(%{
+        import_materialization_id: materialization.id,
+        imported_row_id: skipped_row.id,
+        status: :skipped,
+        outcome_reason: "already imported"
+      })
+      |> Repo.insert!()
+
+    failed_outcome =
+      %ImportRowMaterialization{}
+      |> ImportRowMaterialization.changeset(%{
+        import_materialization_id: materialization.id,
+        imported_row_id: failed_row.id,
+        status: :failed,
+        outcome_reason: "currency mismatch: row EUR vs account USD"
+      })
+      |> Repo.insert!()
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    assert has_element?(view, "#import-materialization-outcomes-#{materialization.id}")
+
+    assert has_element?(
+             view,
+             "#import-materialization-outcome-#{committed_outcome.id}",
+             "Committed"
+           )
+
+    assert has_element?(view, "#import-materialization-outcome-#{skipped_outcome.id}", "Skipped")
+    assert has_element?(view, "#import-materialization-outcome-#{failed_outcome.id}", "Failed")
+
+    assert has_element?(
+             view,
+             "#import-materialization-outcome-#{committed_outcome.id}",
+             transaction.id
+           )
+
+    assert has_element?(
+             view,
+             "#import-materialization-outcome-#{skipped_outcome.id}",
+             "already imported"
+           )
+
+    assert has_element?(
+             view,
+             "#import-materialization-outcome-#{failed_outcome.id}",
+             "currency mismatch: row EUR vs account USD"
+           )
   end
 
   test "refreshes the import details when a PubSub update arrives", %{conn: conn} do

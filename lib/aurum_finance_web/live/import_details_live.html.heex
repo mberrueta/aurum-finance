@@ -239,6 +239,81 @@
         <div :if={materialization.error_message} class="mt-3 text-sm text-rose-100/88">
           {materialization.error_message}
         </div>
+
+        <div class="mt-4 border-t border-white/8 pt-4">
+          <div class="flex flex-wrap items-center justify-between gap-2">
+            <p class="text-sm font-semibold text-white/92">
+              {dgettext("import", "details_materialization_outcomes_title")}
+            </p>
+            <span class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+              {dgettext("import", "details_materialization_outcomes_caption")}
+            </span>
+          </div>
+
+          <div
+            :if={
+              materialization_outcomes_for_run(
+                @import_row_materializations_by_run_id,
+                materialization
+              ) == []
+            }
+            id={"import-materialization-outcomes-empty-#{materialization.id}"}
+            class="mt-3 rounded-xl border border-white/8 bg-white/[0.02] px-3 py-3 text-sm text-white/60"
+          >
+            {materialization_outcomes_empty_message(materialization)}
+          </div>
+
+          <div
+            :if={
+              materialization_outcomes_for_run(
+                @import_row_materializations_by_run_id,
+                materialization
+              ) != []
+            }
+            id={"import-materialization-outcomes-#{materialization.id}"}
+            class="mt-3 overflow-x-auto"
+          >
+            <table class="min-w-full text-left text-sm">
+              <thead class="border-b border-white/8 text-[11px] uppercase tracking-[0.16em] text-white/38">
+                <tr>
+                  <th class="px-3 py-3">{dgettext("import", "label_row_index")}</th>
+                  <th class="px-3 py-3">{dgettext("import", "label_outcome")}</th>
+                  <th class="px-3 py-3">{dgettext("import", "label_outcome_reason")}</th>
+                  <th class="px-3 py-3">{dgettext("import", "label_transaction_reference")}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/5">
+                <tr
+                  :for={
+                    row_materialization <-
+                      materialization_outcomes_for_run(
+                        @import_row_materializations_by_run_id,
+                        materialization
+                      )
+                  }
+                  id={"import-materialization-outcome-#{row_materialization.id}"}
+                >
+                  <td class="px-3 py-3 font-mono text-white/72">
+                    {row_materialization.imported_row.row_index}
+                  </td>
+                  <td class="px-3 py-3">
+                    <.badge variant={
+                      row_materialization_status_variant(row_materialization.status)
+                    }>
+                      {row_materialization_status_label(row_materialization.status)}
+                    </.badge>
+                  </td>
+                  <td class="px-3 py-3 text-white/68">
+                    {row_materialization_reason(row_materialization)}
+                  </td>
+                  <td class="px-3 py-3 font-mono text-[12px] text-white/72">
+                    {row_materialization_transaction_reference(row_materialization)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
       </div>
     </div>
   </.section_panel>

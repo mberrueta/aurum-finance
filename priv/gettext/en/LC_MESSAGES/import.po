@@ -713,3 +713,53 @@ msgstr "Waiting for processing"
 #, elixir-autogen, elixir-format
 msgid "value_rows_summary"
 msgstr "%{rows} total · %{ready} ready · %{duplicates} duplicates · %{invalid} invalid"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:245
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_caption"
+msgstr "Durable row outcomes"
+
+#: lib/aurum_finance_web/live/import_details_live.ex:254
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_empty"
+msgstr "No row outcomes were persisted for this materialization run."
+
+#: lib/aurum_finance_web/live/import_details_live.ex:250
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_pending"
+msgstr "Row outcomes will appear after this materialization run starts."
+
+#: lib/aurum_finance_web/live/import_details_live.ex:246
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_processing"
+msgstr "Row outcomes are being persisted while this materialization run is processing."
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:242
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcomes_title"
+msgstr "Row results"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:265
+#, elixir-autogen, elixir-format
+msgid "label_outcome"
+msgstr "Outcome"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:266
+#, elixir-autogen, elixir-format
+msgid "label_outcome_reason"
+msgstr "Outcome reason"
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:267
+#, elixir-autogen, elixir-format
+msgid "label_transaction_reference"
+msgstr "Transaction"
+
+#: lib/aurum_finance_web/live/import_details_live.ex:192
+#, elixir-autogen, elixir-format
+msgid "status_committed"
+msgstr "Committed"
+
+#: lib/aurum_finance_web/live/import_details_live.ex:194
+#, elixir-autogen, elixir-format
+msgid "status_skipped"
+msgstr "Skipped"

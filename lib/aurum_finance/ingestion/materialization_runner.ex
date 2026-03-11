@@ -55,6 +55,7 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   @missing_amount_reason "missing amount"
   @missing_description_reason "missing description"
   @missing_posted_on_reason "missing posted_on"
+  @import_clearing_notes "System-managed clearing account for CSV import materialization"
 
   @doc """
   Executes one materialization run for one imported file.
@@ -358,12 +359,16 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   end
 
   defp list_matching_clearing_accounts(%Account{} = account) do
+    import_clearing_name = import_clearing_account_name(account.currency_code)
+
     from(clearing_account in Account,
       where:
         clearing_account.entity_id == ^account.entity_id and
           clearing_account.currency_code == ^account.currency_code and
           clearing_account.management_group == :system_managed and
           clearing_account.account_type == :equity and
+          clearing_account.name == ^import_clearing_name and
+          clearing_account.notes == ^@import_clearing_notes and
           is_nil(clearing_account.operational_subtype) and
           is_nil(clearing_account.archived_at),
       order_by: [asc: clearing_account.inserted_at]
@@ -382,11 +387,11 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
     Ledger.create_account(
       %{
         entity_id: account.entity_id,
-        name: "Import clearing (#{account.currency_code})",
+        name: import_clearing_account_name(account.currency_code),
         account_type: :equity,
         management_group: :system_managed,
         currency_code: account.currency_code,
-        notes: "System-managed clearing account for CSV import materialization"
+        notes: @import_clearing_notes
       },
       actor: materialization.requested_by,
       channel: :system
@@ -637,6 +642,8 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
 
   defp format_reason(reason) when is_binary(reason), do: reason
   defp format_reason(reason), do: inspect(reason)
+
+  defp import_clearing_account_name(currency_code), do: "Import clearing (#{currency_code})"
 
   defp now, do: DateTime.utc_now() |> DateTime.truncate(:microsecond)
 end

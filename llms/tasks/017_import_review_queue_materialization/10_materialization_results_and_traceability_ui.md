@@ -1,7 +1,7 @@
 # Task 10: Materialization Results and Traceability UI
 
 ## Status
-- **Status**: UPDATED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 
 ## Objective
@@ -15,6 +15,13 @@ Show durable run results and row-level traceability on the imported-file details
 - transaction link or identifier for committed rows when available
 
 The UI should be driven by durable row outcomes in `import_row_materializations`. Counters summarize those outcomes but are not a substitute for row-level state.
+
+## Implemented
+- the imported-file details page keeps the existing run summary cards
+- each materialization run now renders durable row-level outcomes inline
+- committed rows show the durable transaction identifier
+- skipped and failed rows show the persisted `outcome_reason`
+- pending and processing runs show explicit empty-state copy until row outcomes exist
 
 ## Row-Level Expectations
 - `committed` rows show success and traceability

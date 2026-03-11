@@ -8,6 +8,7 @@ defmodule AurumFinance.Ingestion do
   alias AurumFinance.Audit
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedFile
+  alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.ImportWorker
   alias AurumFinance.Ingestion.LocalFileStorage
   alias AurumFinance.Ingestion.MaterializationWorker
@@ -32,6 +33,12 @@ defmodule AurumFinance.Ingestion do
           {:account_id, Ecto.UUID.t()}
           | {:imported_file_id, Ecto.UUID.t()}
           | {:status, :pending | :processing | :completed | :completed_with_errors | :failed}
+
+  @type row_materialization_list_opt ::
+          {:account_id, Ecto.UUID.t()}
+          | {:imported_file_id, Ecto.UUID.t()}
+          | {:import_materialization_id, Ecto.UUID.t()}
+          | {:imported_row_id, Ecto.UUID.t()}
 
   @type request_materialization_opt :: {:requested_by, String.t()}
 
@@ -456,6 +463,38 @@ defmodule AurumFinance.Ingestion do
   end
 
   @doc """
+  Lists durable row-level materialization outcomes within one account scope.
+
+  The returned rows are preloaded with their imported-row evidence and any
+  committed transaction traceability.
+
+  ## Examples
+
+  ```elixir
+  row_materializations =
+    AurumFinance.Ingestion.list_import_row_materializations(
+      account_id: account.id,
+      imported_file_id: imported_file.id
+    )
+  ```
+
+  Error path:
+
+      iex> AurumFinance.Ingestion.list_import_row_materializations()
+      ** (ArgumentError) list_import_row_materializations/1 requires :account_id
+  """
+  @spec list_import_row_materializations([row_materialization_list_opt()]) :: [
+          ImportRowMaterialization.t()
+        ]
+  def list_import_row_materializations(opts \\ []) do
+    opts = require_account_scope!(opts, "list_import_row_materializations/1")
+
+    opts
+    |> list_import_row_materializations_query()
+    |> Repo.all()
+  end
+
+  @doc """
   Persists a pending materialization run and enqueues the async worker.
 
   ## Examples
@@ -703,6 +742,51 @@ defmodule AurumFinance.Ingestion do
     materialization_filter_query(query, rest)
   end
 
+  defp row_materialization_filter_query(query, []), do: query
+
+  defp row_materialization_filter_query(query, [{:account_id, account_id} | rest]) do
+    query
+    |> where(
+      [row_materialization, imported_row: imported_row],
+      imported_row.account_id == ^account_id
+    )
+    |> row_materialization_filter_query(rest)
+  end
+
+  defp row_materialization_filter_query(
+         query,
+         [{:imported_file_id, imported_file_id} | rest]
+       ) do
+    query
+    |> where(
+      [row_materialization, imported_row: imported_row],
+      imported_row.imported_file_id == ^imported_file_id
+    )
+    |> row_materialization_filter_query(rest)
+  end
+
+  defp row_materialization_filter_query(
+         query,
+         [{:import_materialization_id, import_materialization_id} | rest]
+       ) do
+    query
+    |> where(
+      [row_materialization],
+      row_materialization.import_materialization_id == ^import_materialization_id
+    )
+    |> row_materialization_filter_query(rest)
+  end
+
+  defp row_materialization_filter_query(query, [{:imported_row_id, imported_row_id} | rest]) do
+    query
+    |> where([row_materialization], row_materialization.imported_row_id == ^imported_row_id)
+    |> row_materialization_filter_query(rest)
+  end
+
+  defp row_materialization_filter_query(query, [_unknown_filter | rest]) do
+    row_materialization_filter_query(query, rest)
+  end
+
   defp fetch_imported_file(account_id, imported_file_id) do
     account_id
     |> get_imported_file(imported_file_id)
@@ -899,5 +983,27 @@ defmodule AurumFinance.Ingestion do
         is_nil(committed.id)
     )
     |> Repo.aggregate(:count)
+  end
+
+  defp list_import_row_materializations_query(opts) do
+    opts = require_account_scope!(opts, "list_import_row_materializations_query/1")
+
+    ImportRowMaterialization
+    |> join(
+      :inner,
+      [row_materialization],
+      imported_row in assoc(row_materialization, :imported_row),
+      as: :imported_row
+    )
+    |> preload([_row_materialization, imported_row: imported_row], [
+      :transaction,
+      imported_row: imported_row
+    ])
+    |> row_materialization_filter_query(opts)
+    |> order_by(
+      [row_materialization, imported_row: imported_row],
+      desc: row_materialization.inserted_at,
+      asc: imported_row.row_index
+    )
   end
 end
