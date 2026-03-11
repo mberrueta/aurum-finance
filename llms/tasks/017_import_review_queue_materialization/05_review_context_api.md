@@ -39,10 +39,13 @@ That query is for “what can move now” in the UI.
 ### `request_materialization/3`
 Should create a durable run and enqueue the worker.
 
-The run may still consider ready rows that later end in `failed`, especially currency mismatch cases, because run outcomes and UI reporting must stay explicit.
+It must reject the request if another run for the same imported file is already `pending` or `processing`.
+
+It must only create a run when at least one row is truly materializable under the v1 eligibility rules, not merely `ready`.
 
 ## Error Boundaries
 - no rows left to consider => localized error
+- another materialization already in progress => localized error
 - account/imported-file scope mismatch => not found or equivalent account-safe error
 - delete blocked by existing materialization state => localized error if delete API exists
 

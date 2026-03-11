@@ -69,7 +69,7 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
   end
 
   describe "request_materialization/3" do
-    test "persists a pending run and enqueues the worker for ready rows" do
+    test "persists a pending run and enqueues the worker for truly materializable rows" do
       %{account: account, imported_file: imported_file} = build_import_context()
 
       assert :ok = PubSub.subscribe_account_imports(account.id)
@@ -110,7 +110,7 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
 
       assert materialization.status == :pending
       assert materialization.requested_by == "reviewer@example.com"
-      assert materialization.rows_considered == 2
+      assert materialization.rows_considered == 1
       assert materialization.rows_skipped_duplicate == 1
       assert materialization.rows_materialized == 0
       assert materialization.rows_failed == 0
@@ -179,6 +179,34 @@ defmodule AurumFinance.Ingestion.MaterializationContextTest do
                )
 
       assert reason == "There are no rows eligible for materialization."
+      refute_enqueued(worker: MaterializationWorker)
+    end
+
+    test "returns a localized error when another materialization is already pending" do
+      %{account: account, imported_file: imported_file} = build_import_context()
+
+      _ready_row =
+        insert_imported_row(imported_file, account, %{
+          row_index: 0,
+          fingerprint: "fp-existing-pending"
+        })
+
+      assert {:ok, _materialization} =
+               %ImportMaterialization{}
+               |> ImportMaterialization.changeset(%{
+                 imported_file_id: imported_file.id,
+                 account_id: account.id,
+                 status: :pending,
+                 requested_by: "reviewer@example.com"
+               })
+               |> Repo.insert()
+
+      assert {:error, reason} =
+               Ingestion.request_materialization(account.id, imported_file.id,
+                 requested_by: "reviewer@example.com"
+               )
+
+      assert reason == "A materialization run is already in progress for this import."
       refute_enqueued(worker: MaterializationWorker)
     end
   end

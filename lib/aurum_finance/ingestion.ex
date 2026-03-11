@@ -478,6 +478,7 @@ defmodule AurumFinance.Ingestion do
     requested_by = Keyword.get(opts, :requested_by, @audit_actor)
 
     with {:ok, imported_file} <- fetch_imported_file(account_id, imported_file_id),
+         :ok <- ensure_no_active_materialization(imported_file),
          {:ok, rows_considered} <-
            build_materialization_request_rows(account_id, imported_file.id) do
       imported_file
@@ -709,8 +710,8 @@ defmodule AurumFinance.Ingestion do
   end
 
   defp build_materialization_request_rows(account_id, imported_file_id) do
-    account_id
-    |> materialization_request_rows_query(imported_file_id)
+    [account_id: account_id, imported_file_id: imported_file_id]
+    |> list_materializable_imported_rows_query()
     |> Repo.all()
     |> maybe_return_materialization_request_rows()
   end
@@ -756,27 +757,6 @@ defmodule AurumFinance.Ingestion do
     |> Oban.insert()
   end
 
-  defp materialization_request_rows_query(account_id, imported_file_id) do
-    from(imported_row in ImportedRow, as: :imported_row)
-    |> join(:inner, [imported_row], account in assoc(imported_row, :account), as: :account)
-    |> join(
-      :left,
-      [imported_row],
-      committed in assoc(imported_row, :row_materializations),
-      on: committed.status == :committed,
-      as: :committed_materialization
-    )
-    |> where(
-      [imported_row: imported_row, committed_materialization: committed],
-      imported_row.account_id == ^account_id and
-        imported_row.imported_file_id == ^imported_file_id and
-        imported_row.status == :ready and
-        is_nil(committed.id)
-    )
-    |> preload([account: account], account: account)
-    |> order_by([imported_row: imported_row], asc: imported_row.row_index)
-  end
-
   defp maybe_return_materialization_request_rows([]),
     do:
       {:error,
@@ -787,6 +767,12 @@ defmodule AurumFinance.Ingestion do
        )}
 
   defp maybe_return_materialization_request_rows(rows), do: {:ok, rows}
+
+  defp ensure_no_active_materialization(%ImportedFile{} = imported_file) do
+    imported_file
+    |> imported_file_has_active_materialization?()
+    |> ensure_no_active_materialization_result()
+  end
 
   defp ensure_imported_file_deletable(%ImportedFile{} = imported_file) do
     imported_file
@@ -861,9 +847,30 @@ defmodule AurumFinance.Ingestion do
      )}
   end
 
+  defp ensure_no_active_materialization_result(false), do: :ok
+
+  defp ensure_no_active_materialization_result(true) do
+    {:error,
+     Gettext.dgettext(
+       AurumFinanceWeb.Gettext,
+       "errors",
+       "error_import_materialization_already_in_progress"
+     )}
+  end
+
   defp imported_file_has_materializations?(%ImportedFile{} = imported_file) do
     from(materialization in ImportMaterialization,
       where: materialization.imported_file_id == ^imported_file.id,
+      select: 1
+    )
+    |> Repo.exists?()
+  end
+
+  defp imported_file_has_active_materialization?(%ImportedFile{} = imported_file) do
+    from(materialization in ImportMaterialization,
+      where:
+        materialization.imported_file_id == ^imported_file.id and
+          materialization.status in [:pending, :processing],
       select: 1
     )
     |> Repo.exists?()

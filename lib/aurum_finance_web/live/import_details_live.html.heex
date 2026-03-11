@@ -276,7 +276,21 @@
             </td>
             <td class="px-3 py-3 text-white/72">{format_date(row.posted_on)}</td>
             <td class="px-3 py-3 text-white/92">
-              {row.description || row.normalized_description || "—"}
+              <span>{row.description || row.normalized_description || "—"}</span>
+
+              <div
+                :if={row.status == :duplicate}
+                id={"duplicate-visibility-#{row.id}"}
+                class="mt-2 rounded-xl border border-amber-300/20 bg-amber-300/[0.08] px-3 py-2 text-xs leading-5 text-amber-50/88"
+              >
+                <p>{duplicate_visibility_copy(row)}</p>
+                <p
+                  :if={duplicate_fingerprint(row)}
+                  class="mt-1 font-mono text-[11px] text-amber-100/72"
+                >
+                  {dgettext("import", "label_duplicate_fingerprint")}: {duplicate_fingerprint(row)}
+                </p>
+              </div>
             </td>
             <td class="px-3 py-3 text-white/92">
               {format_amount(row.amount)}

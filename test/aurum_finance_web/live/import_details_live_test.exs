@@ -88,6 +88,8 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
     assert render(view) =~ "detail.csv"
     assert render(view) =~ "Salary"
     assert render(view) =~ "already imported"
+    assert render(view) =~ "Duplicates are identified from persisted import evidence"
+    assert render(view) =~ "fp-duplicate"
     assert render(view) =~ "missing description"
     assert render(view) =~ "Rows read"
   end

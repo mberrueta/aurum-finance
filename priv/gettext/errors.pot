@@ -171,6 +171,9 @@ msgstr ""
 msgid "error_import_materialization_error_message_length_invalid"
 msgstr ""
 
+msgid "error_import_materialization_already_in_progress"
+msgstr ""
+
 msgid "error_import_materialization_no_rows_to_materialize"
 msgstr ""
 

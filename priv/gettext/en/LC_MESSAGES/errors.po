@@ -174,6 +174,9 @@ msgstr "Materialization counts must be non-negative."
 msgid "error_import_materialization_error_message_length_invalid"
 msgstr "Materialization error details must be at most 2000 characters."
 
+msgid "error_import_materialization_already_in_progress"
+msgstr "A materialization run is already in progress for this import."
+
 msgid "error_import_materialization_no_rows_to_materialize"
 msgstr "There are no rows eligible for materialization."
 

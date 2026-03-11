@@ -5,8 +5,8 @@
 - **Created**: 2026-03-10
 - **Updated**: 2026-03-11
 - **Status**: IN PROGRESS
-- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08
-- **Next Task**: 09
+- **Completed Tasks**: 01, 02, 03, 04, 05, 06, 07, 08, 09
+- **Next Task**: 10
 - **Depends on**: Issue #12 completed, Issue #13 in progress, Issue #15 completed
 
 ## Context
@@ -173,13 +173,15 @@ If `imported_row.currency` conflicts with `account.currency_code`, that row must
 2. The page exposes a `Materialize` action for eligible rows.
 3. The page exposes a delete-import action when the import is still deletable under the chosen boundary.
 4. Materialization requests create durable run state before async execution.
-5. Run statuses support `pending`, `processing`, `completed`, `completed_with_errors`, and `failed`.
-6. Row outcomes support `committed`, `skipped`, and `failed`.
-7. Duplicate rows have visibility but no override path.
-8. Currency mismatch rows never create ledger postings and are recorded as row-level `failed`.
-9. Committed rows cannot be committed twice.
-10. Imported-row to transaction traceability is queryable from durable storage.
-11. Deleting a bad CSV removes the imported file and its imported rows without introducing soft delete.
+5. Materialization requests are rejected when another run for the same imported file is already `pending` or `processing`.
+6. Materialization requests only consider rows that are truly materializable under the v1 eligibility rules.
+7. Run statuses support `pending`, `processing`, `completed`, `completed_with_errors`, and `failed`.
+8. Row outcomes support `committed`, `skipped`, and `failed`.
+9. Duplicate rows have visibility but no override path.
+10. Currency mismatch rows never create ledger postings and are recorded as row-level `failed`.
+11. Committed rows cannot be committed twice.
+12. Imported-row to transaction traceability is queryable from durable storage.
+13. Deleting a bad CSV removes the imported file and its imported rows without introducing soft delete.
 
 ### Non-Functional
 1. `imported_rows` remain immutable evidence.

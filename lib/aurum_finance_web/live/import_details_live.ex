@@ -218,6 +218,18 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
 
   defp row_note(%ImportedRow{}), do: "—"
 
+  defp duplicate_visibility_copy(%ImportedRow{status: :duplicate}) do
+    dgettext("import", "details_duplicate_visibility_copy")
+  end
+
+  defp duplicate_visibility_copy(%ImportedRow{}), do: nil
+
+  defp duplicate_fingerprint(%ImportedRow{status: :duplicate, fingerprint: fingerprint})
+       when is_binary(fingerprint),
+       do: fingerprint
+
+  defp duplicate_fingerprint(%ImportedRow{}), do: nil
+
   defp request_materialization_result({:ok, %ImportMaterialization{}}, socket) do
     put_flash(socket, :info, dgettext("import", "flash_materialization_requested"))
   end
