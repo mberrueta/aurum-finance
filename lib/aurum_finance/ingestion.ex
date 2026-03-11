@@ -105,6 +105,7 @@ defmodule AurumFinance.Ingestion do
       [imported_file],
       imported_file.id == ^imported_file_id and imported_file.account_id == ^account_id
     )
+    |> preload(account: [:entity])
     |> Repo.one()
   end
 

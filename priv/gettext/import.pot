@@ -772,3 +772,38 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "status_skipped"
 msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:292
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcome_label"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:301
+#, elixir-autogen, elixir-format
+msgid "details_materialization_outcome_meta"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.ex:278
+#, elixir-autogen, elixir-format
+msgid "details_materialization_run_label"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:330
+#, elixir-autogen, elixir-format
+msgid "details_materialization_summary_only"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:241
+#, elixir-autogen, elixir-format
+msgid "details_row_history_caption"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:238
+#, elixir-autogen, elixir-format
+msgid "details_row_history_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/import_details_live.html.heex:273
+#, elixir-autogen, elixir-format
+msgid "details_row_history_collapsed"
+msgstr ""

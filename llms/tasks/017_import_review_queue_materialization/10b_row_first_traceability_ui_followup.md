@@ -1,7 +1,7 @@
 # Task 10.b: Row-First Traceability UI Follow-Up
 
 ## Status
-- **Status**: DRAFT
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 
 ## Context
@@ -67,6 +67,13 @@ Preferred v1 behavior:
 3. Run cards remain available as summary/history.
 4. Older runs are collapsed by default.
 5. Transaction traceability is more usable than the current raw UUID presentation.
+
+## Implemented
+- imported rows remain the primary table on the page
+- durable materialization history now renders inline per imported row
+- run cards remain visible as summary/history only
+- newest run stays expanded by default and older runs render collapsed
+- transaction references are shown in shortened form instead of raw full UUIDs
 
 ## Constraints
 - no backend contract changes

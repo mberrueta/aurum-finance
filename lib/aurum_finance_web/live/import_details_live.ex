@@ -9,6 +9,7 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
   alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ingestion.PubSub
+  alias AurumFinanceWeb.FilterQuery
 
   @impl true
   def mount(_params, _session, socket) do
@@ -24,7 +25,10 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
         imported_file_deletable?: false,
         imported_file_delete_block_reason: nil,
         import_materializations: [],
-        import_row_materializations_by_run_id: %{},
+        import_materializations_by_id: %{},
+        import_materialization_sequence_by_id: %{},
+        import_row_materializations_by_row_id: %{},
+        latest_import_materialization_id: nil,
         subscribed_imported_file_id: nil
       )
       |> stream(:imported_rows, [], reset: true)
@@ -110,12 +114,17 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
         imported_file_id: imported_file_id
       )
 
-    import_row_materializations_by_run_id =
+    import_materializations_by_id = materializations_by_id(import_materializations)
+
+    import_materialization_sequence_by_id =
+      materialization_sequence_by_id(import_materializations)
+
+    import_row_materializations_by_row_id =
       Ingestion.list_import_row_materializations(
         account_id: account_id,
         imported_file_id: imported_file_id
       )
-      |> group_materialization_outcomes_by_run_id()
+      |> group_materialization_outcomes_by_row_id()
 
     socket
     |> assign(
@@ -125,7 +134,10 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
       imported_file_deletable?: import_materializations == [],
       imported_file_delete_block_reason: delete_block_reason(import_materializations),
       import_materializations: import_materializations,
-      import_row_materializations_by_run_id: import_row_materializations_by_run_id,
+      import_materializations_by_id: import_materializations_by_id,
+      import_materialization_sequence_by_id: import_materialization_sequence_by_id,
+      import_row_materializations_by_row_id: import_row_materializations_by_row_id,
+      latest_import_materialization_id: latest_import_materialization_id(import_materializations),
       page_title: dgettext("import", "details_page_title")
     )
     |> stream(:imported_rows, imported_rows, reset: true)
@@ -230,6 +242,17 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
   defp format_byte_size(nil), do: "—"
   defp format_byte_size(byte_size), do: "#{byte_size} B"
 
+  defp imported_file_account_name(%ImportedFile{account: %{name: name}}) when is_binary(name),
+    do: name
+
+  defp imported_file_account_name(%ImportedFile{}), do: "—"
+
+  defp imported_file_entity_name(%ImportedFile{account: %{entity: %{name: name}}})
+       when is_binary(name),
+       do: name
+
+  defp imported_file_entity_name(%ImportedFile{}), do: "—"
+
   defp row_note(%ImportedRow{status: :duplicate, skip_reason: skip_reason})
        when is_binary(skip_reason),
        do: skip_reason
@@ -261,29 +284,105 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
   defp row_materialization_transaction_reference(%ImportRowMaterialization{
          transaction_id: transaction_id
        }),
-       do: transaction_id
+       do: short_uuid(transaction_id)
 
-  defp materialization_outcomes_empty_message(%ImportMaterialization{status: :pending}) do
-    dgettext("import", "details_materialization_outcomes_pending")
-  end
+  defp row_materialization_transaction_path(
+         %ImportRowMaterialization{transaction_id: nil},
+         %ImportedFile{}
+       ),
+       do: nil
 
-  defp materialization_outcomes_empty_message(%ImportMaterialization{status: :processing}) do
-    dgettext("import", "details_materialization_outcomes_processing")
-  end
-
-  defp materialization_outcomes_empty_message(%ImportMaterialization{}) do
-    dgettext("import", "details_materialization_outcomes_empty")
-  end
-
-  defp materialization_outcomes_for_run(
-         import_row_materializations_by_run_id,
-         %ImportMaterialization{id: materialization_id}
+  defp row_materialization_transaction_path(
+         %ImportRowMaterialization{transaction_id: transaction_id},
+         %ImportedFile{account: %{entity: %{id: entity_id}}}
        ) do
-    Map.get(import_row_materializations_by_run_id, materialization_id, [])
+    FilterQuery.build_path("/transactions", entity: entity_id, tx: transaction_id)
   end
 
-  defp group_materialization_outcomes_by_run_id(import_row_materializations) do
-    Enum.group_by(import_row_materializations, & &1.import_materialization_id)
+  defp materialization_summary_open?(
+         %ImportMaterialization{id: materialization_id},
+         materialization_id
+       ),
+       do: true
+
+  defp materialization_summary_open?(%ImportMaterialization{}, _latest_import_materialization_id),
+    do: false
+
+  defp materialization_label(
+         %ImportMaterialization{id: materialization_id},
+         import_materialization_sequence_by_id
+       ) do
+    run_number = Map.fetch!(import_materialization_sequence_by_id, materialization_id)
+    dgettext("import", "details_materialization_run_label", number: run_number)
+  end
+
+  defp row_materializations_for_row(
+         import_row_materializations_by_row_id,
+         %ImportedRow{id: row_id},
+         import_materializations_by_id
+       ) do
+    import_row_materializations_by_row_id
+    |> Map.get(row_id, [])
+    |> Enum.sort_by(
+      fn row_materialization ->
+        import_materialization_inserted_at(row_materialization, import_materializations_by_id)
+      end,
+      {:desc, DateTime}
+    )
+  end
+
+  defp materialization_outcome_label(
+         %ImportRowMaterialization{import_materialization_id: materialization_id},
+         import_materialization_sequence_by_id
+       ) do
+    run_number = Map.fetch!(import_materialization_sequence_by_id, materialization_id)
+    dgettext("import", "details_materialization_outcome_label", number: run_number)
+  end
+
+  defp materialization_outcome_meta(
+         %ImportRowMaterialization{} = row_materialization,
+         import_materializations_by_id
+       ) do
+    row_materialization
+    |> import_materialization_inserted_at(import_materializations_by_id)
+    |> format_timestamp()
+    |> then(&dgettext("import", "details_materialization_outcome_meta", inserted_at: &1))
+  end
+
+  defp materializations_by_id(import_materializations) do
+    Map.new(import_materializations, &{&1.id, &1})
+  end
+
+  defp materialization_sequence_by_id(import_materializations) do
+    import_materializations
+    |> Enum.reverse()
+    |> Enum.with_index(1)
+    |> Map.new(fn {materialization, index} -> {materialization.id, index} end)
+  end
+
+  defp latest_import_materialization_id([]), do: nil
+
+  defp latest_import_materialization_id([%ImportMaterialization{id: materialization_id} | _rest]) do
+    materialization_id
+  end
+
+  defp group_materialization_outcomes_by_row_id(import_row_materializations) do
+    Enum.group_by(import_row_materializations, & &1.imported_row_id)
+  end
+
+  defp import_materialization_inserted_at(
+         %ImportRowMaterialization{import_materialization_id: materialization_id},
+         import_materializations_by_id
+       ) do
+    import_materializations_by_id
+    |> Map.fetch!(materialization_id)
+    |> Map.fetch!(:inserted_at)
+  end
+
+  defp short_uuid(uuid) when byte_size(uuid) <= 12, do: uuid
+
+  defp short_uuid(uuid) do
+    "#{String.slice(uuid, 0, 8)}…#{String.slice(uuid, -4, 4)}"
   end
 
   defp request_materialization_result({:ok, %ImportMaterialization{}}, socket) do

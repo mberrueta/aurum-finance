@@ -29,7 +29,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
 
   @impl true
   def handle_params(_params, uri, socket) do
-    {entity_id, filters} = parse_state_from_uri(uri)
+    {entity_id, expanded_transaction_id, filters} = parse_state_from_uri(uri)
     current_entity = resolve_current_entity(socket.assigns.entities, entity_id)
 
     {:noreply,
@@ -37,7 +37,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
      |> assign(
        current_entity: current_entity,
        filters_expanded: filters_expanded?(filters),
-       expanded_transaction_id: nil
+       expanded_transaction_id: expanded_transaction_id
      )
      |> assign_filters(filters)
      |> load_transactions()}
@@ -126,6 +126,11 @@ defmodule AurumFinanceWeb.TransactionsLive do
       |> Map.get("entity")
       |> Helpers.blank_to_nil()
 
+    expanded_transaction_id =
+      clauses
+      |> Map.get("tx")
+      |> Helpers.blank_to_nil()
+
     filters =
       %{
         account_id: clauses["account"] |> Helpers.blank_to_nil(),
@@ -135,7 +140,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
       }
       |> normalize_date_filters()
 
-    {entity_id, filters}
+    {entity_id, expanded_transaction_id, filters}
   end
 
   defp filter_opts(entity_id, filters) do

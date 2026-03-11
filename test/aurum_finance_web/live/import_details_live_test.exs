@@ -81,12 +81,14 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
 
     assert has_element?(view, "#import-details-page")
     assert has_element?(view, "#import-review-workflow")
-    assert has_element?(view, "#import-rows-table")
+    assert has_element?(view, "#import-rows-list")
     assert has_element?(view, "#import-materialize-btn")
     assert has_element?(view, "#import-delete-btn")
     assert has_element?(view, "#import-materializations-empty")
     assert render(view) =~ "Import details"
     assert render(view) =~ "detail.csv"
+    assert render(view) =~ "Import detail entity"
+    assert render(view) =~ "Import detail account"
     assert render(view) =~ "Salary"
     assert render(view) =~ "already imported"
     assert render(view) =~ "Duplicates are identified from persisted import evidence"
@@ -161,7 +163,7 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
     )
   end
 
-  test "shows durable row outcomes and transaction traceability for a completed run", %{
+  test "shows durable row history inline under imported rows and keeps runs as summaries", %{
     conn: conn
   } do
     entity = insert_entity(name: "Materialization results entity")
@@ -290,34 +292,99 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
       |> log_in_root()
       |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
 
-    assert has_element?(view, "#import-materialization-outcomes-#{materialization.id}")
+    assert has_element?(view, "#imported-row-materializations-#{committed_row.id}")
+    assert has_element?(view, "#imported-row-materializations-#{skipped_row.id}")
+    assert has_element?(view, "#imported-row-materializations-#{failed_row.id}")
+    refute has_element?(view, "#import-materialization-outcomes-#{materialization.id}")
+    assert has_element?(view, "#import-materialization-#{materialization.id}[open]")
 
     assert has_element?(
              view,
-             "#import-materialization-outcome-#{committed_outcome.id}",
+             "#imported-row-materialization-#{committed_outcome.id}",
              "Committed"
            )
 
-    assert has_element?(view, "#import-materialization-outcome-#{skipped_outcome.id}", "Skipped")
-    assert has_element?(view, "#import-materialization-outcome-#{failed_outcome.id}", "Failed")
+    assert has_element?(view, "#imported-row-materialization-#{skipped_outcome.id}", "Skipped")
+    assert has_element?(view, "#imported-row-materialization-#{failed_outcome.id}", "Failed")
 
     assert has_element?(
              view,
-             "#import-materialization-outcome-#{committed_outcome.id}",
-             transaction.id
+             "#imported-row-materialization-#{committed_outcome.id}",
+             String.slice(transaction.id, 0, 8)
            )
 
     assert has_element?(
              view,
-             "#import-materialization-outcome-#{skipped_outcome.id}",
+             "#imported-row-materialization-#{committed_outcome.id} a[href='/transactions?q=entity:#{entity.id}&tx:#{transaction.id}']"
+           )
+
+    assert has_element?(
+             view,
+             "#imported-row-materialization-#{skipped_outcome.id}",
              "already imported"
            )
 
     assert has_element?(
              view,
-             "#import-materialization-outcome-#{failed_outcome.id}",
+             "#imported-row-materialization-#{failed_outcome.id}",
              "currency mismatch: row EUR vs account USD"
            )
+  end
+
+  test "expands the latest materialization summary and collapses older runs by default", %{
+    conn: conn
+  } do
+    entity = insert_entity(name: "Materialization history entity")
+
+    account =
+      insert_account(entity, %{name: "Materialization history account", currency_code: "USD"})
+
+    assert {:ok, imported_file} =
+             Ingestion.create_imported_file(%{
+               account_id: account.id,
+               filename: "materialization-history.csv",
+               sha256: String.duplicate("n", 64),
+               format: :csv,
+               status: :complete,
+               row_count: 1,
+               imported_row_count: 1,
+               skipped_row_count: 0,
+               invalid_row_count: 0,
+               processed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+               storage_path: "/tmp/imports/materialization-history.csv"
+             })
+
+    older_materialization =
+      %ImportMaterialization{}
+      |> ImportMaterialization.changeset(%{
+        imported_file_id: imported_file.id,
+        account_id: account.id,
+        status: :failed,
+        requested_by: "root",
+        rows_considered: 1,
+        rows_failed: 1
+      })
+      |> Repo.insert!()
+
+    latest_materialization =
+      %ImportMaterialization{}
+      |> ImportMaterialization.changeset(%{
+        imported_file_id: imported_file.id,
+        account_id: account.id,
+        status: :completed,
+        requested_by: "root",
+        rows_considered: 1,
+        rows_materialized: 1
+      })
+      |> Repo.insert!()
+
+    {:ok, view, _html} =
+      conn
+      |> log_in_root()
+      |> live("/import/accounts/#{account.id}/files/#{imported_file.id}")
+
+    assert has_element?(view, "#import-materialization-#{latest_materialization.id}[open]")
+    refute has_element?(view, "#import-materialization-#{older_materialization.id}[open]")
   end
 
   test "refreshes the import details when a PubSub update arrives", %{conn: conn} do
@@ -370,7 +437,7 @@ defmodule AurumFinanceWeb.ImportDetailsLiveTest do
 
     assert :ok = PubSub.broadcast_imported_file(completed_import)
 
-    assert has_element?(view, "#import-rows-table")
+    assert has_element?(view, "#import-rows-list")
     assert render(view) =~ "Complete"
     assert render(view) =~ "Dinner"
   end
