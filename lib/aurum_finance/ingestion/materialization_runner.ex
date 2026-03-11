@@ -41,6 +41,7 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
 
   import Ecto.Query, warn: false
 
+  alias AurumFinance.Audit.AuditEvent
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportRowMaterialization
   alias AurumFinance.Ingestion.ImportedRow
@@ -56,6 +57,11 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   @missing_description_reason "missing description"
   @missing_posted_on_reason "missing posted_on"
   @import_clearing_notes "System-managed clearing account for CSV import materialization"
+  @audit_actor "system"
+  @audit_channel :system
+  @audit_entity_type "import_materialization"
+  @completed_audit_action "materialization_completed"
+  @failed_audit_action "materialization_failed"
 
   @doc """
   Executes one materialization run for one imported file.
@@ -584,17 +590,31 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   end
 
   defp finalize_success(%ImportMaterialization{} = materialization, summary) do
-    materialization
-    |> ImportMaterialization.changeset(%{
-      error_message: nil,
-      finished_at: now(),
-      rows_considered: summary.rows_considered,
-      rows_failed: summary.rows_failed,
-      rows_materialized: summary.rows_materialized,
-      rows_skipped_duplicate: summary.rows_skipped_duplicate,
-      status: final_status(summary)
-    })
-    |> Repo.update()
+    before_snapshot = import_materialization_audit_snapshot(materialization)
+    status = final_status(summary)
+
+    Repo.transaction(fn ->
+      with {:ok, updated_materialization} <-
+             update_materialization(materialization, %{
+               error_message: nil,
+               finished_at: now(),
+               rows_considered: summary.rows_considered,
+               rows_failed: summary.rows_failed,
+               rows_materialized: summary.rows_materialized,
+               rows_skipped_duplicate: summary.rows_skipped_duplicate,
+               status: status
+             }),
+           {:ok, _audit_event} <-
+             insert_materialization_audit_event(
+               updated_materialization,
+               @completed_audit_action,
+               before_snapshot
+             ) do
+        updated_materialization
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
+    end)
     |> finalize_success_result()
   end
 
@@ -609,13 +629,27 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   defp finalize_success_result({:error, reason}), do: {:error, reason}
 
   defp finalize_failure(%ImportMaterialization{} = materialization, reason) do
-    materialization
-    |> ImportMaterialization.changeset(%{
-      error_message: format_reason(reason),
-      finished_at: now(),
-      status: :failed
-    })
-    |> Repo.update()
+    before_snapshot = import_materialization_audit_snapshot(materialization)
+    formatted_reason = format_reason(reason)
+
+    Repo.transaction(fn ->
+      with {:ok, updated_materialization} <-
+             update_materialization(materialization, %{
+               error_message: formatted_reason,
+               finished_at: now(),
+               status: :failed
+             }),
+           {:ok, _audit_event} <-
+             insert_materialization_audit_event(
+               updated_materialization,
+               @failed_audit_action,
+               before_snapshot
+             ) do
+        updated_materialization
+      else
+        {:error, failure_reason} -> Repo.rollback(failure_reason)
+      end
+    end)
     |> finalize_failure_result(reason)
   end
 
@@ -644,6 +678,64 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
   defp format_reason(reason), do: inspect(reason)
 
   defp import_clearing_account_name(currency_code), do: "Import clearing (#{currency_code})"
+
+  defp materialization_audit_metadata(%ImportMaterialization{} = materialization) do
+    %{
+      account_id: materialization.account_id,
+      imported_file_id: materialization.imported_file_id,
+      requested_by: materialization.requested_by
+    }
+  end
+
+  defp import_materialization_audit_snapshot(%ImportMaterialization{} = materialization) do
+    %{
+      "id" => materialization.id,
+      "account_id" => materialization.account_id,
+      "imported_file_id" => materialization.imported_file_id,
+      "status" => materialization.status,
+      "requested_by" => materialization.requested_by,
+      "rows_considered" => materialization.rows_considered,
+      "rows_materialized" => materialization.rows_materialized,
+      "rows_skipped_duplicate" => materialization.rows_skipped_duplicate,
+      "rows_failed" => materialization.rows_failed,
+      "error_message" => materialization.error_message,
+      "started_at" => materialization.started_at,
+      "finished_at" => materialization.finished_at,
+      "inserted_at" => materialization.inserted_at,
+      "updated_at" => materialization.updated_at
+    }
+  end
+
+  defp update_materialization(%ImportMaterialization{} = materialization, attrs) do
+    materialization
+    |> ImportMaterialization.changeset(attrs)
+    |> Repo.update()
+  end
+
+  defp insert_materialization_audit_event(
+         %ImportMaterialization{} = materialization,
+         action,
+         before_snapshot
+       ) do
+    %{
+      entity_type: @audit_entity_type,
+      entity_id: materialization.id,
+      action: action,
+      actor: @audit_actor,
+      channel: @audit_channel,
+      before: before_snapshot,
+      after: import_materialization_audit_snapshot(materialization),
+      metadata: materialization_audit_metadata(materialization),
+      occurred_at: DateTime.utc_now()
+    }
+    |> insert_audit_event()
+  end
+
+  defp insert_audit_event(attrs) do
+    %AuditEvent{}
+    |> AuditEvent.changeset(attrs)
+    |> Repo.insert()
+  end
 
   defp now, do: DateTime.utc_now() |> DateTime.truncate(:microsecond)
 end

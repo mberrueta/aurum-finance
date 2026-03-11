@@ -1,7 +1,7 @@
 # Task 11: Audit Event Integration
 
 ## Status
-- **Status**: UPDATED
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 
 ## Objective
@@ -17,14 +17,18 @@ Keep audit focused on workflow-level events, not row-review actions.
 - row rejection audit
 - duplicate override audit
 
-## Optional Narrow Addition
-- imported-file hard delete audit event, if Task 02 is implemented in code
+## Implemented Narrow Addition
+- imported-file hard delete audit event
 
-If included, keep it narrow:
+The delete audit event stays intentionally narrow:
 
 - actor
 - account/imported-file identifiers
 - no sensitive raw CSV payloads
 
-## Remaining Open Question
-1. Should imported-file hard delete be audited in v1, or is standard DB traceability sufficient for this milestone?
+## Implementation Notes
+- `materialization_requested` is appended atomically with creation of the pending `import_materialization`
+- `materialization_completed` is appended atomically with terminal success updates, including `completed_with_errors`
+- `materialization_failed` is appended atomically with terminal failed updates
+- imported-file hard delete is audited as `deleted` on `imported_file`
+- audit metadata stays narrow and excludes raw CSV content or row payloads

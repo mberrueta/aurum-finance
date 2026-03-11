@@ -6,6 +6,7 @@ defmodule AurumFinance.Ingestion do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Audit
+  alias AurumFinance.Audit.AuditEvent
   alias AurumFinance.Ingestion.ImportMaterialization
   alias AurumFinance.Ingestion.ImportedFile
   alias AurumFinance.Ingestion.ImportRowMaterialization
@@ -55,6 +56,10 @@ defmodule AurumFinance.Ingestion do
   @audit_channel :system
   @audit_entity_type "imported_file"
   @upload_audit_action "uploaded"
+  @delete_audit_action "deleted"
+  @materialization_audit_entity_type "import_materialization"
+  @materialization_request_audit_action "materialization_requested"
+  @materialization_request_audit_channel :web
 
   @doc """
   Lists imported files within one account scope with optional filters.
@@ -820,11 +825,11 @@ defmodule AurumFinance.Ingestion do
   defp insert_materialization_request(attrs) do
     Repo.transaction(fn ->
       with {:ok, materialization} <- insert_import_materialization(attrs),
-           {:ok, _job} <- enqueue_materialization_request(materialization) do
+           {:ok, _job} <- enqueue_materialization_request(materialization),
+           {:ok, _audit_event} <- insert_materialization_requested_audit_event(materialization) do
         materialization
       else
-        {:error, reason} ->
-          Repo.rollback(reason)
+        {:error, reason} -> Repo.rollback(reason)
       end
     end)
     |> insert_materialization_request_result()
@@ -866,11 +871,18 @@ defmodule AurumFinance.Ingestion do
   end
 
   defp delete_imported_file_record(%ImportedFile{} = imported_file) do
+    before_snapshot = imported_file_audit_snapshot(imported_file)
+
     Repo.transaction(fn ->
-      imported_file
-      |> delete_imported_rows()
-      |> delete_imported_file_step(imported_file)
-      |> delete_imported_file_storage_step(imported_file)
+      with {_count, nil} <- delete_imported_rows(imported_file),
+           {:ok, deleted_imported_file} <- Repo.delete(imported_file),
+           {:ok, _audit_event} <-
+             insert_imported_file_deleted_audit_event(imported_file, before_snapshot),
+           :ok <- LocalFileStorage.delete(imported_file.storage_path) do
+        deleted_imported_file
+      else
+        {:error, reason} -> Repo.rollback(reason)
+      end
     end)
     |> delete_imported_file_record_result()
   end
@@ -878,23 +890,6 @@ defmodule AurumFinance.Ingestion do
   defp delete_imported_rows(%ImportedFile{} = imported_file) do
     from(imported_row in ImportedRow, where: imported_row.imported_file_id == ^imported_file.id)
     |> Repo.delete_all()
-  end
-
-  defp delete_imported_file_step({_count, nil}, %ImportedFile{} = imported_file) do
-    case Repo.delete(imported_file) do
-      {:ok, deleted_imported_file} -> deleted_imported_file
-      {:error, reason} -> Repo.rollback(reason)
-    end
-  end
-
-  defp delete_imported_file_storage_step(
-         %ImportedFile{} = deleted_imported_file,
-         %ImportedFile{} = imported_file
-       ) do
-    case LocalFileStorage.delete(imported_file.storage_path) do
-      :ok -> deleted_imported_file
-      {:error, reason} -> Repo.rollback(reason)
-    end
   end
 
   defp require_account_scope_result({:ok, account_id}, opts, _function_name)
@@ -1006,5 +1001,91 @@ defmodule AurumFinance.Ingestion do
       desc: row_materialization.inserted_at,
       asc: imported_row.row_index
     )
+  end
+
+  defp materialization_audit_metadata(attrs) do
+    %{
+      account_id: attrs.account_id,
+      imported_file_id: attrs.imported_file_id,
+      requested_by: attrs.requested_by
+    }
+  end
+
+  defp import_materialization_audit_snapshot(%ImportMaterialization{} = materialization) do
+    %{
+      "id" => materialization.id,
+      "account_id" => materialization.account_id,
+      "imported_file_id" => materialization.imported_file_id,
+      "status" => materialization.status,
+      "requested_by" => materialization.requested_by,
+      "rows_considered" => materialization.rows_considered,
+      "rows_materialized" => materialization.rows_materialized,
+      "rows_skipped_duplicate" => materialization.rows_skipped_duplicate,
+      "rows_failed" => materialization.rows_failed,
+      "error_message" => materialization.error_message,
+      "started_at" => materialization.started_at,
+      "finished_at" => materialization.finished_at,
+      "inserted_at" => materialization.inserted_at,
+      "updated_at" => materialization.updated_at
+    }
+  end
+
+  defp imported_file_audit_snapshot(%ImportedFile{} = imported_file) do
+    %{
+      "id" => imported_file.id,
+      "account_id" => imported_file.account_id,
+      "filename" => imported_file.filename,
+      "format" => imported_file.format,
+      "status" => imported_file.status,
+      "row_count" => imported_file.row_count,
+      "imported_row_count" => imported_file.imported_row_count,
+      "skipped_row_count" => imported_file.skipped_row_count,
+      "invalid_row_count" => imported_file.invalid_row_count,
+      "error_message" => imported_file.error_message,
+      "processed_at" => imported_file.processed_at,
+      "content_type" => imported_file.content_type,
+      "byte_size" => imported_file.byte_size,
+      "inserted_at" => imported_file.inserted_at,
+      "updated_at" => imported_file.updated_at
+    }
+  end
+
+  defp insert_materialization_requested_audit_event(%ImportMaterialization{} = materialization) do
+    %{
+      entity_type: @materialization_audit_entity_type,
+      entity_id: materialization.id,
+      action: @materialization_request_audit_action,
+      actor: materialization.requested_by,
+      channel: @materialization_request_audit_channel,
+      before: nil,
+      after: import_materialization_audit_snapshot(materialization),
+      metadata: materialization_audit_metadata(materialization),
+      occurred_at: DateTime.utc_now()
+    }
+    |> insert_audit_event()
+  end
+
+  defp insert_imported_file_deleted_audit_event(
+         %ImportedFile{} = imported_file,
+         before_snapshot
+       ) do
+    %{
+      entity_type: @audit_entity_type,
+      entity_id: imported_file.id,
+      action: @delete_audit_action,
+      actor: @audit_actor,
+      channel: @audit_channel,
+      before: before_snapshot,
+      after: nil,
+      metadata: %{account_id: imported_file.account_id},
+      occurred_at: DateTime.utc_now()
+    }
+    |> insert_audit_event()
+  end
+
+  defp insert_audit_event(attrs) do
+    %AuditEvent{}
+    |> AuditEvent.changeset(attrs)
+    |> Repo.insert()
   end
 end
