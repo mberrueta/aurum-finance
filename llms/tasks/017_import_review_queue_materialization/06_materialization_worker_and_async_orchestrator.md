@@ -1,8 +1,8 @@
 # Task 06: Materialization Worker and Async Orchestrator
 
 ## Status
-- **Status**: UPDATED
-- **Approved**: [ ] Human sign-off
+- **Status**: COMPLETED
+- **Approved**: [x] Human sign-off
 
 ## Objective
 Implement the async worker that processes one materialization run and records durable row outcomes.

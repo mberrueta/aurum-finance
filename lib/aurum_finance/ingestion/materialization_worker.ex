@@ -9,6 +9,7 @@ defmodule AurumFinance.Ingestion.MaterializationWorker do
   use Oban.Worker, queue: :materializations, max_attempts: 5
 
   alias AurumFinance.Ingestion.ImportMaterialization
+  alias AurumFinance.Ingestion.MaterializationRunner
 
   @doc """
   Builds a new Oban job for one import materialization run.
@@ -24,7 +25,21 @@ defmodule AurumFinance.Ingestion.MaterializationWorker do
   end
 
   @impl Oban.Worker
-  def perform(%Oban.Job{}) do
-    {:error, "materialization worker not implemented yet"}
+  def perform(%Oban.Job{
+        args: %{
+          "account_id" => account_id,
+          "import_materialization_id" => import_materialization_id,
+          "imported_file_id" => imported_file_id
+        }
+      }) do
+    account_id
+    |> MaterializationRunner.run(imported_file_id, import_materialization_id)
+    |> perform_result()
   end
+
+  def perform(%Oban.Job{}), do: {:discard, "invalid materialization job args"}
+
+  defp perform_result(:ok), do: :ok
+  defp perform_result({:error, :not_found}), do: {:discard, :not_found}
+  defp perform_result({:error, reason}), do: {:error, reason}
 end
