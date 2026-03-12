@@ -180,15 +180,21 @@ sequenceDiagram
     W->>R: Start session(account, statement)
     R->>I: Load statement row evidence
     R->>L: Load candidate postings
-    R->>R: Score matches + create MatchResult candidates
-    R-->>W: Candidates + discrepancies
-    U->>W: Accept/reject/reopen as needed
+    R->>R: Score runtime candidates with explainable signals
+    R-->>W: Candidate rows + reconciliation state
+    U->>W: Inspect candidate rows and accept/clear when appropriate
     W->>R: Apply transition (unreconciled/cleared/reconciled)
     R-->>W: Updated state + audit + discrepancy status
 ```
 
 Key architecture points:
 - `reconciled` is explicit confirmation, never automatic.
+- Current candidate scoring is assist-only and read-time. It does not persist a
+  standalone `MatchResult` entity yet.
+- Public candidate inspection surfaces only useful above-threshold candidates by
+  default, even though internal scoring can classify more broadly.
+- Accepted candidate references are currently preserved through reconciliation
+  audit metadata.
 - Corrections reopen reconciliation and preserve evidence history.
 
 ### 3) Reporting and FX conversion

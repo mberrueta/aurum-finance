@@ -1,7 +1,7 @@
 # Task 13: ADR and System Documentation Update for Assisted Matching
 
 ## Status
-- **Status**: PENDING
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 10, Task 11
 - **Blocks**: None
@@ -105,24 +105,48 @@ The agent must choose one of these and justify it:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
+- Amended `docs/adr/0013-reconciliation-workflow-model.md` to reflect the
+  shipped intermediate posture: runtime assisted candidate matching,
+  explainable scoring, operator-driven acceptance, and deferred persistent
+  `MatchResult` / `Discrepancy` lifecycle.
+- Updated `docs/architecture.md` so the reconciliation flow shows runtime
+  candidate scoring, read-only candidate inspection, default above-threshold
+  filtering, and accepted candidate references preserved in reconciliation
+  audit metadata.
+- Updated `docs/domain-model.md` so the reconciliation section distinguishes
+  between the current runtime match-candidate model and future persistent
+  matching/discrepancy entities.
+
 ### Outputs Created
+- Updated `docs/adr/0013-reconciliation-workflow-model.md`
+- Updated `docs/architecture.md`
+- Updated `docs/domain-model.md`
+
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
+| Amending ADR 0013 was sufficient and a new ADR was not required | The shipped feature clarifies the implementation posture of the already accepted reconciliation direction rather than introducing a competing architectural decision |
+| `MatchResult` and `Discrepancy` remain valid future concepts even though they are not persisted yet | Existing architecture already anticipates them; docs needed to distinguish current runtime behavior from deferred domain entities |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
+| Amend ADR 0013 instead of creating a new ADR | New ADR for assisted runtime candidate scoring | This feature is an implementation refinement inside the existing reconciliation model, not a separate top-level architectural fork |
+| Document `score` + `match_band` as the public contract | Introducing a second backend qualitative field such as `match_strength` | Keeps the backend contract stable and avoids competing qualitative vocabularies |
+| Document default filtering of `below_threshold` candidates | Showing all internally classified candidates by default | Matches the shipped API/UI behavior and keeps the operator-facing workflow focused on useful candidates |
 
 ### Blockers Encountered
+- None
+
 ### Questions for Human
+- None
+
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

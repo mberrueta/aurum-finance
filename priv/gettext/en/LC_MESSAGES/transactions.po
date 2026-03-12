@@ -3,19 +3,19 @@ msgstr ""
 "Language: en\n"
 
 #: lib/aurum_finance_web/components/transactions_components.ex:130
-#: lib/aurum_finance_web/live/transactions_live.ex:157
+#: lib/aurum_finance_web/live/transactions_live.ex:162
 #, elixir-autogen
 msgid "badge_import"
 msgstr "Import"
 
 #: lib/aurum_finance_web/components/transactions_components.ex:129
-#: lib/aurum_finance_web/live/transactions_live.ex:156
+#: lib/aurum_finance_web/live/transactions_live.ex:161
 #, elixir-autogen
 msgid "badge_manual"
 msgstr "Manual"
 
 #: lib/aurum_finance_web/components/transactions_components.ex:131
-#: lib/aurum_finance_web/live/transactions_live.ex:158
+#: lib/aurum_finance_web/live/transactions_live.ex:163
 #, elixir-autogen
 msgid "badge_system"
 msgstr "System"
@@ -88,7 +88,7 @@ msgstr "No transactions found for the selected filters."
 msgid "filter_account"
 msgstr "Account"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:150
+#: lib/aurum_finance_web/live/transactions_live.ex:155
 #, elixir-autogen
 msgid "filter_account_all"
 msgstr "All accounts"
@@ -98,22 +98,22 @@ msgstr "All accounts"
 msgid "filter_date"
 msgstr "Date"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:167
+#: lib/aurum_finance_web/live/transactions_live.ex:172
 #, elixir-autogen
 msgid "filter_date_all"
 msgstr "All"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:165
+#: lib/aurum_finance_web/live/transactions_live.ex:170
 #, elixir-autogen
 msgid "filter_date_this_month"
 msgstr "This month"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:164
+#: lib/aurum_finance_web/live/transactions_live.ex:169
 #, elixir-autogen
 msgid "filter_date_this_week"
 msgstr "This week"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:166
+#: lib/aurum_finance_web/live/transactions_live.ex:171
 #, elixir-autogen
 msgid "filter_date_this_year"
 msgstr "This year"
@@ -131,17 +131,17 @@ msgstr "Include voided"
 msgid "filter_source"
 msgstr "Source"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:155
+#: lib/aurum_finance_web/live/transactions_live.ex:160
 #, elixir-autogen
 msgid "filter_source_all"
 msgstr "All sources"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:264
+#: lib/aurum_finance_web/live/transactions_live.ex:269
 #, elixir-autogen
 msgid "filters_hide"
 msgstr "Hide filters"
 
-#: lib/aurum_finance_web/live/transactions_live.ex:265
+#: lib/aurum_finance_web/live/transactions_live.ex:270
 #, elixir-autogen
 msgid "filters_show"
 msgstr "More filters"

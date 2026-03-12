@@ -4,7 +4,7 @@
 - **Spec**: `llms/tasks/018_reconciliation_status/plan.md` (original spec preserved below)
 - **Created**: 2026-03-11
 - **Status**: IN PROGRESS
-- **Current Task**: 12_match_candidates_tests.md
+- **Current Task**: None
 
 ## Overview
 
@@ -82,8 +82,8 @@ This extension adds reconciliation assistance without introducing auto-reconcili
 |---|------|--------|----------|--------------|
 | 10 | Backend candidate matching API | COMPLETED | [ ] | Task 03, Task 07 |
 | 11 | Frontend candidate-inspection UI | COMPLETED | [ ] | Task 10 |
-| 12 | Backend + LiveView tests | PENDING | [ ] | Task 10, Task 11 |
-| 13 | ADR + system docs update | PENDING | [ ] | Task 10, Task 11 |
+| 12 | Backend + LiveView tests | COMPLETED | [ ] | Task 10, Task 11 |
+| 13 | ADR + system docs update | COMPLETED | [ ] | Task 10, Task 11 |
 
 **Status Legend:**
 - PENDING - Ready to start (dependencies met)
@@ -117,6 +117,8 @@ This extension adds reconciliation assistance without introducing auto-reconcili
 | 2026-03-12 | Plan | Added follow-up assisted matching extension tasks 10-13 | User requested posting-to-import comparison workflow |
 | 2026-03-12 | Task 10 | Marked backend candidate matching API as completed | Backend API, modules, and tests implemented locally |
 | 2026-03-12 | Task 11 | Marked frontend candidate-inspection UI as completed | LiveView panel, row inspection action, and smoke tests implemented locally |
+| 2026-03-12 | Task 12 | Marked backend and LiveView tests as completed | Deterministic backend ranking coverage and candidate-inspection/acceptance LiveView tests implemented locally |
+| 2026-03-12 | Task 13 | Marked ADR and system docs update as completed | ADR 0013, architecture, and domain model now reflect assist-only runtime candidate matching |
 
 ---
 ---

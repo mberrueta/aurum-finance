@@ -86,6 +86,41 @@ Additional rules:
 Matching compares statement lines (from import rows) to existing postings using
 a weighted score, producing candidate matches.
 
+#### Current Implementation Status (2026-03-12)
+
+The current implementation ships **assist-only candidate matching**, not full
+persisted `MatchResult` lifecycle yet.
+
+What is implemented now:
+
+- runtime candidate retrieval from `ImportedRow` evidence within the
+  `AurumFinance.Reconciliation` context
+- explainable scoring with a normalized heuristic `score` in the range
+  `0.0..1.0`
+- stable qualitative `match_band` values:
+  - `exact_match`
+  - `near_match`
+  - `weak_match`
+  - `below_threshold`
+- default public filtering so only above-threshold candidates are shown unless
+  explicitly requested otherwise
+- read-only candidate inspection in the reconciliation UI
+- explicit operator action to accept a visible candidate and mark the posting
+  `cleared`
+- accepted candidate reference persisted in reconciliation audit metadata, not
+  yet as a standalone `MatchResult` record
+
+What remains deferred:
+
+- durable `MatchResult` persistence as a first-class entity
+- `rejected` / `superseded` candidate lifecycle
+- discrepancy records and resolution workflow
+- auto-suggest / auto-clear automation
+
+This means the accepted architectural direction remains valid, but the shipped
+system is currently in an intermediate implementation posture: runtime candidate
+scoring plus audit-traceable acceptance, without a persistent match table yet.
+
 #### MatchResult Entity
 
 | Field | Description | Mutability |
@@ -117,6 +152,23 @@ Candidate generation rules:
    - one statement row may accept at most one posting,
    - one posting may accept at most one statement row within an open session.
 3. Auto-matches can set `cleared`, never `reconciled`.
+
+#### Current scoring contract
+
+The current runtime scorer follows these rules:
+
+- amount has the highest weight
+- date proximity has the second-highest weight
+- description similarity is supportive only
+- description similarity must not rescue a weak amount/date candidate into a
+  strong band
+
+Public scoring output is intentionally neutral and explainable:
+
+- `score` is a normalized heuristic in the range `0.0..1.0`
+- `match_band` is the stable backend qualitative contract
+- additional UI wording must remain derived from `match_band`, not introduce a
+  second competing classification model
 
 ### 4. Discrepancy Tracking
 
@@ -217,6 +269,10 @@ The model separates:
 This keeps reconciliation auditable and resilient to correction workflows while
 reducing operator effort through automatic `cleared` suggestions.
 
+In the current implementation, operator effort is reduced through **candidate
+inspection and explicit accept-and-clear actions**, not through automatic
+reconciliation.
+
 It also preserves the immutable-fact posture: reconciliation never edits
 postings; it overlays workflow state and audit events.
 
@@ -247,12 +303,18 @@ postings; it overlays workflow state and audit events.
   (ADR-0007).
 - The Reconciliation context owns: ReconciliationSession, MatchResult,
   Discrepancy, ReconciliationAuditLog.
+- In the current shipped implementation, `MatchResult` and `Discrepancy` remain
+  deferred as persistent tables. Candidate matching currently runs at read time
+  and writes accepted candidate references into reconciliation audit metadata.
 - Reconciliation state must be stored in a **separate overlay table**
   (e.g., `posting_reconciliation_states`) keyed by `posting_id`, never as a
   column on the `postings` table. This preserves ADR-0014's prohibition on
   workflow attributes on fact tables. The state is rolled up to transactions
   for UI display.
 - Enforce accepted-match uniqueness constraints in the persistence model.
+- Until persistent `MatchResult` storage is introduced, the public API/UI should
+  expose only useful above-threshold candidates by default and keep acceptance
+  semantics explicit and user-driven.
 - Record all transition events in the append-only `ReconciliationAuditLog`.
 - Keep ingestion deduplication and reconciliation matching separate concerns:
   dedup prevents duplicate imports; reconciliation confirms ledger correctness

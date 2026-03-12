@@ -1,7 +1,7 @@
 # Task 12: Candidate Matching Tests
 
 ## Status
-- **Status**: PENDING
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 10, Task 11
 - **Blocks**: Task 13
@@ -94,24 +94,45 @@ Add deterministic backend and LiveView tests for the candidate-matching workflow
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
+- Extended `test/aurum_finance/reconciliation_test.exs` with deterministic
+  backend coverage for candidate retrieval, ranking, score normalization,
+  match-band classification, scope isolation, nil-description handling, and the
+  operator acceptance flow.
+- Extended `test/aurum_finance_web/live/reconciliation_live_test.exs` with
+  interaction coverage for opening the candidate panel, empty candidate states,
+  switching inspected postings, and accepting a candidate to clear the posting.
+- Kept the tests factory-driven and sandbox-safe without timing-based
+  synchronization.
+
 ### Outputs Created
+- Updated `test/aurum_finance/reconciliation_test.exs`
+- Updated `test/aurum_finance_web/live/reconciliation_live_test.exs`
+
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
+| Task 12 could be closed using the test coverage added while implementing Tasks 10 and 11 plus the later accept-candidate flow | The acceptance criteria are about outcome coverage, not when the tests were authored |
+| Acceptance-flow coverage belongs in this task even though it extends the original inspection-only UI work | It is part of the same candidate-matching workflow and exercises the same backend contract |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
+| Extend the existing reconciliation test files instead of creating new fragmented files | New dedicated test files for matcher-only behavior | The current test files already own the reconciliation backend and LiveView workflow, so the added coverage stays easier to navigate there |
+| Keep assertions centered on stable IDs, state transitions, and returned contracts | Raw HTML snapshots or brittle text-only assertions | Matches the project LiveView testing style and reduces churn from non-semantic markup changes |
+| Test that stronger amount/date evidence outranks stronger description-only evidence | Rely on indirect score assertions only | This directly protects the intended product heuristic from future regressions |
 
 ### Blockers Encountered
+- None
+
 ### Questions for Human
+- None
+
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

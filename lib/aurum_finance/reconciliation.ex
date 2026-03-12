@@ -653,7 +653,7 @@ defmodule AurumFinance.Reconciliation do
   # Mark cleared / unclear
   # ---------------------------------------------------------------------------
 
-  @dialyzer {:nowarn_function, do_mark_postings_cleared: 3, do_mark_postings_uncleared: 3}
+  @dialyzer {:nowarn_function, do_mark_postings_cleared: 4, do_mark_postings_uncleared: 3}
   defp do_mark_postings_cleared(posting_ids, session, opts, metadata_by_posting \\ %{}) do
     now = utc_now()
     audit_metadata = extract_audit_metadata(opts)
