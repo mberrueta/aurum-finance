@@ -79,7 +79,7 @@ defmodule AurumFinance.Audit.MultiTest do
                |> Repo.transaction()
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).entity_id
+      assert "This field is required." in errors_on(changeset).entity_id
       assert Repo.aggregate(AuditEvent, :count, :id) == 0
     end
 

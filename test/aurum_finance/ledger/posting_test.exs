@@ -19,9 +19,9 @@ defmodule AurumFinance.Ledger.PostingTest do
       changeset = Posting.changeset(%Posting{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).transaction_id
-      assert "error_field_required" in errors_on(changeset).account_id
-      assert "error_field_required" in errors_on(changeset).amount
+      assert "This field is required." in errors_on(changeset).transaction_id
+      assert "This field is required." in errors_on(changeset).account_id
+      assert "This field is required." in errors_on(changeset).amount
     end
 
     test "requires amount to be non-nil" do
@@ -33,7 +33,7 @@ defmodule AurumFinance.Ledger.PostingTest do
         })
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).amount
+      assert "This field is required." in errors_on(changeset).amount
     end
 
     test "does not expose currency_code, entity_id, or updated_at fields" do

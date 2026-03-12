@@ -21,10 +21,10 @@ defmodule AurumFinance.Ledger.TransactionTest do
       changeset = Transaction.changeset(%Transaction{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).entity_id
-      assert "error_field_required" in errors_on(changeset).date
-      assert "error_field_required" in errors_on(changeset).description
-      assert "error_field_required" in errors_on(changeset).source_type
+      assert "This field is required." in errors_on(changeset).entity_id
+      assert "This field is required." in errors_on(changeset).date
+      assert "This field is required." in errors_on(changeset).description
+      assert "This field is required." in errors_on(changeset).source_type
     end
 
     test "validates source_type enum" do

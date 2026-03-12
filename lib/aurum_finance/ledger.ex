@@ -9,6 +9,8 @@ defmodule AurumFinance.Ledger do
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
+  alias AurumFinance.Reconciliation
+  alias AurumFinance.Reconciliation.PostingReconciliationState
   alias AurumFinance.Repo
 
   @entity_type "account"
@@ -413,20 +415,28 @@ defmodule AurumFinance.Ledger do
   @spec void_transaction(Transaction.t()) ::
           {:ok, %{voided: Transaction.t(), reversal: Transaction.t()}}
           | {:error, Ecto.Changeset.t()}
+          | {:error, :reconciled_postings}
   @spec void_transaction(Transaction.t(), [audit_opt()]) ::
           {:ok, %{voided: Transaction.t(), reversal: Transaction.t()}}
           | {:error, Ecto.Changeset.t()}
+          | {:error, :reconciled_postings}
   def void_transaction(%Transaction{} = transaction, opts \\ []) do
     audit_metadata = extract_audit_metadata(opts)
     transaction = Repo.preload(transaction, :postings)
+    posting_ids = Enum.map(transaction.postings, & &1.id)
 
-    if transaction.voided_at do
-      {:error,
-       Transaction.void_changeset(transaction, %{
-         voided_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
-       })}
-    else
-      persist_void_transaction(transaction, audit_metadata)
+    cond do
+      transaction.voided_at ->
+        {:error,
+         Transaction.void_changeset(transaction, %{
+           voided_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+         })}
+
+      Reconciliation.any_posting_reconciled?(posting_ids) ->
+        {:error, :reconciled_postings}
+
+      true ->
+        persist_void_transaction(transaction, audit_metadata, posting_ids)
     end
   end
 
@@ -536,7 +546,7 @@ defmodule AurumFinance.Ledger do
   # Transaction persistence (Multi-based)
   # ---------------------------------------------------------------------------
 
-  @dialyzer {:nowarn_function, persist_transaction: 2, persist_void_transaction: 2}
+  @dialyzer {:nowarn_function, persist_transaction: 2, persist_void_transaction: 3}
   defp persist_transaction(validated_changeset, posting_attrs) do
     new_multi()
     |> multi_insert(:transaction, validated_changeset)
@@ -550,7 +560,7 @@ defmodule AurumFinance.Ledger do
     |> normalize_multi_transaction_result()
   end
 
-  defp persist_void_transaction(transaction, audit_metadata) do
+  defp persist_void_transaction(transaction, audit_metadata, posting_ids) do
     voided_at = DateTime.utc_now() |> DateTime.truncate(:microsecond)
     correlation_id = Ecto.UUID.generate()
 
@@ -564,6 +574,7 @@ defmodule AurumFinance.Ledger do
 
     new_multi()
     |> multi_update(:voided, void_changeset)
+    |> Ecto.Multi.delete_all(:cleanup_cleared_overlays, cleared_overlay_query(posting_ids))
     |> Audit.Multi.append_event(:voided, before_snapshot, %{
       entity_type: @transaction_entity_type,
       action: "voided",
@@ -963,6 +974,16 @@ defmodule AurumFinance.Ledger do
 
   defp maybe_filter_balance_as_of_date(query, %Date{} = as_of_date) do
     where(query, [_posting, _account, transaction], transaction.date <= ^as_of_date)
+  end
+
+  defp cleared_overlay_query([]) do
+    from(state in PostingReconciliationState, where: false)
+  end
+
+  defp cleared_overlay_query(posting_ids) do
+    from(state in PostingReconciliationState,
+      where: state.posting_id in ^posting_ids and state.status == ^:cleared
+    )
   end
 
   defp posting_value(posting_attr, key) when is_map(posting_attr) do

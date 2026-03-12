@@ -31,8 +31,8 @@ defmodule AurumFinance.Reconciliation do
 
   @default_actor "system"
   @session_entity_type "reconciliation_session"
-  @cleared_status "cleared"
-  @reconciled_status "reconciled"
+  @cleared_status :cleared
+  @reconciled_status :reconciled
 
   @type audit_opt :: {:actor, String.t()} | {:channel, Audit.audit_channel()}
 
@@ -529,8 +529,8 @@ defmodule AurumFinance.Reconciliation do
         posting_reconciliation_state_id: state.id,
         reconciliation_session_id: session_id,
         posting_id: state.posting_id,
-        from_status: @cleared_status,
-        to_status: @reconciled_status,
+        from_status: Atom.to_string(@cleared_status),
+        to_status: Atom.to_string(@reconciled_status),
         actor: audit_metadata.actor,
         channel: Atom.to_string(audit_metadata.channel),
         occurred_at: now,
@@ -615,6 +615,8 @@ defmodule AurumFinance.Reconciliation do
   end
 
   defp insert_posting_reconciliation_states(repo, clearable_postings, session, now) do
+    posting_ids = Enum.map(clearable_postings, & &1.posting_id)
+
     entries =
       Enum.map(clearable_postings, fn %{posting_id: posting_id} ->
         %{
@@ -628,17 +630,22 @@ defmodule AurumFinance.Reconciliation do
         }
       end)
 
-    {count, inserted_rows} =
+    {count, _inserted_rows} =
       repo.insert_all(
         PostingReconciliationState,
         entries,
         on_conflict: :nothing,
-        conflict_target: [:posting_id],
-        returning: [:id, :entity_id, :posting_id, :reconciliation_session_id, :status, :reason]
+        conflict_target: [:posting_id]
       )
 
     if count == length(entries) do
-      {:ok, Enum.map(inserted_rows, &repo.load(PostingReconciliationState, &1))}
+      states =
+        PostingReconciliationState
+        |> where([state], state.posting_id in ^posting_ids)
+        |> where([state], state.reconciliation_session_id == ^session.id)
+        |> repo.all()
+
+      {:ok, states}
     else
       {:error, :postings_not_clearable}
     end
@@ -647,11 +654,11 @@ defmodule AurumFinance.Reconciliation do
   defp build_cleared_audit_log_entries(states, session_id, audit_metadata, now) do
     Enum.map(states, fn state ->
       %{
-        posting_reconciliation_state_id: state.id,
+        posting_reconciliation_state_id: nil,
         reconciliation_session_id: session_id,
         posting_id: state.posting_id,
         from_status: nil,
-        to_status: @cleared_status,
+        to_status: Atom.to_string(@cleared_status),
         actor: audit_metadata.actor,
         channel: Atom.to_string(audit_metadata.channel),
         occurred_at: now,
@@ -708,7 +715,7 @@ defmodule AurumFinance.Reconciliation do
         posting_reconciliation_state_id: nil,
         reconciliation_session_id: session_id,
         posting_id: state.posting_id,
-        from_status: @cleared_status,
+        from_status: Atom.to_string(@cleared_status),
         to_status: nil,
         actor: audit_metadata.actor,
         channel: Atom.to_string(audit_metadata.channel),
