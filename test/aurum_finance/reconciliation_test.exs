@@ -4,6 +4,7 @@ defmodule AurumFinance.ReconciliationTest do
   import Ecto.Query
 
   alias AurumFinance.Audit
+  alias AurumFinance.Ingestion
   alias AurumFinance.Ledger
   alias AurumFinance.Reconciliation
   alias AurumFinance.Reconciliation.PostingReconciliationState
@@ -468,6 +469,81 @@ defmodule AurumFinance.ReconciliationTest do
     end
   end
 
+  describe "list_match_candidates_for_posting/2" do
+    test "ranks stronger amount and date evidence above stronger description similarity" do
+      %{
+        entity: entity,
+        fuel_posting_id: fuel_posting_id
+      } = reconciliation_postings_with_import_rows()
+
+      assert {:ok, [best_candidate, second_candidate | _rest]} =
+               Reconciliation.list_match_candidates_for_posting(
+                 fuel_posting_id,
+                 entity_id: entity.id,
+                 limit: 10
+               )
+
+      assert best_candidate.imported_row.description == "Fuel purchase"
+      assert best_candidate.match_band == :exact_match
+      assert best_candidate.score <= 1.0
+      assert best_candidate.score >= 0.0
+
+      assert second_candidate.imported_row.description == "Fuel station premium"
+      assert second_candidate.match_band in [:near_match, :weak_match]
+      assert best_candidate.score > second_candidate.score
+    end
+
+    test "filters below-threshold rows from the public API by default" do
+      %{
+        entity: entity,
+        fuel_posting_id: fuel_posting_id
+      } = reconciliation_postings_with_import_rows()
+
+      assert {:ok, candidates} =
+               Reconciliation.list_match_candidates_for_posting(
+                 fuel_posting_id,
+                 entity_id: entity.id,
+                 limit: 10
+               )
+
+      refute Enum.any?(candidates, &(&1.match_band == :below_threshold))
+
+      assert {:ok, candidates_with_below_threshold} =
+               Reconciliation.list_match_candidates_for_posting(
+                 fuel_posting_id,
+                 entity_id: entity.id,
+                 limit: 10,
+                 include_below_threshold: true
+               )
+
+      assert Enum.any?(candidates_with_below_threshold, &(&1.match_band == :below_threshold))
+    end
+
+    test "returns only imported rows from the posting account and entity scope" do
+      %{
+        entity: entity,
+        other_entity: other_entity,
+        fuel_posting_id: fuel_posting_id,
+        account: account
+      } = reconciliation_postings_with_import_rows()
+
+      assert {:ok, candidates} =
+               Reconciliation.list_match_candidates_for_posting(
+                 fuel_posting_id,
+                 entity_id: entity.id,
+                 limit: 10
+               )
+
+      assert Enum.all?(candidates, &(&1.imported_row.account_id == account.id))
+
+      assert {:error, :not_found} =
+               Reconciliation.list_match_candidates_for_posting(
+                 fuel_posting_id,
+                 entity_id: other_entity.id
+               )
+    end
+  end
+
   defp reconciliation_postings do
     entity = insert_entity()
     account = insert_account(entity, %{name: "Recon Checking"})
@@ -533,4 +609,100 @@ defmodule AurumFinance.ReconciliationTest do
       transaction: transaction_1
     }
   end
+
+  defp reconciliation_postings_with_import_rows do
+    base = reconciliation_postings()
+    account = base.account
+    other_entity = insert_entity()
+    other_account = insert_account(other_entity)
+
+    fuel_posting_id =
+      AurumFinance.Ledger.Posting
+      |> join(:inner, [posting], transaction in AurumFinance.Ledger.Transaction,
+        on: transaction.id == posting.transaction_id
+      )
+      |> where(
+        [posting, transaction],
+        posting.account_id == ^account.id and transaction.description == "Fuel"
+      )
+      |> select([posting], posting.id)
+      |> Repo.one!()
+
+    imported_file = create_imported_file(account)
+
+    _exact_match_row =
+      create_imported_row(imported_file, account, 0, "Fuel purchase", ~D[2026-03-02], "-20.00")
+
+    _better_description_weaker_core_row =
+      create_imported_row(
+        imported_file,
+        account,
+        1,
+        "Fuel station premium",
+        ~D[2026-03-03],
+        "-22.00"
+      )
+
+    _below_threshold_row =
+      create_imported_row(imported_file, account, 2, nil, ~D[2026-03-04], "-24.00")
+
+    other_imported_file = create_imported_file(other_account)
+
+    _other_entity_row =
+      create_imported_row(
+        other_imported_file,
+        other_account,
+        0,
+        "Fuel purchase",
+        ~D[2026-03-02],
+        "-20.00"
+      )
+
+    Map.merge(base, %{
+      fuel_posting_id: fuel_posting_id,
+      other_entity: other_entity
+    })
+  end
+
+  defp create_imported_file(account) do
+    {:ok, imported_file} =
+      Ingestion.create_imported_file(%{
+        account_id: account.id,
+        filename: "statement-#{System.unique_integer([:positive])}.csv",
+        sha256: String.duplicate("a", 64),
+        format: :csv,
+        status: :complete,
+        storage_path: "/tmp/statement-#{System.unique_integer([:positive])}.csv"
+      })
+
+    imported_file
+  end
+
+  defp create_imported_row(imported_file, account, row_index, description, posted_on, amount) do
+    raw_data =
+      case description do
+        nil -> %{"posted_on" => Date.to_iso8601(posted_on)}
+        _description -> %{"description" => description, "posted_on" => Date.to_iso8601(posted_on)}
+      end
+
+    {:ok, imported_row} =
+      Ingestion.create_imported_row(%{
+        imported_file_id: imported_file.id,
+        account_id: account.id,
+        row_index: row_index,
+        raw_data: raw_data,
+        description: description,
+        normalized_description: normalize_description(description),
+        posted_on: posted_on,
+        amount: Decimal.new(amount),
+        currency: "USD",
+        fingerprint: "fp-#{System.unique_integer([:positive])}",
+        status: :ready
+      })
+
+    imported_row
+  end
+
+  defp normalize_description(nil), do: nil
+  defp normalize_description(description), do: String.downcase(description)
 end

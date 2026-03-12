@@ -21,9 +21,12 @@ defmodule AurumFinance.Reconciliation do
 
   alias AurumFinance.Audit
   alias AurumFinance.Audit.Multi, as: AuditMulti
+  alias AurumFinance.Ingestion.ImportedRow
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
+  alias AurumFinance.Reconciliation.MatchCandidateFinder
+  alias AurumFinance.Reconciliation.MatchCandidateScorer
   alias AurumFinance.Reconciliation.PostingReconciliationState
   alias AurumFinance.Reconciliation.ReconciliationAuditLog
   alias AurumFinance.Reconciliation.ReconciliationSession
@@ -41,7 +44,14 @@ defmodule AurumFinance.Reconciliation do
           | {:account_id, Ecto.UUID.t()}
           | {:include_completed, boolean()}
 
+  @type match_candidate_opt ::
+          {:entity_id, Ecto.UUID.t()}
+          | {:date_window_days, non_neg_integer()}
+          | {:include_below_threshold, boolean()}
+          | {:limit, pos_integer()}
+
   @type posting_status :: :unreconciled | :cleared | :reconciled
+  @type match_band :: :exact_match | :near_match | :weak_match | :below_threshold
 
   @type reconciliation_posting :: %{
           id: Ecto.UUID.t(),
@@ -55,6 +65,23 @@ defmodule AurumFinance.Reconciliation do
           posting_reconciliation_state_id: Ecto.UUID.t() | nil,
           reconciliation_session_id: Ecto.UUID.t() | nil,
           reason: String.t() | nil
+        }
+
+  @type match_candidate :: %{
+          posting_id: Ecto.UUID.t(),
+          imported_row_id: Ecto.UUID.t(),
+          imported_file_id: Ecto.UUID.t(),
+          score: float(),
+          match_band: match_band(),
+          reasons: [atom()],
+          signals: %{
+            amount_exact: boolean(),
+            amount_absolute_distance: Decimal.t(),
+            amount_relative_distance: float(),
+            date_distance_days: non_neg_integer(),
+            description_similarity: float()
+          },
+          imported_row: ImportedRow.t()
         }
 
   @doc """
@@ -332,6 +359,47 @@ defmodule AurumFinance.Reconciliation do
     |> select([state], state.status)
     |> Repo.one()
     |> normalize_posting_status()
+  end
+
+  @doc """
+  Returns ranked imported-row match candidates for one posting within an entity scope.
+
+  Candidate retrieval, scoring, and presentation are intentionally separated so
+  the matching model can evolve without changing the public context contract.
+
+  The returned candidates are read-only assistance. Inspecting them does not
+  clear, reconcile, or persist any match suggestion.
+
+  By default, the public API only returns useful above-threshold candidates.
+  Internal scoring may still classify weaker rows as `:below_threshold`, and
+  callers can opt in to include them.
+
+  ## Examples
+
+      iex> AurumFinance.Reconciliation.list_match_candidates_for_posting(
+      ...>   Ecto.UUID.generate(),
+      ...>   entity_id: Ecto.UUID.generate()
+      ...> )
+      {:error, :not_found}
+  """
+  @spec list_match_candidates_for_posting(Ecto.UUID.t(), [match_candidate_opt()]) ::
+          {:ok, [match_candidate()]} | {:error, :not_found}
+  def list_match_candidates_for_posting(posting_id, opts \\ []) do
+    opts = require_entity_scope!(opts, "list_match_candidates_for_posting/2")
+
+    with {:ok, posting_context} <-
+           fetch_posting_match_context(Keyword.fetch!(opts, :entity_id), posting_id) do
+      candidates =
+        posting_context
+        |> MatchCandidateFinder.find(opts)
+        |> Enum.map(&MatchCandidateScorer.score(posting_context, &1, opts))
+        |> maybe_reject_below_threshold(opts)
+        |> Enum.sort_by(& &1.score, :desc)
+        |> Enum.take(Keyword.get(opts, :limit, 5))
+        |> Enum.map(&normalize_match_candidate/1)
+
+      {:ok, candidates}
+    end
   end
 
   @doc """
@@ -801,6 +869,43 @@ defmodule AurumFinance.Reconciliation do
 
   defp active_session(%ReconciliationSession{completed_at: nil} = session), do: {:ok, session}
   defp active_session(%ReconciliationSession{}), do: {:error, :session_already_completed}
+
+  defp fetch_posting_match_context(entity_id, posting_id) do
+    Posting
+    |> join(:inner, [posting], transaction in Transaction,
+      on: transaction.id == posting.transaction_id
+    )
+    |> join(:inner, [posting, _transaction], account in Account,
+      on: account.id == posting.account_id
+    )
+    |> where(
+      [posting, transaction, account],
+      posting.id == ^posting_id and transaction.entity_id == ^entity_id and
+        account.entity_id == ^entity_id
+    )
+    |> select([posting, transaction, account], %{
+      posting: posting,
+      transaction_date: transaction.date,
+      transaction_description: transaction.description,
+      account: account
+    })
+    |> Repo.one()
+    |> fetch_posting_match_context_result()
+  end
+
+  defp fetch_posting_match_context_result(nil), do: {:error, :not_found}
+  defp fetch_posting_match_context_result(posting_context), do: {:ok, posting_context}
+
+  defp maybe_reject_below_threshold(candidates, opts) do
+    case Keyword.get(opts, :include_below_threshold, false) do
+      true -> candidates
+      false -> Enum.reject(candidates, &(&1.match_band == :below_threshold))
+    end
+  end
+
+  defp normalize_match_candidate(candidate) do
+    Map.update!(candidate, :reasons, &Enum.reverse/1)
+  end
 
   # ---------------------------------------------------------------------------
   # Audit helpers

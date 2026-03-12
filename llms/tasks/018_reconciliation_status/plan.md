@@ -3,8 +3,8 @@
 ## Metadata
 - **Spec**: `llms/tasks/018_reconciliation_status/plan.md` (original spec preserved below)
 - **Created**: 2026-03-11
-- **Status**: PLANNING
-- **Current Task**: N/A
+- **Status**: IN PROGRESS
+- **Current Task**: 11_match_candidates_frontend.md
 
 ## Overview
 
@@ -80,7 +80,7 @@ This extension adds reconciliation assistance without introducing auto-reconcili
 
 | # | Task | Status | Approved | Dependencies |
 |---|------|--------|----------|--------------|
-| 10 | Backend candidate matching API | PENDING | [ ] | Task 03, Task 07 |
+| 10 | Backend candidate matching API | COMPLETED | [ ] | Task 03, Task 07 |
 | 11 | Frontend candidate-inspection UI | PENDING | [ ] | Task 10 |
 | 12 | Backend + LiveView tests | PENDING | [ ] | Task 10, Task 11 |
 | 13 | ADR + system docs update | PENDING | [ ] | Task 10, Task 11 |
@@ -115,6 +115,7 @@ This extension adds reconciliation assistance without introducing auto-reconcili
 |------|------|--------|--------|
 | 2026-03-11 | Plan | Initial creation | - |
 | 2026-03-12 | Plan | Added follow-up assisted matching extension tasks 10-13 | User requested posting-to-import comparison workflow |
+| 2026-03-12 | Task 10 | Marked backend candidate matching API as completed | Backend API, modules, and tests implemented locally |
 
 ---
 ---

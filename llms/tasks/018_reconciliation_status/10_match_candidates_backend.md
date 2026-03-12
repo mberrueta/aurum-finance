@@ -1,7 +1,7 @@
 # Task 10: Backend Candidate Matching API
 
 ## Status
-- **Status**: PENDING
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 03, Task 07
 - **Blocks**: Task 11, Task 12, Task 13
@@ -181,24 +181,43 @@ The public context function should orchestrate the internal pipeline rather than
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
+- Added `list_match_candidates_for_posting/2` to `AurumFinance.Reconciliation`
+- Added `MatchCandidateFinder` to retrieve raw imported-row candidates within account/date/amount scope
+- Added `MatchCandidateScorer` to calculate weighted score, `match_band`, `reasons`, and `signals`
+- Kept the public contract read-only and filtered `:below_threshold` candidates by default, with opt-in inclusion
+- Added context tests for ranking, threshold filtering, and entity/account isolation
+
 ### Outputs Created
+- `lib/aurum_finance/reconciliation.ex`
+- `lib/aurum_finance/reconciliation/match_candidate_finder.ex`
+- `lib/aurum_finance/reconciliation/match_candidate_scorer.ex`
+- `test/aurum_finance/reconciliation_test.exs`
+
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
+| Candidate retrieval should operate only on `ImportedRow` records with `status: :ready` | Reconciliation assistance should rely on usable imported evidence, not duplicates/invalid rows |
+| The default public API should hide `:below_threshold` rows | Keeps the operator-facing contract focused on useful candidates while preserving scorer breadth for future work |
+| Score should be exposed as a normalized float in the range `0.0..1.0` | Simplifies UI formatting, tests, and future documentation |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
+| Separated retrieval and scoring into dedicated modules | Keeping all logic inline in `AurumFinance.Reconciliation` | Avoids a monolithic context function and leaves room for future tuning |
+| Removed `MatchCandidatePresenter` after initial implementation | Keeping a third shaping module | The shaping concern was too small to justify a separate module at this stage |
+| Weighted scoring as `amount > date > description` | Heavier description similarity or flatter scoring | Matches product intent and reduces noisy bank-description influence |
 
 ### Blockers Encountered
+- None beyond small compile/test adjustments while tuning the threshold fixture and scorer shape
+
 ### Questions for Human
+- None
+
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
