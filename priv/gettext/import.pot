@@ -23,7 +23,7 @@ msgid "page_title"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:462
-#: lib/aurum_finance_web/live/import_details_live.ex:173
+#: lib/aurum_finance_web/live/import_details_live.ex:195
 #, elixir-autogen, elixir-format
 msgid "status_duplicate"
 msgstr ""
@@ -34,7 +34,7 @@ msgid "status_error"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:461
-#: lib/aurum_finance_web/live/import_details_live.ex:172
+#: lib/aurum_finance_web/live/import_details_live.ex:194
 #, elixir-autogen, elixir-format
 msgid "status_ready"
 msgstr ""
@@ -177,7 +177,7 @@ msgstr ""
 msgid "callout_tips_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:160
+#: lib/aurum_finance_web/live/import_details_live.html.heex:178
 #, elixir-autogen, elixir-format
 msgid "details_error_title"
 msgstr ""
@@ -187,8 +187,8 @@ msgstr ""
 msgid "details_page_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:19
-#: lib/aurum_finance_web/live/import_details_live.ex:119
+#: lib/aurum_finance_web/live/import_details_live.ex:21
+#: lib/aurum_finance_web/live/import_details_live.ex:141
 #: lib/aurum_finance_web/live/import_details_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "details_page_title"
@@ -219,7 +219,7 @@ msgstr ""
 msgid "confirm_delete_import"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:267
+#: lib/aurum_finance_web/live/import_details_live.ex:422
 #, elixir-autogen
 msgid "details_delete_blocked_materialization"
 msgstr ""
@@ -239,7 +239,7 @@ msgstr ""
 msgid "details_delete_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:222
+#: lib/aurum_finance_web/live/import_details_live.ex:267
 #, elixir-autogen
 msgid "details_duplicate_visibility_copy"
 msgstr ""
@@ -254,7 +254,7 @@ msgstr ""
 msgid "details_materializable_rows_badge"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:204
+#: lib/aurum_finance_web/live/import_details_live.html.heex:397
 #, elixir-autogen
 msgid "details_materialization_run_meta"
 msgstr ""
@@ -269,7 +269,7 @@ msgstr ""
 msgid "details_materialize_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:184
+#: lib/aurum_finance_web/live/import_details_live.html.heex:368
 #, elixir-autogen
 msgid "empty_materialization_runs"
 msgstr ""
@@ -277,47 +277,47 @@ msgstr ""
 msgid "error_import_delete_blocked_by_materialization"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:259
+#: lib/aurum_finance_web/live/import_details_live.ex:414
 #, elixir-autogen
 msgid "flash_import_delete_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:251
+#: lib/aurum_finance_web/live/import_details_live.ex:406
 #, elixir-autogen
 msgid "flash_import_deleted"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:241
+#: lib/aurum_finance_web/live/import_details_live.ex:396
 #, elixir-autogen
 msgid "flash_materialization_request_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:234
+#: lib/aurum_finance_web/live/import_details_live.ex:389
 #, elixir-autogen
 msgid "flash_materialization_requested"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:200
+#: lib/aurum_finance_web/live/import_details_live.html.heex:393
 #, elixir-autogen
 msgid "label_requested_by"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:213
+#: lib/aurum_finance_web/live/import_details_live.html.heex:418
 #, elixir-autogen
 msgid "label_rows_considered"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:231
+#: lib/aurum_finance_web/live/import_details_live.html.heex:445
 #, elixir-autogen
 msgid "label_rows_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:219
+#: lib/aurum_finance_web/live/import_details_live.html.heex:427
 #, elixir-autogen
 msgid "label_rows_materialized"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:179
+#: lib/aurum_finance_web/live/import_details_live.html.heex:363
 #, elixir-autogen
 msgid "section_materialization_runs"
 msgstr ""
@@ -327,22 +327,22 @@ msgstr ""
 msgid "section_review_workflow"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:186
+#: lib/aurum_finance_web/live/import_details_live.ex:208
 #, elixir-autogen
 msgid "status_completed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:189
+#: lib/aurum_finance_web/live/import_details_live.ex:211
 #, elixir-autogen
 msgid "status_completed_with_errors"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:166
+#: lib/aurum_finance_web/live/import_details_live.html.heex:184
 #, elixir-autogen, elixir-format
 msgid "details_warnings_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:253
+#: lib/aurum_finance_web/live/import_details_live.html.heex:202
 #, elixir-autogen, elixir-format
 msgid "empty_import_rows"
 msgstr ""
@@ -417,32 +417,28 @@ msgstr ""
 msgid "label_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:264
+#: lib/aurum_finance_web/live/import_details_live.html.heex:234
 #, elixir-autogen, elixir-format
 msgid "label_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:265
+#: lib/aurum_finance_web/live/import_details_live.html.heex:250
 #, elixir-autogen, elixir-format
 msgid "label_currency"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:262
+#: lib/aurum_finance_web/live/import_details_live.html.heex:243
 #, elixir-autogen, elixir-format
 msgid "label_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:263
-#, elixir-autogen, elixir-format
-msgid "label_description"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.html.heex:291
+#: lib/aurum_finance_web/live/import_details_live.html.heex:273
 #, elixir-autogen
 msgid "label_duplicate_fingerprint"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:43
+#: lib/aurum_finance_web/live/import_details_live.html.heex:96
 #, elixir-autogen, elixir-format
 msgid "label_entity"
 msgstr ""
@@ -452,7 +448,7 @@ msgstr ""
 msgid "label_entity_scope"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:96
+#: lib/aurum_finance_web/live/import_details_live.html.heex:114
 #, elixir-autogen, elixir-format
 msgid "label_file"
 msgstr ""
@@ -462,7 +458,7 @@ msgstr ""
 msgid "label_format"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:112
+#: lib/aurum_finance_web/live/import_details_live.html.heex:130
 #, elixir-autogen, elixir-format
 msgid "label_processed_at"
 msgstr ""
@@ -472,12 +468,12 @@ msgstr ""
 msgid "label_progress"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:260
+#: lib/aurum_finance_web/live/import_details_live.html.heex:220
 #, elixir-autogen, elixir-format
 msgid "label_row_index"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:266
+#: lib/aurum_finance_web/live/import_details_live.html.heex:257
 #, elixir-autogen, elixir-format
 msgid "label_row_note"
 msgstr ""
@@ -487,46 +483,42 @@ msgstr ""
 msgid "label_rows"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:146
-#: lib/aurum_finance_web/live/import_details_live.html.heex:225
+#: lib/aurum_finance_web/live/import_details_live.html.heex:164
+#: lib/aurum_finance_web/live/import_details_live.html.heex:436
 #, elixir-autogen, elixir-format
 msgid "label_rows_duplicates"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:153
+#: lib/aurum_finance_web/live/import_details_live.html.heex:171
 #, elixir-autogen, elixir-format
 msgid "label_rows_invalid"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:139
+#: lib/aurum_finance_web/live/import_details_live.html.heex:157
 #, elixir-autogen, elixir-format
 msgid "label_rows_ready"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:132
+#: lib/aurum_finance_web/live/import_details_live.html.heex:150
 #, elixir-autogen, elixir-format
 msgid "label_rows_total"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:352
-#: lib/aurum_finance_web/live/import_details_live.html.heex:121
+#: lib/aurum_finance_web/live/import_details_live.html.heex:139
 #, elixir-autogen, elixir-format
 msgid "label_size"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:261
-#, elixir-autogen, elixir-format
-msgid "label_status"
-msgstr ""
-
 #: lib/aurum_finance_web/components/import_components.ex:77
 #: lib/aurum_finance_web/components/import_components.ex:106
+#: lib/aurum_finance_web/live/import_details_live.html.heex:105
 #, elixir-autogen, elixir-format
 msgid "label_target_account"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:327
-#: lib/aurum_finance_web/live/import_details_live.html.heex:103
+#: lib/aurum_finance_web/live/import_details_live.html.heex:121
 #, elixir-autogen, elixir-format
 msgid "label_uploaded_at"
 msgstr ""
@@ -572,7 +564,7 @@ msgstr ""
 msgid "section_expected_format"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:248
+#: lib/aurum_finance_web/live/import_details_live.html.heex:197
 #, elixir-autogen, elixir-format
 msgid "section_import_rows"
 msgstr ""
@@ -599,33 +591,34 @@ msgid "section_upload"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:457
-#: lib/aurum_finance_web/live/import_details_live.ex:163
+#: lib/aurum_finance_web/live/import_details_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "status_complete"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:458
-#: lib/aurum_finance_web/live/import_details_live.ex:164
-#: lib/aurum_finance_web/live/import_details_live.ex:191
+#: lib/aurum_finance_web/live/import_details_live.ex:186
+#: lib/aurum_finance_web/live/import_details_live.ex:213
+#: lib/aurum_finance_web/live/import_details_live.ex:225
 #, elixir-autogen, elixir-format
 msgid "status_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:174
+#: lib/aurum_finance_web/live/import_details_live.ex:196
 #, elixir-autogen, elixir-format
 msgid "status_invalid"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:455
-#: lib/aurum_finance_web/live/import_details_live.ex:161
-#: lib/aurum_finance_web/live/import_details_live.ex:184
+#: lib/aurum_finance_web/live/import_details_live.ex:183
+#: lib/aurum_finance_web/live/import_details_live.ex:206
 #, elixir-autogen, elixir-format
 msgid "status_pending"
 msgstr ""
 
 #: lib/aurum_finance_web/components/import_components.ex:456
-#: lib/aurum_finance_web/live/import_details_live.ex:162
-#: lib/aurum_finance_web/live/import_details_live.ex:185
+#: lib/aurum_finance_web/live/import_details_live.ex:184
+#: lib/aurum_finance_web/live/import_details_live.ex:207
 #, elixir-autogen, elixir-format
 msgid "status_processing"
 msgstr ""
@@ -723,87 +716,52 @@ msgstr ""
 msgid "value_rows_summary"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:245
-#, elixir-autogen, elixir-format
-msgid "details_materialization_outcomes_caption"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.ex:254
-#, elixir-autogen, elixir-format
-msgid "details_materialization_outcomes_empty"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.ex:250
-#, elixir-autogen, elixir-format
-msgid "details_materialization_outcomes_pending"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.ex:246
-#, elixir-autogen, elixir-format
-msgid "details_materialization_outcomes_processing"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.html.heex:242
-#, elixir-autogen, elixir-format
-msgid "details_materialization_outcomes_title"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.html.heex:265
-#, elixir-autogen, elixir-format
-msgid "label_outcome"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.html.heex:266
-#, elixir-autogen, elixir-format
-msgid "label_outcome_reason"
-msgstr ""
-
-#: lib/aurum_finance_web/live/import_details_live.html.heex:267
+#: lib/aurum_finance_web/live/import_details_live.html.heex:349
 #, elixir-autogen, elixir-format
 msgid "label_transaction_reference"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:192
+#: lib/aurum_finance_web/live/import_details_live.ex:222
 #, elixir-autogen, elixir-format
 msgid "status_committed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:194
+#: lib/aurum_finance_web/live/import_details_live.ex:224
 #, elixir-autogen, elixir-format
 msgid "status_skipped"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:292
+#: lib/aurum_finance_web/live/import_details_live.ex:339
 #, elixir-autogen, elixir-format
 msgid "details_materialization_outcome_label"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:301
+#: lib/aurum_finance_web/live/import_details_live.ex:349
 #, elixir-autogen, elixir-format
 msgid "details_materialization_outcome_meta"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.ex:278
+#: lib/aurum_finance_web/live/import_details_live.ex:316
 #, elixir-autogen, elixir-format
 msgid "details_materialization_run_label"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:330
+#: lib/aurum_finance_web/live/import_details_live.html.heex:406
 #, elixir-autogen, elixir-format
 msgid "details_materialization_summary_only"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:241
+#: lib/aurum_finance_web/live/import_details_live.html.heex:294
 #, elixir-autogen, elixir-format
 msgid "details_row_history_caption"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:238
+#: lib/aurum_finance_web/live/import_details_live.html.heex:291
 #, elixir-autogen, elixir-format
 msgid "details_row_history_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/import_details_live.html.heex:273
+#: lib/aurum_finance_web/live/import_details_live.html.heex:300
 #, elixir-autogen, elixir-format
 msgid "details_row_history_collapsed"
 msgstr ""

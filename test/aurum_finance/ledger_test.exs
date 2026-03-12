@@ -5,17 +5,20 @@ defmodule AurumFinance.LedgerTest do
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Transaction
+  alias AurumFinance.Reconciliation
+  alias AurumFinance.Reconciliation.PostingReconciliationState
+  alias AurumFinance.Repo
 
   describe "change_account/2" do
     test "requires canonical fields" do
       changeset = Ledger.change_account(%Account{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).entity_id
-      assert "error_field_required" in errors_on(changeset).name
-      assert "error_field_required" in errors_on(changeset).account_type
-      assert "error_field_required" in errors_on(changeset).management_group
-      assert "error_field_required" in errors_on(changeset).currency_code
+      assert "This field is required." in errors_on(changeset).entity_id
+      assert "This field is required." in errors_on(changeset).name
+      assert "This field is required." in errors_on(changeset).account_type
+      assert "This field is required." in errors_on(changeset).management_group
+      assert "This field is required." in errors_on(changeset).currency_code
     end
 
     test "requires operational_subtype for asset/liability accounts" do
@@ -659,6 +662,67 @@ defmodule AurumFinance.LedgerTest do
 
       assert {:error, changeset} = Ledger.void_transaction(voided)
       assert "This transaction has already been voided." in errors_on(changeset).voided_at
+    end
+
+    test "rejects voiding a transaction with reconciled postings" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      transaction =
+        create_balanced_transaction(checking, groceries, %{description: "Reconciled Tx"})
+
+      assert {:ok, session} =
+               Reconciliation.create_reconciliation_session(
+                 %{
+                   entity_id: entity.id,
+                   account_id: checking.id,
+                   statement_date: ~D[2026-03-11],
+                   statement_balance: Decimal.new("-10.00")
+                 },
+                 entity_id: entity.id
+               )
+
+      posting_ids =
+        transaction.postings
+        |> Enum.filter(&(&1.account_id == checking.id))
+        |> Enum.map(& &1.id)
+
+      assert {:ok, _states} =
+               Reconciliation.mark_postings_cleared(posting_ids, session.id, entity_id: entity.id)
+
+      assert {:ok, _session} = Reconciliation.complete_reconciliation_session(session)
+      assert {:error, :reconciled_postings} = Ledger.void_transaction(transaction)
+
+      reloaded = Ledger.get_transaction!(entity.id, transaction.id)
+      assert is_nil(reloaded.voided_at)
+    end
+
+    test "removes cleared overlays when voiding a transaction" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+      transaction = create_balanced_transaction(checking, groceries, %{description: "Cleared Tx"})
+
+      assert {:ok, session} =
+               Reconciliation.create_reconciliation_session(
+                 %{
+                   entity_id: entity.id,
+                   account_id: checking.id,
+                   statement_date: ~D[2026-03-11],
+                   statement_balance: Decimal.new("-10.00")
+                 },
+                 entity_id: entity.id
+               )
+
+      posting_ids =
+        transaction.postings
+        |> Enum.filter(&(&1.account_id == checking.id))
+        |> Enum.map(& &1.id)
+
+      assert {:ok, _states} =
+               Reconciliation.mark_postings_cleared(posting_ids, session.id, entity_id: entity.id)
+
+      assert Repo.aggregate(PostingReconciliationState, :count, :id) == length(posting_ids)
+
+      assert {:ok, %{voided: _voided, reversal: _reversal}} = Ledger.void_transaction(transaction)
+      assert Repo.aggregate(PostingReconciliationState, :count, :id) == 0
     end
   end
 

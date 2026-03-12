@@ -296,6 +296,13 @@ defmodule AurumFinanceWeb.UiComponents do
       iex> format_money(-2640.0, "USD")
       "-2,640.00 USD"
   """
+  def format_money(%Decimal{} = amount, currency) do
+    amount
+    |> Decimal.round(2)
+    |> Decimal.to_string(:normal)
+    |> format_decimal_string(currency)
+  end
+
   def format_money(amount, currency) when is_number(amount) do
     sign = if amount < 0, do: "-", else: ""
     abs_val = abs(amount * 1.0)
@@ -304,6 +311,29 @@ defmodule AurumFinanceWeb.UiComponents do
     int_str = int_part |> Integer.to_string() |> thousands_sep()
     dec_str = dec_part |> Integer.to_string() |> String.pad_leading(2, "0")
     "#{sign}#{int_str}.#{dec_str} #{currency}"
+  end
+
+  defp format_decimal_string("-" <> value, currency) do
+    format_decimal_string(value, currency, "-")
+  end
+
+  defp format_decimal_string(value, currency) do
+    format_decimal_string(value, currency, "")
+  end
+
+  defp format_decimal_string(value, currency, sign) do
+    [int_part, dec_part] =
+      value
+      |> String.split(".", parts: 2)
+      |> case do
+        [int_part, dec_part] ->
+          [int_part, String.pad_trailing(dec_part, 2, "0") |> binary_part(0, 2)]
+
+        [int_part] ->
+          [int_part, "00"]
+      end
+
+    "#{sign}#{thousands_sep(int_part)}.#{dec_part} #{currency}"
   end
 
   defp thousands_sep(str) do

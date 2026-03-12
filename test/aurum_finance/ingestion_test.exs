@@ -15,12 +15,12 @@ defmodule AurumFinance.IngestionTest do
       changeset = Ingestion.change_imported_file(%ImportedFile{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).account_id
-      assert "error_field_required" in errors_on(changeset).filename
-      assert "error_field_required" in errors_on(changeset).sha256
-      assert "error_field_required" in errors_on(changeset).format
-      assert "error_field_required" in errors_on(changeset).status
-      assert "error_field_required" in errors_on(changeset).storage_path
+      assert "This field is required." in errors_on(changeset).account_id
+      assert "This field is required." in errors_on(changeset).filename
+      assert "This field is required." in errors_on(changeset).sha256
+      assert "This field is required." in errors_on(changeset).format
+      assert "This field is required." in errors_on(changeset).status
+      assert "This field is required." in errors_on(changeset).storage_path
     end
 
     test "rejects invalid sha256 length and negative counters" do
@@ -289,11 +289,11 @@ defmodule AurumFinance.IngestionTest do
       changeset = Ingestion.change_imported_row(%ImportedRow{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).imported_file_id
-      assert "error_field_required" in errors_on(changeset).account_id
-      assert "error_field_required" in errors_on(changeset).row_index
-      assert "error_field_required" in errors_on(changeset).raw_data
-      assert "error_field_required" in errors_on(changeset).status
+      assert "This field is required." in errors_on(changeset).imported_file_id
+      assert "This field is required." in errors_on(changeset).account_id
+      assert "This field is required." in errors_on(changeset).row_index
+      assert "This field is required." in errors_on(changeset).raw_data
+      assert "This field is required." in errors_on(changeset).status
     end
 
     test "requires fingerprint for ready and duplicate rows but not invalid rows" do

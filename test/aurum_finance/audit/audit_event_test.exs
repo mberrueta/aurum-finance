@@ -39,12 +39,12 @@ defmodule AurumFinance.Audit.AuditEventTest do
       changeset = AuditEvent.changeset(%AuditEvent{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).entity_type
-      assert "error_field_required" in errors_on(changeset).entity_id
-      assert "error_field_required" in errors_on(changeset).action
-      assert "error_field_required" in errors_on(changeset).actor
-      assert "error_field_required" in errors_on(changeset).channel
-      assert "error_field_required" in errors_on(changeset).occurred_at
+      assert "This field is required." in errors_on(changeset).entity_type
+      assert "This field is required." in errors_on(changeset).entity_id
+      assert "This field is required." in errors_on(changeset).action
+      assert "This field is required." in errors_on(changeset).actor
+      assert "This field is required." in errors_on(changeset).channel
+      assert "This field is required." in errors_on(changeset).occurred_at
     end
 
     test "S04: enforces max length for entity_type and action" do

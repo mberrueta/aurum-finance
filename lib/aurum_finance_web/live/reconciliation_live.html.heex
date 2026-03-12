@@ -1,0 +1,369 @@
+<div id="reconciliation-page" class="space-y-5">
+  <.page_header title={dgettext("reconciliation", "page_title")}>
+    <:subtitle>{dgettext("reconciliation", "page_subtitle")}</:subtitle>
+    <:actions>
+      <button
+        id="new-reconciliation-session-btn"
+        type="button"
+        class="au-btn au-btn-primary"
+        phx-click="new_session"
+        disabled={is_nil(@current_entity) or @institution_accounts == []}
+      >
+        {dgettext("reconciliation", "btn_new_session")}
+      </button>
+    </:actions>
+  </.page_header>
+
+  <div id="reconciliation-what-is" class="mb-[14px]">
+    <.info_callout title={dgettext("reconciliation", "callout_what_is_title")} tone={:info}>
+      <p>{dgettext("reconciliation", "callout_what_is_body")}</p>
+      <ul class="list-disc pl-5 space-y-1 mt-2">
+        <li>{dgettext("reconciliation", "callout_what_is_item_1")}</li>
+        <li>{dgettext("reconciliation", "callout_what_is_item_2")}</li>
+        <li>{dgettext("reconciliation", "callout_what_is_item_3")}</li>
+      </ul>
+    </.info_callout>
+  </div>
+
+  <.au_card>
+    <:header>
+      <span>{dgettext("reconciliation", "section_workflow")}</span>
+    </:header>
+
+    <div class="grid gap-3 lg:grid-cols-3">
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+          {dgettext("reconciliation", "workflow_step_open")}
+        </p>
+        <p class="mt-2 text-sm leading-relaxed text-white/72">
+          {dgettext("reconciliation", "workflow_step_open_body")}
+        </p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+          {dgettext("reconciliation", "workflow_step_clear")}
+        </p>
+        <p class="mt-2 text-sm leading-relaxed text-white/72">
+          {dgettext("reconciliation", "workflow_step_clear_body")}
+        </p>
+      </div>
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+        <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+          {dgettext("reconciliation", "workflow_step_complete")}
+        </p>
+        <p class="mt-2 text-sm leading-relaxed text-white/72">
+          {dgettext("reconciliation", "workflow_step_complete_body")}
+        </p>
+      </div>
+    </div>
+  </.au_card>
+
+  <div class="grid gap-5 xl:grid-cols-[360px_minmax(0,1fr)]">
+    <.section_panel
+      title={dgettext("reconciliation", "section_sessions")}
+      badge={Integer.to_string(@session_count)}
+      badge_variant={:purple}
+    >
+      <:actions>
+        <div class="flex flex-wrap items-end gap-3">
+          <.entity_scope_selector entities={@entities} current_entity={@current_entity} />
+          <.account_filter
+            accounts={@institution_accounts}
+            selected_account_id={@selected_account_id}
+          />
+        </div>
+      </:actions>
+
+      <div :if={is_nil(@current_entity)} id="reconciliation-empty-entities">
+        <.empty_state text={dgettext("reconciliation", "empty_no_entities")} />
+      </div>
+
+      <div
+        :if={!is_nil(@current_entity) and @institution_accounts == []}
+        id="reconciliation-empty-accounts"
+      >
+        <.empty_state text={dgettext("reconciliation", "empty_no_institution_accounts")} />
+      </div>
+
+      <div
+        :if={!is_nil(@current_entity) and @institution_accounts != []}
+        class="space-y-3"
+      >
+        <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <span id="reconciliation-current-entity" class="text-sm font-medium text-white/92">
+              {@current_entity.name}
+            </span>
+            <.badge variant={:warn}>
+              {dgettext("reconciliation", "badge_active_sessions", count: @active_session_count)}
+            </.badge>
+          </div>
+          <p class="mt-2 text-sm text-white/62">
+            {dgettext("reconciliation", "sessions_hint")}
+          </p>
+        </div>
+
+        <div :if={@session_count == 0} id="reconciliation-empty-sessions">
+          <.empty_state text={dgettext("reconciliation", "empty_no_sessions")} />
+        </div>
+
+        <div id="reconciliation-sessions" class="space-y-3">
+          <.session_item
+            :for={session <- @sessions}
+            id={"reconciliation-session-#{session.id}"}
+            session={session}
+            selected?={!is_nil(@selected_session) and @selected_session.id == session.id}
+            href={~p"/reconciliation/#{session.id}"}
+          />
+        </div>
+      </div>
+    </.section_panel>
+
+    <div class="space-y-5">
+      <.section_panel
+        title={detail_panel_title(@selected_session)}
+        badge={detail_panel_badge(@selected_session)}
+        badge_variant={detail_panel_badge_variant(@selected_session)}
+      >
+        <:actions>
+          <.link
+            :if={!is_nil(@selected_session)}
+            id="reconciliation-back-link"
+            patch={~p"/reconciliation"}
+            class="au-btn"
+          >
+            {dgettext("reconciliation", "btn_back_to_sessions")}
+          </.link>
+        </:actions>
+
+        <div :if={is_nil(@selected_session)} id="reconciliation-detail-empty">
+          <.empty_state text={dgettext("reconciliation", "empty_select_session")} />
+        </div>
+
+        <div :if={!is_nil(@selected_session)} class="space-y-5">
+          <div class="grid gap-3 xl:grid-cols-3">
+            <.summary_tile
+              title={dgettext("reconciliation", "summary_statement_balance")}
+              value={
+                format_money(
+                  @selected_session.statement_balance,
+                  @selected_session.account.currency_code
+                )
+              }
+              tone={:default}
+              caption={
+                dgettext("reconciliation", "summary_statement_date",
+                  date: format_date(@selected_session.statement_date)
+                )
+              }
+            />
+            <.summary_tile
+              title={dgettext("reconciliation", "summary_cleared_balance")}
+              value={format_money(@cleared_balance, @selected_session.account.currency_code)}
+              tone={:purple}
+              caption={dgettext("reconciliation", "summary_cleared_caption")}
+            />
+            <.summary_tile
+              title={dgettext("reconciliation", "summary_difference")}
+              value={format_money(@difference, @selected_session.account.currency_code)}
+              tone={if(@balanced?, do: :good, else: :warn)}
+              caption={difference_caption(@balanced?)}
+            />
+          </div>
+
+          <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+            <div class="flex flex-col gap-3 lg:flex-row lg:items-start lg:justify-between">
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <p class="text-base font-semibold text-white/92">
+                    {@selected_session.account.name}
+                  </p>
+                  <.badge variant={
+                    if(is_nil(@selected_session.completed_at), do: :warn, else: :good)
+                  }>
+                    {session_status_label(@selected_session)}
+                  </.badge>
+                </div>
+                <dl class="grid gap-3 text-sm text-white/68 sm:grid-cols-2">
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+                      {dgettext("reconciliation", "label_statement_date")}
+                    </dt>
+                    <dd class="mt-1 text-white/88">
+                      {format_date(@selected_session.statement_date)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+                      {dgettext("reconciliation", "label_created_at")}
+                    </dt>
+                    <dd class="mt-1 text-white/88">
+                      {format_datetime(@selected_session.inserted_at)}
+                    </dd>
+                  </div>
+                  <div :if={!is_nil(@selected_session.completed_at)}>
+                    <dt class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+                      {dgettext("reconciliation", "label_completed_at")}
+                    </dt>
+                    <dd class="mt-1 text-white/88">
+                      {format_datetime(@selected_session.completed_at)}
+                    </dd>
+                  </div>
+                  <div>
+                    <dt class="text-[11px] uppercase tracking-[0.16em] text-white/38">
+                      {dgettext("reconciliation", "label_account_currency")}
+                    </dt>
+                    <dd class="mt-1 text-white/88">
+                      {@selected_session.account.currency_code}
+                    </dd>
+                  </div>
+                </dl>
+              </div>
+
+              <div
+                :if={is_nil(@selected_session.completed_at)}
+                class="flex flex-wrap items-center gap-2"
+              >
+                <button
+                  id="posting-select-all-btn"
+                  type="button"
+                  class="au-btn"
+                  phx-click="toggle_select_all"
+                >
+                  {select_all_button_label(@selected_posting_ids, @postings)}
+                </button>
+                <button
+                  id="mark-cleared-btn"
+                  type="button"
+                  class="au-btn au-btn-primary"
+                  phx-click="mark_cleared"
+                  disabled={MapSet.size(@selected_posting_ids) == 0}
+                >
+                  {dgettext("reconciliation", "btn_mark_cleared")}
+                </button>
+                <button
+                  id="complete-reconciliation-btn"
+                  type="button"
+                  class="au-btn"
+                  phx-click="complete_session"
+                  data-confirm={complete_confirmation(@balanced?)}
+                >
+                  {dgettext("reconciliation", "btn_reconcile")}
+                </button>
+              </div>
+            </div>
+          </div>
+
+          <div class="overflow-hidden rounded-[24px] border border-white/10 bg-[#07101c]">
+            <div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
+              <div>
+                <p class="text-sm font-semibold text-white/90">
+                  {dgettext("reconciliation", "section_postings")}
+                </p>
+                <p class="mt-1 text-xs text-white/55">
+                  {dgettext("reconciliation", "postings_hint")}
+                </p>
+              </div>
+            </div>
+
+            <div :if={@postings == []} class="px-4 py-5">
+              <.empty_state text={dgettext("reconciliation", "empty_no_postings")} />
+            </div>
+
+            <div :if={@postings != []} class="overflow-x-auto">
+              <table class="au-table min-w-full">
+                <thead>
+                  <tr>
+                    <th>{dgettext("reconciliation", "col_select")}</th>
+                    <th>{dgettext("reconciliation", "col_date")}</th>
+                    <th>{dgettext("reconciliation", "col_description")}</th>
+                    <th>{dgettext("reconciliation", "col_amount")}</th>
+                    <th>{dgettext("reconciliation", "col_state")}</th>
+                    <th>{dgettext("reconciliation", "col_actions")}</th>
+                  </tr>
+                </thead>
+                <tbody id="reconciliation-postings">
+                  <.posting_row
+                    :for={posting <- @postings}
+                    id={"reconciliation-posting-#{posting.id}"}
+                    posting={posting}
+                    currency_code={@selected_session.account.currency_code}
+                    session_completed?={!is_nil(@selected_session.completed_at)}
+                    selected?={MapSet.member?(@selected_posting_ids, posting.id)}
+                    inspected?={
+                      !is_nil(@selected_posting_match) and
+                        @selected_posting_match.id == posting.id
+                    }
+                  />
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <.posting_match_panel
+            posting={@selected_posting_match}
+            match_candidates={@match_candidates}
+            currency_code={@selected_session.account.currency_code}
+            accept_enabled?={
+              is_nil(@selected_session.completed_at) and
+                !is_nil(@selected_posting_match) and
+                @selected_posting_match.reconciliation_status == :unreconciled
+            }
+          />
+        </div>
+      </.section_panel>
+    </div>
+  </div>
+
+  <div id="reconciliation-guidance">
+    <.au_card class="mt-[14px]">
+      <:header>
+        <span>{dgettext("reconciliation", "section_guidance")}</span>
+      </:header>
+
+      <div class="grid grid-cols-1 lg:grid-cols-2 gap-[10px]">
+        <div>
+          <.info_callout title={dgettext("reconciliation", "callout_how_use_title")} tone={:info}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("reconciliation", "callout_how_use_item_1")}</li>
+              <li>{dgettext("reconciliation", "callout_how_use_item_2")}</li>
+              <li>{dgettext("reconciliation", "callout_how_use_item_3")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+
+        <div class="space-y-[10px]">
+          <.info_callout title={dgettext("reconciliation", "callout_warning_title")} tone={:warn}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("reconciliation", "callout_warning_item_1")}</li>
+              <li>{dgettext("reconciliation", "callout_warning_item_2")}</li>
+            </ul>
+          </.info_callout>
+
+          <.info_callout title={dgettext("reconciliation", "callout_tips_title")} tone={:tip}>
+            <ul class="list-disc pl-5 space-y-1">
+              <li>{dgettext("reconciliation", "callout_tips_item_1")}</li>
+              <li>{dgettext("reconciliation", "callout_tips_item_2")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+      </div>
+    </.au_card>
+  </div>
+
+  <.right_sidebar_panel
+    open={@form_open?}
+    title={dgettext("reconciliation", "panel_new_session_title")}
+    subtitle={dgettext("reconciliation", "panel_new_session_subtitle")}
+    close_event="close_form"
+    panel_id="reconciliation-session-panel"
+    overlay_id="reconciliation-session-overlay"
+    close_button_id="close-reconciliation-session-panel-btn"
+  >
+    <.session_form
+      form={@form}
+      current_entity={@current_entity}
+      institution_accounts={@institution_accounts}
+    />
+  </.right_sidebar_panel>
+</div>

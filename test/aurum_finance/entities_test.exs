@@ -10,9 +10,9 @@ defmodule AurumFinance.EntitiesTest do
       changeset = Entities.change_entity(%Entity{}, %{})
 
       refute changeset.valid?
-      assert "error_field_required" in errors_on(changeset).name
-      assert "error_field_required" in errors_on(changeset).type
-      assert "error_field_required" in errors_on(changeset).country_code
+      assert "This field is required." in errors_on(changeset).name
+      assert "This field is required." in errors_on(changeset).type
+      assert "This field is required." in errors_on(changeset).country_code
     end
 
     test "accepts only canonical entity types" do

@@ -793,24 +793,39 @@ The Reconciliation context (`AurumFinance.Reconciliation`) validates ledger
 postings against imported statement evidence through explicit sessions, matching
 results, and discrepancy records. See ADR-0013 for full design rationale.
 
+Current shipped posture:
+
+- reconciliation sessions, posting overlay state, and reconciliation audit log
+  are implemented
+- candidate matching is implemented as runtime, explainable scoring over
+  imported rows
+- candidate inspection is read-only until the operator explicitly accepts a
+  visible candidate and clears the posting
+- accepted candidate references are preserved in reconciliation audit metadata
+- persistent `MatchResult` and `Discrepancy` entities remain deferred
+
 #### Domain Objects
 
 | Domain Object | Description | Key Fields |
 |---------------|-------------|------------|
 | **ReconciliationSession** | A statement-period reconciliation run for one account and entity. | `entity_id`, `account_id`, `statement_identifier`, `opened_at`, `closed_at`, `opening_balance`, `closing_balance_expected`, `closing_balance_computed`, `status`, `notes` |
-| **MatchResult** | Candidate or accepted mapping between a statement line and a posting. | `entity_id`, `reconciliation_session_id`, `statement_row_reference`, `posting_id`, `match_status`, `confidence_score`, `score_breakdown`, `matched_by`, `matched_at` |
-| **Discrepancy** | Persistent mismatch or gap discovered during reconciliation. | `entity_id`, `reconciliation_session_id`, `discrepancy_type`, `severity`, `statement_row_reference`, `posting_id`, `details`, `status`, `raised_at`, `resolved_at`, `resolved_by` |
+| **Runtime Match Candidate** | Read-time scored candidate produced from imported-row evidence for one posting. Not persisted as its own table yet. | `posting_id`, `imported_row_id`, `score (0.0..1.0)`, `match_band`, `signals`, `reasons` |
+| **Future MatchResult** | Deferred persistent mapping between a statement line and a posting. | `entity_id`, `reconciliation_session_id`, `statement_row_reference`, `posting_id`, `match_status`, `score_breakdown`, `matched_by`, `matched_at` |
+| **Future Discrepancy** | Deferred persistent mismatch or gap discovered during reconciliation. | `entity_id`, `reconciliation_session_id`, `discrepancy_type`, `severity`, `statement_row_reference`, `posting_id`, `details`, `status`, `raised_at`, `resolved_at`, `resolved_by` |
 | **ReconciliationAuditLog** | Append-only log of state transitions and reconciliation actions. | `entity_id`, `reconciliation_session_id`, `posting_id`, `from_state`, `to_state`, `reason`, `actor`, `occurred_at` |
 
 #### Relationships
 
 - Entity 1--* ReconciliationSession
 - Account 1--* ReconciliationSession
-- ReconciliationSession 1--* MatchResult
-- ReconciliationSession 1--* Discrepancy
-- Posting 1--* MatchResult (across sessions over time)
+- ReconciliationSession uses runtime match candidates during inspection in the
+  current implementation
+- ReconciliationSession 1--* Future MatchResult (deferred)
+- ReconciliationSession 1--* Future Discrepancy (deferred)
+- Posting 1--* Future MatchResult (across sessions over time, deferred)
 - Posting 1--* ReconciliationAuditLog
-- ImportedRow 0..1--* MatchResult via `statement_row_reference`
+- ImportedRow participates in runtime candidate scoring now
+- ImportedRow 0..1--* Future MatchResult via `statement_row_reference`
 
 #### Posting Reconciliation State Machine
 
@@ -837,8 +852,20 @@ Statement-to-posting matching is scored using:
 - institution reference equality (when available),
 - account/entity scope consistency.
 
-Auto-matching can promote to `cleared` only. `reconciled` always requires an
-explicit user action.
+Current implementation details:
+
+- score is a normalized heuristic in the range `0.0..1.0`
+- backend qualitative band is `match_band`, not a second competing confidence model
+- scoring can classify more broadly, but the default API/UI show only useful
+  above-threshold candidates
+- viewing candidates does not mutate reconciliation state
+- accepting a candidate clears the posting and stores candidate reference data
+  in reconciliation audit metadata
+
+Future automation details remain deferred:
+
+- auto-suggest may eventually promote to `cleared`
+- `reconciled` will still require explicit user action
 
 #### Discrepancy Lifecycle
 
@@ -864,8 +891,9 @@ is confirmed.
 
 1. **Reconciliation never mutates posting facts** — it tracks workflow state
    and evidence overlays.
-2. **Accepted matching is one-to-one** within a session (row-to-posting and
-   posting-to-row).
+2. **Accepted matching remains explicit and user-driven** in the current
+   implementation; durable one-to-one persistence is deferred until
+   `MatchResult` is introduced.
 3. **`reconciled` requires explicit confirmation** — never auto-set by import.
 4. **All transitions are auditable** via append-only logs.
 5. **Critical discrepancies block close** until resolved.

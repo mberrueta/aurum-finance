@@ -123,6 +123,9 @@ msgstr ""
 msgid "error_account_immutable_field"
 msgstr ""
 
+msgid "error_active_session_exists"
+msgstr ""
+
 msgid "error_account_management_group_invalid"
 msgstr ""
 
@@ -187,4 +190,10 @@ msgid "error_import_row_materialization_transaction_forbidden"
 msgstr ""
 
 msgid "error_import_row_materialization_transaction_required"
+msgstr ""
+
+msgid "error_field_required"
+msgstr ""
+
+msgid "error_reconciliation_statement_balance_invalid"
 msgstr ""
