@@ -144,10 +144,11 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
   attr :currency_code, :string, required: true
   attr :session_completed?, :boolean, default: false
   attr :selected?, :boolean, default: false
+  attr :inspected?, :boolean, default: false
 
   def posting_row(assigns) do
     ~H"""
-    <tr id={@id} class="border-t border-white/6">
+    <tr id={@id} class={["border-t border-white/6 transition", @inspected? && "bg-sky-400/10"]}>
       <td class="whitespace-nowrap px-4 py-3">
         <button
           :if={selectable_posting?(@posting, @session_completed?)}
@@ -191,21 +192,155 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
         </.badge>
       </td>
       <td class="whitespace-nowrap px-4 py-3">
-        <button
-          :if={unclearable_posting?(@posting, @session_completed?)}
-          id={"unclear-posting-#{@posting.id}"}
-          type="button"
-          class="au-btn"
-          phx-click="unclear_posting"
-          phx-value-id={@posting.id}
-        >
-          {dgettext("reconciliation", "btn_unclear")}
-        </button>
-        <span :if={!unclearable_posting?(@posting, @session_completed?)} class="text-xs text-white/28">
-          -
-        </span>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            id={"inspect-posting-#{@posting.id}"}
+            type="button"
+            class={[
+              "au-btn",
+              @inspected? && "border-sky-300/40 bg-sky-300/10 text-sky-100"
+            ]}
+            phx-click="inspect_posting_matches"
+            phx-value-id={@posting.id}
+          >
+            {dgettext("reconciliation", "btn_inspect_matches")}
+          </button>
+          <button
+            :if={unclearable_posting?(@posting, @session_completed?)}
+            id={"unclear-posting-#{@posting.id}"}
+            type="button"
+            class="au-btn"
+            phx-click="unclear_posting"
+            phx-value-id={@posting.id}
+          >
+            {dgettext("reconciliation", "btn_unclear")}
+          </button>
+          <span
+            :if={!unclearable_posting?(@posting, @session_completed?) and !@inspected?}
+            class="text-xs text-white/28"
+          >
+            -
+          </span>
+        </div>
       </td>
     </tr>
+    """
+  end
+
+  attr :posting, :map, default: nil
+  attr :match_candidates, :list, default: []
+  attr :currency_code, :string, required: true
+  attr :accept_enabled?, :boolean, default: false
+
+  def posting_match_panel(assigns) do
+    ~H"""
+    <div class="rounded-[24px] border border-sky-300/15 bg-[#071422] p-4 sm:p-5">
+      <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div class="space-y-2">
+          <p class="text-sm font-semibold text-white/92">
+            {dgettext("reconciliation", "section_match_candidates")}
+          </p>
+          <p class="text-sm text-white/62">
+            {dgettext("reconciliation", "match_candidates_intro")}
+          </p>
+          <p class="text-xs uppercase tracking-[0.16em] text-white/42">
+            {dgettext("reconciliation", "match_candidates_read_only")}
+          </p>
+        </div>
+
+        <button
+          :if={!is_nil(@posting)}
+          id="clear-posting-match-inspection-btn"
+          type="button"
+          class="au-btn"
+          phx-click="clear_posting_match_inspection"
+        >
+          {dgettext("reconciliation", "btn_close_match_candidates")}
+        </button>
+      </div>
+
+      <div :if={is_nil(@posting)} id="reconciliation-match-candidates-empty" class="mt-4">
+        <.empty_state text={dgettext("reconciliation", "empty_match_candidates_idle")} />
+      </div>
+
+      <div :if={!is_nil(@posting)} class="mt-4 space-y-4">
+        <div
+          id="selected-posting-match-summary"
+          class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+        >
+          <p class="text-[11px] uppercase tracking-[0.16em] text-white/40">
+            {dgettext("reconciliation", "label_selected_posting")}
+          </p>
+          <div class="mt-3 flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+            <div class="space-y-1">
+              <p class="text-sm font-semibold text-white/92">{@posting.transaction_description}</p>
+              <p class="text-sm text-white/64">{format_date(@posting.transaction_date)}</p>
+            </div>
+            <div class="text-sm font-medium text-white/88">
+              {format_money(@posting.amount, @currency_code)}
+            </div>
+          </div>
+        </div>
+
+        <div :if={@match_candidates == []} id="reconciliation-match-candidates-none">
+          <.empty_state text={dgettext("reconciliation", "empty_match_candidates_none")} />
+        </div>
+
+        <div
+          :if={@match_candidates != []}
+          id="reconciliation-match-candidates-list"
+          class="space-y-3"
+        >
+          <div
+            :for={candidate <- @match_candidates}
+            id={"match-candidate-#{candidate.imported_row_id}"}
+            class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+          >
+            <div class="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+              <div class="space-y-2">
+                <div class="flex flex-wrap items-center gap-2">
+                  <.badge variant={match_band_variant(candidate.match_band)}>
+                    {match_band_label(candidate.match_band)}
+                  </.badge>
+                  <span class="text-xs text-white/50">
+                    {format_match_score(candidate.score)}
+                  </span>
+                </div>
+                <p class="text-sm font-semibold text-white/92">
+                  {candidate.imported_row.description || "-"}
+                </p>
+                <div class="flex flex-wrap gap-x-4 gap-y-1 text-sm text-white/64">
+                  <span>{format_date(candidate.imported_row.posted_on)}</span>
+                  <span>{format_money(candidate.imported_row.amount, @currency_code)}</span>
+                  <span>
+                    {dgettext("reconciliation", "label_match_file_id",
+                      file_id: candidate.imported_file_id
+                    )}
+                  </span>
+                </div>
+              </div>
+
+              <div class="flex flex-wrap gap-2">
+                <.badge :for={reason <- candidate.reasons} variant={:default}>
+                  {match_reason_label(reason)}
+                </.badge>
+                <button
+                  :if={@accept_enabled?}
+                  id={"accept-match-candidate-#{candidate.imported_row_id}"}
+                  type="button"
+                  class="au-btn au-btn-primary"
+                  phx-click="accept_match_candidate"
+                  phx-value-posting_id={@posting.id}
+                  phx-value-imported_row_id={candidate.imported_row_id}
+                >
+                  {dgettext("reconciliation", "btn_accept_match_candidate")}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
     """
   end
 
@@ -386,10 +521,41 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
   defp posting_status_variant(:reconciled), do: :good
   defp posting_status_variant(_status), do: :default
 
+  defp match_band_variant(:exact_match), do: :good
+  defp match_band_variant(:near_match), do: :purple
+  defp match_band_variant(:weak_match), do: :warn
+  defp match_band_variant(:below_threshold), do: :default
+
   defp posting_status_label(:unreconciled), do: dgettext("reconciliation", "status_unreconciled")
   defp posting_status_label(:cleared), do: dgettext("reconciliation", "status_cleared")
   defp posting_status_label(:reconciled), do: dgettext("reconciliation", "status_reconciled")
   defp posting_status_label(status), do: Helpers.humanize_token(status)
+
+  defp match_band_label(:exact_match), do: dgettext("reconciliation", "match_band_exact")
+  defp match_band_label(:near_match), do: dgettext("reconciliation", "match_band_near")
+  defp match_band_label(:weak_match), do: dgettext("reconciliation", "match_band_weak")
+
+  defp match_band_label(:below_threshold),
+    do: dgettext("reconciliation", "match_band_below_threshold")
+
+  defp match_reason_label(:exact_amount),
+    do: dgettext("reconciliation", "match_reason_exact_amount")
+
+  defp match_reason_label(:close_amount),
+    do: dgettext("reconciliation", "match_reason_close_amount")
+
+  defp match_reason_label(:same_day), do: dgettext("reconciliation", "match_reason_same_day")
+  defp match_reason_label(:near_date), do: dgettext("reconciliation", "match_reason_near_date")
+
+  defp match_reason_label(:description_similarity),
+    do: dgettext("reconciliation", "match_reason_description_similarity")
+
+  defp match_reason_label(reason), do: Helpers.humanize_token(reason)
+
+  defp format_match_score(score) do
+    percentage = (score * 100) |> Float.round(0) |> trunc()
+    dgettext("reconciliation", "label_match_score", score: percentage)
+  end
 
   defp summary_tile_class(:good), do: "border-emerald-500/25 bg-emerald-500/10"
   defp summary_tile_class(:warn), do: "border-amber-400/25 bg-amber-400/10"

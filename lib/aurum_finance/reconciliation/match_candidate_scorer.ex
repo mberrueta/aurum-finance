@@ -143,22 +143,34 @@ defmodule AurumFinance.Reconciliation.MatchCandidateScorer do
 
   defp classify_match_band(signals, score) do
     cond do
-      signals.amount_exact and signals.date_score == 1.0 ->
+      exact_match?(signals) ->
         :exact_match
 
-      signals.amount_score >= @close_amount_threshold and
-          signals.date_score >= @same_day_threshold and
-          score >= @near_match_threshold ->
+      near_match?(signals, score) ->
         :near_match
 
-      signals.amount_score >= @near_amount_threshold and
-          signals.date_score >= @near_day_threshold and
-          score >= @weak_match_threshold ->
+      weak_match?(signals, score) ->
         :weak_match
 
       true ->
         :below_threshold
     end
+  end
+
+  defp exact_match?(signals) do
+    signals.amount_exact and signals.date_score == 1.0
+  end
+
+  defp near_match?(signals, score) do
+    signals.amount_score >= @close_amount_threshold and
+      signals.date_score >= @same_day_threshold and
+      score >= @near_match_threshold
+  end
+
+  defp weak_match?(signals, score) do
+    signals.amount_score >= @near_amount_threshold and
+      signals.date_score >= @near_day_threshold and
+      score >= @weak_match_threshold
   end
 
   defp reasons(signals) do

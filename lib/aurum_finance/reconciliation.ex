@@ -403,6 +403,47 @@ defmodule AurumFinance.Reconciliation do
   end
 
   @doc """
+  Accepts one visible match candidate for a posting and marks that posting as cleared.
+
+  This operation is still grounded in the reconciliation state machine: the
+  posting becomes `:cleared`. The accepted imported-row reference is preserved
+  in the reconciliation audit metadata for traceability.
+
+  ## Examples
+
+      iex> AurumFinance.Reconciliation.accept_match_candidate(
+      ...>   Ecto.UUID.generate(),
+      ...>   Ecto.UUID.generate(),
+      ...>   Ecto.UUID.generate(),
+      ...>   entity_id: Ecto.UUID.generate()
+      ...> )
+      {:error, :not_found}
+  """
+  @spec accept_match_candidate(Ecto.UUID.t(), Ecto.UUID.t(), Ecto.UUID.t(), [
+          match_candidate_opt() | audit_opt()
+        ]) ::
+          {:ok, PostingReconciliationState.t()} | {:error, term()}
+  def accept_match_candidate(posting_id, imported_row_id, session_id, opts \\ []) do
+    opts = require_entity_scope!(opts, "accept_match_candidate/4")
+    entity_id = Keyword.fetch!(opts, :entity_id)
+    session = get_reconciliation_session!(entity_id, session_id)
+
+    with {:ok, session} <- active_session(session),
+         {:ok, candidate} <-
+           fetch_acceptable_match_candidate(posting_id, imported_row_id, entity_id) do
+      metadata_by_posting = %{
+        posting_id => accepted_match_metadata(candidate)
+      }
+
+      case do_mark_postings_cleared([posting_id], session, opts, metadata_by_posting) do
+        {:ok, [state]} -> {:ok, state}
+        {:ok, []} -> {:error, :candidate_not_acceptable}
+        {:error, reason} -> {:error, reason}
+      end
+    end
+  end
+
+  @doc """
   Marks unreconciled postings as cleared for the given session atomically.
 
   All posting ids must belong to the session account, remain unvoided, and have
@@ -613,7 +654,7 @@ defmodule AurumFinance.Reconciliation do
   # ---------------------------------------------------------------------------
 
   @dialyzer {:nowarn_function, do_mark_postings_cleared: 3, do_mark_postings_uncleared: 3}
-  defp do_mark_postings_cleared(posting_ids, session, opts) do
+  defp do_mark_postings_cleared(posting_ids, session, opts, metadata_by_posting \\ %{}) do
     now = utc_now()
     audit_metadata = extract_audit_metadata(opts)
 
@@ -628,7 +669,13 @@ defmodule AurumFinance.Reconciliation do
     |> multi_run(:reconciliation_audit_logs, fn repo, %{posting_reconciliation_states: states} ->
       insert_reconciliation_audit_logs(
         repo,
-        build_cleared_audit_log_entries(states, session.id, audit_metadata, now)
+        build_cleared_audit_log_entries(
+          states,
+          session.id,
+          audit_metadata,
+          now,
+          metadata_by_posting
+        )
       )
     end)
     |> Repo.transaction()
@@ -719,7 +766,13 @@ defmodule AurumFinance.Reconciliation do
     end
   end
 
-  defp build_cleared_audit_log_entries(states, session_id, audit_metadata, now) do
+  defp build_cleared_audit_log_entries(
+         states,
+         session_id,
+         audit_metadata,
+         now,
+         metadata_by_posting
+       ) do
     Enum.map(states, fn state ->
       %{
         posting_reconciliation_state_id: nil,
@@ -730,7 +783,7 @@ defmodule AurumFinance.Reconciliation do
         actor: audit_metadata.actor,
         channel: Atom.to_string(audit_metadata.channel),
         occurred_at: now,
-        metadata: nil,
+        metadata: Map.get(metadata_by_posting, state.posting_id),
         inserted_at: now
       }
     end)
@@ -901,6 +954,31 @@ defmodule AurumFinance.Reconciliation do
       true -> candidates
       false -> Enum.reject(candidates, &(&1.match_band == :below_threshold))
     end
+  end
+
+  defp fetch_acceptable_match_candidate(posting_id, imported_row_id, entity_id) do
+    case list_match_candidates_for_posting(posting_id, entity_id: entity_id, limit: 10) do
+      {:ok, candidates} ->
+        candidates
+        |> Enum.find(&(&1.imported_row_id == imported_row_id))
+        |> fetch_acceptable_match_candidate_result()
+
+      {:error, reason} ->
+        {:error, reason}
+    end
+  end
+
+  defp fetch_acceptable_match_candidate_result(nil), do: {:error, :candidate_not_acceptable}
+  defp fetch_acceptable_match_candidate_result(candidate), do: {:ok, candidate}
+
+  defp accepted_match_metadata(candidate) do
+    %{
+      "accepted_imported_row_id" => candidate.imported_row_id,
+      "accepted_imported_file_id" => candidate.imported_file_id,
+      "match_band" => Atom.to_string(candidate.match_band),
+      "score" => candidate.score,
+      "reasons" => Enum.map(candidate.reasons, &Atom.to_string/1)
+    }
   end
 
   defp normalize_match_candidate(candidate) do

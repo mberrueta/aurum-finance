@@ -1,7 +1,7 @@
 # Task 11: Reconciliation Candidate-Inspection UI
 
 ## Status
-- **Status**: PENDING
+- **Status**: COMPLETED
 - **Approved**: [ ] Human sign-off
 - **Blocked by**: Task 10
 - **Blocks**: Task 12, Task 13
@@ -123,24 +123,45 @@ Add a comparison workflow to the reconciliation screen so the user can click a p
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
+- Added a read-only candidate inspection workflow to the reconciliation detail screen
+- Added per-posting inspect action and visual highlight for the currently inspected posting
+- Added a candidate panel with explicit assistive wording and read-only guidance
+- Added empty states for both idle inspection and no-candidate results
+- Added minimal LiveView tests for candidate inspection and candidate-empty behavior
+
 ### Outputs Created
+- `lib/aurum_finance_web/live/reconciliation_live.ex`
+- `lib/aurum_finance_web/live/reconciliation_live.html.heex`
+- `lib/aurum_finance_web/components/reconciliation_components.ex`
+- `priv/gettext/en/LC_MESSAGES/reconciliation.po`
+- `priv/gettext/reconciliation.pot`
+- `test/aurum_finance_web/live/reconciliation_live_test.exs`
+
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
+| Candidate inspection should be available in active and completed sessions | The feature is comparative/read-only and remains useful in history review |
+| The panel should live inline below the postings table rather than as a drawer | Keeps comparison anchored to the current session context and avoids extra navigation |
+| Showing file ID is sufficient for v1 candidate provenance in the panel | Useful now without introducing a larger file-detail UI commitment |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
+| Added an explicit `Inspect matches` action per posting row | Making the whole row clickable | Keeps selection/clear actions separate from candidate inspection |
+| Used assistive copy such as `Candidate matches` and `Viewing candidates does not clear or reconcile anything.` | More authoritative copy like `Best match` or `Matched` | Avoids overstating certainty before score calibration is mature |
+| Displayed score as rounded percentage text | Raw float values | Avoids false precision and is easier to scan |
 
 ### Blockers Encountered
+- None beyond normal UI/test integration adjustments
+
 ### Questions for Human
+- None
+
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 

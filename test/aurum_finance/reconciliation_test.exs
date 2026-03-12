@@ -544,6 +544,56 @@ defmodule AurumFinance.ReconciliationTest do
     end
   end
 
+  describe "accept_match_candidate/4" do
+    test "marks the posting as cleared and stores accepted candidate metadata in the audit log" do
+      %{
+        entity: entity,
+        account: account,
+        fuel_posting_id: fuel_posting_id
+      } = reconciliation_postings_with_import_rows()
+
+      session =
+        insert_reconciliation_session(entity,
+          account: account,
+          account_id: account.id,
+          statement_date: ~D[2026-03-31],
+          statement_balance: Decimal.new("45.20")
+        )
+
+      {:ok, [candidate | _rest]} =
+        Reconciliation.list_match_candidates_for_posting(
+          fuel_posting_id,
+          entity_id: entity.id
+        )
+
+      assert {:ok, state} =
+               Reconciliation.accept_match_candidate(
+                 fuel_posting_id,
+                 candidate.imported_row_id,
+                 session.id,
+                 entity_id: entity.id,
+                 actor: "root",
+                 channel: :web
+               )
+
+      assert state.status == :cleared
+
+      audit_log =
+        ReconciliationAuditLog
+        |> where(
+          [log],
+          log.reconciliation_session_id == ^session.id and log.posting_id == ^fuel_posting_id
+        )
+        |> order_by([log], desc: log.inserted_at)
+        |> limit(1)
+        |> Repo.one!()
+
+      assert audit_log.metadata["accepted_imported_row_id"] == candidate.imported_row_id
+      assert audit_log.metadata["accepted_imported_file_id"] == candidate.imported_file_id
+      assert audit_log.metadata["match_band"] == Atom.to_string(candidate.match_band)
+    end
+  end
+
   defp reconciliation_postings do
     entity = insert_entity()
     account = insert_account(entity, %{name: "Recon Checking"})

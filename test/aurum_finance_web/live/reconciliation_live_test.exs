@@ -4,6 +4,7 @@ defmodule AurumFinanceWeb.ReconciliationLiveTest do
   import Phoenix.LiveViewTest
 
   alias AurumFinance.Ledger
+  alias AurumFinance.Ingestion
   alias AurumFinance.Reconciliation
 
   setup %{conn: conn} do
@@ -306,6 +307,108 @@ defmodule AurumFinanceWeb.ReconciliationLiveTest do
       assert render(view) =~ "0.00 USD"
     end
 
+    test "inspects candidate matches for a posting", %{conn: conn} do
+      entity = insert_entity(name: "Reconciliation Candidate Matches")
+      account = insert_account(entity, %{name: "Checking Candidate Matches"})
+
+      {posting, _transaction} =
+        create_reconciliation_posting(entity, account,
+          amount: "45.20",
+          description: "Fuel",
+          date: ~D[2026-03-04]
+        )
+
+      imported_file = create_imported_file(account)
+
+      _candidate_row =
+        create_imported_row(imported_file, account, 0, "Fuel purchase", ~D[2026-03-04], "45.20")
+
+      session =
+        insert_reconciliation_session(entity,
+          account: account,
+          statement_date: ~D[2026-03-31],
+          statement_balance: Decimal.new("45.20")
+        )
+
+      {:ok, view, _html} = live(conn, ~p"/reconciliation/#{session.id}")
+
+      view
+      |> element("#inspect-posting-#{posting.id}")
+      |> render_click()
+
+      assert has_element?(view, "#selected-posting-match-summary")
+      assert has_element?(view, "#reconciliation-match-candidates-list")
+      assert has_element?(view, "[id^='match-candidate-']")
+      assert render(view) =~ "Candidate matches"
+      assert render(view) =~ "Viewing candidates does not clear or reconcile anything."
+    end
+
+    test "accepts a candidate and clears the posting", %{conn: conn} do
+      entity = insert_entity(name: "Reconciliation Accept Candidate")
+      account = insert_account(entity, %{name: "Checking Accept Candidate"})
+
+      {posting, _transaction} =
+        create_reconciliation_posting(entity, account,
+          amount: "45.20",
+          description: "Fuel",
+          date: ~D[2026-03-04]
+        )
+
+      imported_file = create_imported_file(account)
+
+      candidate_row =
+        create_imported_row(imported_file, account, 0, "Fuel purchase", ~D[2026-03-04], "45.20")
+
+      session =
+        insert_reconciliation_session(entity,
+          account: account,
+          statement_date: ~D[2026-03-31],
+          statement_balance: Decimal.new("45.20")
+        )
+
+      {:ok, view, _html} = live(conn, ~p"/reconciliation/#{session.id}")
+
+      view
+      |> element("#inspect-posting-#{posting.id}")
+      |> render_click()
+
+      view
+      |> element("#accept-match-candidate-#{candidate_row.id}")
+      |> render_click()
+
+      assert Reconciliation.get_posting_reconciliation_status(posting.id) == :cleared
+      assert render(view) =~ "Candidate accepted and posting cleared."
+      assert render(view) =~ rt("status_cleared")
+    end
+
+    test "shows an empty candidate state when no likely imported rows exist", %{conn: conn} do
+      entity = insert_entity(name: "Reconciliation Candidate Empty")
+      account = insert_account(entity, %{name: "Checking Candidate Empty"})
+
+      {posting, _transaction} =
+        create_reconciliation_posting(entity, account,
+          amount: "45.20",
+          description: "Fuel",
+          date: ~D[2026-03-04]
+        )
+
+      session =
+        insert_reconciliation_session(entity,
+          account: account,
+          statement_date: ~D[2026-03-31],
+          statement_balance: Decimal.new("45.20")
+        )
+
+      {:ok, view, _html} = live(conn, ~p"/reconciliation/#{session.id}")
+
+      view
+      |> element("#inspect-posting-#{posting.id}")
+      |> render_click()
+
+      assert has_element?(view, "#reconciliation-match-candidates-none")
+      assert render(view) =~ "No likely statement rows were found for this posting."
+    end
+
     test "marks selected postings as cleared and updates cleared balance", %{conn: conn} do
       entity = insert_entity(name: "Reconciliation Clear Flow")
       account = insert_account(entity, %{name: "Checking Clear"})
@@ -460,6 +563,39 @@ defmodule AurumFinanceWeb.ReconciliationLiveTest do
       end)
 
     {posting, transaction}
+  end
+
+  defp create_imported_file(account) do
+    {:ok, imported_file} =
+      Ingestion.create_imported_file(%{
+        account_id: account.id,
+        filename: "statement-#{System.unique_integer([:positive])}.csv",
+        sha256: String.duplicate("a", 64),
+        format: :csv,
+        status: :complete,
+        storage_path: "/tmp/statement-#{System.unique_integer([:positive])}.csv"
+      })
+
+    imported_file
+  end
+
+  defp create_imported_row(imported_file, account, row_index, description, posted_on, amount) do
+    {:ok, imported_row} =
+      Ingestion.create_imported_row(%{
+        imported_file_id: imported_file.id,
+        account_id: account.id,
+        row_index: row_index,
+        raw_data: %{"description" => description, "posted_on" => Date.to_iso8601(posted_on)},
+        description: description,
+        normalized_description: String.downcase(description),
+        posted_on: posted_on,
+        amount: Decimal.new(amount),
+        currency: "USD",
+        fingerprint: "fp-#{System.unique_integer([:positive])}",
+        status: :ready
+      })
+
+    imported_row
   end
 
   defp session_position(html, session_id) do

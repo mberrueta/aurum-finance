@@ -304,3 +304,69 @@ msgstr "1. Open"
 
 msgid "workflow_step_open_body"
 msgstr "Start one active session per account with the statement date and balance you want to reconcile."
+
+msgid "btn_close_match_candidates"
+msgstr "Close candidates"
+
+msgid "btn_inspect_matches"
+msgstr "Inspect matches"
+
+msgid "btn_accept_match_candidate"
+msgstr "Accept and clear"
+
+msgid "empty_match_candidates_idle"
+msgstr "Select a posting to inspect likely statement rows."
+
+msgid "empty_match_candidates_none"
+msgstr "No likely statement rows were found for this posting."
+
+msgid "label_match_file_id"
+msgstr "File: %{file_id}"
+
+msgid "label_match_score"
+msgstr "Heuristic score: %{score}%"
+
+msgid "label_selected_posting"
+msgstr "Selected posting"
+
+msgid "match_band_below_threshold"
+msgstr "Below threshold"
+
+msgid "match_band_exact"
+msgstr "Exact match"
+
+msgid "match_band_near"
+msgstr "Near match"
+
+msgid "match_band_weak"
+msgstr "Weak match"
+
+msgid "match_candidates_intro"
+msgstr "Possible matches are shown here to help comparison. Review before clearing."
+
+msgid "match_candidates_read_only"
+msgstr "Viewing candidates does not clear or reconcile anything."
+
+msgid "match_reason_close_amount"
+msgstr "Close amount"
+
+msgid "match_reason_description_similarity"
+msgstr "Description match"
+
+msgid "match_reason_exact_amount"
+msgstr "Exact amount"
+
+msgid "match_reason_near_date"
+msgstr "Near date"
+
+msgid "match_reason_same_day"
+msgstr "Same day"
+
+msgid "section_match_candidates"
+msgstr "Candidate matches"
+
+msgid "flash_match_candidate_accepted"
+msgstr "Candidate accepted and posting cleared."
+
+msgid "flash_match_candidate_not_acceptable"
+msgstr "That candidate is no longer available to clear this posting."

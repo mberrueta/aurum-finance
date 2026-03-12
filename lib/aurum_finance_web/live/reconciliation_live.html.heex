@@ -290,11 +290,26 @@
                     currency_code={@selected_session.account.currency_code}
                     session_completed?={!is_nil(@selected_session.completed_at)}
                     selected?={MapSet.member?(@selected_posting_ids, posting.id)}
+                    inspected?={
+                      !is_nil(@selected_posting_match) and
+                        @selected_posting_match.id == posting.id
+                    }
                   />
                 </tbody>
               </table>
             </div>
           </div>
+
+          <.posting_match_panel
+            posting={@selected_posting_match}
+            match_candidates={@match_candidates}
+            currency_code={@selected_session.account.currency_code}
+            accept_enabled?={
+              is_nil(@selected_session.completed_at) and
+                !is_nil(@selected_posting_match) and
+                @selected_posting_match.reconciliation_status == :unreconciled
+            }
+          />
         </div>
       </.section_panel>
     </div>

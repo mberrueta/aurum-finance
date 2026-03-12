@@ -29,6 +29,8 @@ defmodule AurumFinanceWeb.ReconciliationLive do
        selected_posting_ids: MapSet.new(),
        sessions: [],
        postings: [],
+       selected_posting_match: nil,
+       match_candidates: [],
        cleared_balance: @zero,
        difference: @zero,
        balanced?: true,
@@ -159,6 +161,46 @@ defmodule AurumFinanceWeb.ReconciliationLive do
     {:noreply, update(socket, :selected_posting_ids, &toggle_posting_id(&1, posting_id))}
   end
 
+  def handle_event("inspect_posting_matches", %{"id" => posting_id}, socket) do
+    {:noreply, inspect_posting_matches(socket, posting_id)}
+  end
+
+  def handle_event("clear_posting_match_inspection", _params, socket) do
+    {:noreply, clear_posting_match_inspection(socket)}
+  end
+
+  def handle_event(
+        "accept_match_candidate",
+        %{"posting_id" => posting_id, "imported_row_id" => imported_row_id},
+        socket
+      ) do
+    case Reconciliation.accept_match_candidate(
+           posting_id,
+           imported_row_id,
+           socket.assigns.selected_session.id,
+           entity_id: socket.assigns.current_entity.id,
+           actor: "root",
+           channel: :web
+         ) do
+      {:ok, _state} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, dgettext("reconciliation", "flash_match_candidate_accepted"))
+         |> reload_selected_session()}
+
+      {:error, :candidate_not_acceptable} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           dgettext("reconciliation", "flash_match_candidate_not_acceptable")
+         )}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, clear_error_message(reason))}
+    end
+  end
+
   def handle_event("mark_cleared", _params, %{assigns: %{selected_session: nil}} = socket) do
     {:noreply, socket}
   end
@@ -235,6 +277,8 @@ defmodule AurumFinanceWeb.ReconciliationLive do
     |> assign(:selected_account_id, nil)
     |> assign(:selected_session, nil)
     |> assign(:selected_posting_ids, MapSet.new())
+    |> assign(:selected_posting_match, nil)
+    |> assign(:match_candidates, [])
     |> assign(:cleared_balance, @zero)
     |> assign(:difference, @zero)
     |> assign(:balanced?, true)
@@ -285,6 +329,8 @@ defmodule AurumFinanceWeb.ReconciliationLive do
         |> put_flash(:error, dgettext("reconciliation", "flash_session_not_found"))
         |> assign(:selected_session, nil)
         |> assign(:selected_posting_ids, MapSet.new())
+        |> assign(:selected_posting_match, nil)
+        |> assign(:match_candidates, [])
         |> assign(:cleared_balance, @zero)
         |> assign(:difference, @zero)
         |> assign(:balanced?, true)
@@ -296,6 +342,8 @@ defmodule AurumFinanceWeb.ReconciliationLive do
         |> assign(:selected_account_id, session.account_id)
         |> assign(:selected_session, session)
         |> assign(:selected_posting_ids, MapSet.new())
+        |> assign(:selected_posting_match, nil)
+        |> assign(:match_candidates, [])
         |> assign_postings_and_summary(session)
         |> assign_session_form(%{"account_id" => session.account_id})
     end
@@ -305,6 +353,8 @@ defmodule AurumFinanceWeb.ReconciliationLive do
     socket
     |> assign(:selected_session, nil)
     |> assign(:selected_posting_ids, MapSet.new())
+    |> assign(:selected_posting_match, nil)
+    |> assign(:match_candidates, [])
     |> assign(:cleared_balance, @zero)
     |> assign(:difference, @zero)
     |> assign(:balanced?, true)
@@ -358,6 +408,7 @@ defmodule AurumFinanceWeb.ReconciliationLive do
     |> assign(:selected_session, session)
     |> assign(:selected_posting_ids, MapSet.new())
     |> assign_postings_and_summary(session)
+    |> refresh_posting_match_inspection()
     |> load_sessions()
   end
 
@@ -484,6 +535,49 @@ defmodule AurumFinanceWeb.ReconciliationLive do
 
   defp clearable_postings(%{postings: postings}),
     do: Enum.filter(postings, &(&1.reconciliation_status == :unreconciled))
+
+  defp inspect_posting_matches(%{assigns: %{current_entity: nil}} = socket, _posting_id),
+    do: socket
+
+  defp inspect_posting_matches(%{assigns: %{selected_session: nil}} = socket, _posting_id),
+    do: socket
+
+  defp inspect_posting_matches(socket, posting_id) do
+    selected_posting_match = Enum.find(socket.assigns.postings, &(&1.id == posting_id))
+
+    case selected_posting_match do
+      nil ->
+        clear_posting_match_inspection(socket)
+
+      posting ->
+        {:ok, match_candidates} =
+          Reconciliation.list_match_candidates_for_posting(posting.id,
+            entity_id: socket.assigns.current_entity.id
+          )
+
+        socket
+        |> assign(:selected_posting_match, posting)
+        |> assign(:match_candidates, match_candidates)
+    end
+  end
+
+  defp clear_posting_match_inspection(socket) do
+    socket
+    |> assign(:selected_posting_match, nil)
+    |> assign(:match_candidates, [])
+  end
+
+  defp refresh_posting_match_inspection(%{assigns: %{selected_posting_match: nil}} = socket),
+    do: socket
+
+  defp refresh_posting_match_inspection(socket) do
+    selected_posting_id = socket.assigns.selected_posting_match.id
+
+    case Enum.find(socket.assigns.postings, &(&1.id == selected_posting_id)) do
+      nil -> clear_posting_match_inspection(socket)
+      _posting -> inspect_posting_matches(socket, selected_posting_id)
+    end
+  end
 
   defp active_session?(%ReconciliationSession{completed_at: nil}), do: true
   defp active_session?(%ReconciliationSession{}), do: false

@@ -303,3 +303,69 @@ msgstr ""
 
 msgid "workflow_step_open_body"
 msgstr ""
+
+msgid "btn_close_match_candidates"
+msgstr ""
+
+msgid "btn_inspect_matches"
+msgstr ""
+
+msgid "empty_match_candidates_idle"
+msgstr ""
+
+msgid "empty_match_candidates_none"
+msgstr ""
+
+msgid "label_match_file_id"
+msgstr ""
+
+msgid "label_match_score"
+msgstr ""
+
+msgid "label_selected_posting"
+msgstr ""
+
+msgid "match_band_below_threshold"
+msgstr ""
+
+msgid "match_band_exact"
+msgstr ""
+
+msgid "match_band_near"
+msgstr ""
+
+msgid "match_band_weak"
+msgstr ""
+
+msgid "match_candidates_intro"
+msgstr ""
+
+msgid "match_candidates_read_only"
+msgstr ""
+
+msgid "match_reason_close_amount"
+msgstr ""
+
+msgid "match_reason_description_similarity"
+msgstr ""
+
+msgid "match_reason_exact_amount"
+msgstr ""
+
+msgid "match_reason_near_date"
+msgstr ""
+
+msgid "match_reason_same_day"
+msgstr ""
+
+msgid "section_match_candidates"
+msgstr ""
+
+msgid "btn_accept_match_candidate"
+msgstr ""
+
+msgid "flash_match_candidate_accepted"
+msgstr ""
+
+msgid "flash_match_candidate_not_acceptable"
+msgstr ""
