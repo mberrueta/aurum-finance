@@ -49,9 +49,11 @@ Add a comparison workflow to the reconciliation screen so the user can click a p
 - [ ] Candidate list appears in a dedicated comparison panel on the same page
 - [ ] Panel shows the selected posting summary
 - [ ] Panel shows imported-row candidates ordered by backend score
-- [ ] Each candidate displays at least: date, description, amount, score/confidence, and reasons/badges
+- [ ] Each candidate displays at least: date, description, amount, backend `match_band` (and optionally score), plus reasons/badges
+- [ ] Each candidate displays its qualitative match band in a user-friendly way
 - [ ] Empty state is shown when no candidates are found
 - [ ] UI makes clear this is assistance, not automatic reconciliation
+- [ ] UI explicitly states that viewing candidates does not clear or reconcile anything
 - [ ] No clearing/reconciliation action is triggered by viewing candidates
 - [ ] Interaction works in both active and completed session views as read-only inspection
 - [ ] Component and DOM IDs are explicit and test-friendly
@@ -67,10 +69,23 @@ Add a comparison workflow to the reconciliation screen so the user can click a p
   - right-side panel on desktop, stacked section below on smaller screens, or
   - a drawer/slideover if that integrates better with current layout
 - The comparison panel should explain why a candidate is likely:
-  - `Exact amount`
-  - `Same day`
-  - `Near date`
-  - `Description match`
+- Use clearly assistive language such as:
+  - `Possible matches`
+  - `Candidate rows`
+  - `Likely statement rows`
+  - `Why this may match`
+  - `Review before clearing`
+- Avoid overly authoritative language such as:
+  - `Best match found`
+  - `Matched`
+  - `Recommended action`
+- `Exact amount`
+- `Same day`
+- `Near date`
+- `Description match`
+- The comparison panel should visually distinguish candidate strength using the stable backend band (`exact`, `near`, `weak`, `below threshold` if shown).
+- If extra wording is shown beyond `match_band`, it should be clearly UI-derived and must not create a second competing classification model.
+- If numeric score is shown in the UI, format it as human-friendly heuristic output and avoid false precision.
 
 ### Suggested LiveView State
 

@@ -30,6 +30,12 @@ Read these files before starting:
 ## Objective
 Add a backend API that, given a posting in a reconciliation session, returns ranked imported-row candidates from the same account with an explainable match score. This is read-only assistance for operators and a foundation for future auto-suggest and auto-clear workflows.
 
+The internal design should explicitly separate:
+
+- candidate retrieval
+- candidate scoring
+- candidate shaping / presentation
+
 ## Inputs Required
 
 - [ ] `docs/adr/0013-reconciliation-workflow-model.md` - matching model and scoring rationale
@@ -47,15 +53,18 @@ Add a backend API that, given a posting in a reconciliation session, returns ran
 
 - [ ] Public API added to `AurumFinance.Reconciliation` for listing candidates for one posting, scoped by `entity_id`
 - [ ] API is read-only: it does not create matches, clear postings, or mutate reconciliation state
+- [ ] Internal design separates candidate retrieval from candidate scoring and output shaping
 - [ ] Candidate search is scoped to the posting's account and entity
 - [ ] Candidates come from imported rows, not arbitrary UI-only structs
 - [ ] Imported rows are filtered to a small date window around the posting date, default `+/- 2` days
 - [ ] Imported rows are filtered to likely amount matches using both exact match and a tolerance rule
 - [ ] Tolerance is modeled for future reuse, not hardcoded only as `+/- 20%`
 - [ ] Returned candidates include an overall numeric `score`
+- [ ] Returned candidates expose a stable qualitative band such as `:exact_match`, `:near_match`, `:weak_match`, or `:below_threshold`
 - [ ] Returned candidates include a machine-readable `signals` / `score_breakdown`
 - [ ] Returned candidates include human-usable `reasons` or badges derived from the score
 - [ ] Ranking prioritizes amount exactness and date closeness over description similarity
+- [ ] Description similarity cannot rescue an otherwise poor amount/date candidate into a strong match band
 - [ ] Description similarity is included when data is available, but does not dominate the score
 - [ ] API supports a sensible default limit (for example top 5 or top 10 candidates)
 - [ ] Public function has `@doc` and `@spec`
@@ -75,6 +84,14 @@ lib/aurum_finance/ingestion/imported_row.ex
 
 Use a stable, explainable candidate shape rather than returning raw imported rows only.
 
+The backend implementation should be split into small focused modules, for example:
+
+- `CandidateFinder` - loads candidate imported rows within scope and retrieval window
+- `CandidateScorer` - computes weighted signals and final score
+- `CandidatePresenter` or `CandidateShape` - normalizes the result contract returned by the context
+
+Exact names may vary, but the responsibility split should remain clear.
+
 Suggested shape:
 
 ```elixir
@@ -82,7 +99,7 @@ Suggested shape:
   posting_id: posting.id,
   imported_row_id: imported_row.id,
   score: 0.87,
-  confidence: :high,
+  match_band: :near_match,
   reasons: [:exact_amount, :same_day, :description_similarity],
   signals: %{
     amount_exact: true,
@@ -95,25 +112,53 @@ Suggested shape:
 }
 ```
 
+`score` should be a normalized numeric heuristic in the range `0.0..1.0`.
+
+The `match_band` contract should be stable and explicit even if the underlying scoring weights evolve. Suggested baseline bands:
+
+- `:exact_match`
+- `:near_match`
+- `:weak_match`
+- `:below_threshold`
+
+Prefer neutral terminology such as `match_strength` over authoritative terminology such as `confidence` unless the latter is explicitly documented as derived UI language only.
+
+Prefer `match_band` as the stable backend qualitative contract. Additional UI wording such as `match_strength` should be derived only if needed and should not introduce a second competing classification model.
+
+The scorer may classify rows into all bands, including `:below_threshold`, but the public API should filter out below-threshold rows by default and return only actionable candidate rows unless explicitly configured otherwise. A future-friendly option such as `include_below_threshold?: true` is acceptable for debugging or deeper inspection.
+
 ### Scoring Guidance
 
 - Amount score should carry the highest weight.
 - Date proximity should carry the second-highest weight.
 - Description similarity should be supportive, not dominant.
+- Description similarity should act as a tie-breaker or confidence booster, not as a primary rescue signal.
 - Use absolute amount comparison for cross-sign normalization if imported evidence and ledger postings differ in sign conventions.
 - Keep thresholds configurable through small private helpers or module attributes.
+- Map the numeric score and/or signals into a stable qualitative band for UI and tests.
+- Keep the public `score` contract normalized to `0.0..1.0`.
+
+Recommended mental rule:
+
+- amount
+- date
+- description
+
+If amount/date are materially weak, description similarity alone must not produce `:exact_match` or `:near_match`.
 
 ### Suggested Public API
 
 - `list_match_candidates_for_posting(posting_id, opts)`
 - optional companion helper: `list_match_candidates_for_posting_query/2` only if composition is genuinely useful
 
+The public context function should orchestrate the internal pipeline rather than owning the scoring logic inline.
+
 ### Constraints
 
 - Do not introduce auto-clear or auto-reconcile behavior in this task
 - Do not add persistence for accepted/rejected matches in this task unless strictly necessary and explicitly documented
 - Web layer must remain a consumer of the context API, not `Repo`
-- Prefer small dedicated scorer helpers over embedding all logic in the LiveView
+- Prefer dedicated modules over embedding all logic in the context or LiveView
 
 ## Execution Instructions
 

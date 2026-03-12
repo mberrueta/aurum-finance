@@ -51,6 +51,9 @@ Update the architectural record and system documentation so the codebase clearly
   - future auto-reconciliation
 - [ ] ADR text matches the implemented system, not the aspirational end-state only
 - [ ] Docs explain that score output is explainable and based on weighted signals
+- [ ] Docs use neutral terminology for heuristic strength and avoid overstating certainty
+- [ ] Docs state the public score contract clearly as a normalized heuristic in the range `0.0..1.0`
+- [ ] Docs state that scoring may classify more broadly, while the default public API/UI only surface useful above-threshold candidates unless explicitly configured otherwise
 - [ ] Docs explain that viewing candidates does not mutate ledger or reconciliation state
 - [ ] Architecture doc reflects where candidate scoring lives and which contexts it depends on
 - [ ] Domain model doc reflects the current implementation posture accurately

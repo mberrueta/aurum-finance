@@ -43,10 +43,14 @@ Add deterministic backend and LiveView tests for the candidate-matching workflow
 ## Acceptance Criteria
 
 - [ ] Backend tests cover exact-amount + same-day ranking above weaker matches
+- [ ] Backend tests cover qualitative match-band classification (`exact`, `near`, `weak`, `below threshold`) as a stable contract
+- [ ] Backend tests cover the normalized public score contract in the range `0.0..1.0`
 - [ ] Backend tests cover near-date / close-amount candidates being included
 - [ ] Backend tests cover out-of-window / out-of-scope imported rows being excluded
 - [ ] Backend tests cover entity/account isolation
 - [ ] Backend tests cover rows with partial metadata (for example nil description) without crashing
+- [ ] Backend tests cover that strong description similarity alone does not promote a weak amount/date candidate into a strong match band
+- [ ] Backend tests cover that a candidate with stronger amount/date evidence ranks above another candidate with stronger description similarity but weaker core evidence
 - [ ] LiveView tests cover selecting a posting and rendering the comparison panel
 - [ ] LiveView tests cover the empty-candidate state
 - [ ] LiveView tests use stable element IDs/selectors, not brittle raw-HTML assertions
@@ -64,6 +68,7 @@ Add deterministic backend and LiveView tests for the candidate-matching workflow
 5. Clicking a posting in the UI shows its candidate panel.
 6. Clicking another posting refreshes the panel to the new candidate set.
 7. No candidates produces a clear empty state.
+8. A better amount/date candidate outranks a better-description-only candidate.
 
 ### Constraints
 
