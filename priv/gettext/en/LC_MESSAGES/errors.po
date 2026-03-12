@@ -126,6 +126,9 @@ msgstr "Currency code must be exactly 3 characters."
 msgid "error_account_immutable_field"
 msgstr "This field cannot be changed after the account is created."
 
+msgid "error_active_session_exists"
+msgstr "An active reconciliation session already exists for this account."
+
 msgid "error_account_management_group_invalid"
 msgstr "Management group is inconsistent with account type and operational subtype."
 
@@ -191,3 +194,9 @@ msgstr "Only committed row materializations may reference a transaction."
 
 msgid "error_import_row_materialization_transaction_required"
 msgstr "Committed row materializations must reference a transaction."
+
+msgid "error_field_required"
+msgstr "This field is required."
+
+msgid "error_reconciliation_statement_balance_invalid"
+msgstr "Statement balance must be a valid decimal value."

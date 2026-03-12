@@ -63,6 +63,28 @@ Implements the reconciliation status workflow as an overlay on the immutable pos
 | 08 | LiveView integration tests | PENDING | [ ] | Task 07, 05 |
 | 09 | Final audit (precommit, coverage) | PENDING | [ ] | Task 06, 08 |
 
+## Follow-up Extension: Assisted Match Comparison
+
+This extension adds reconciliation assistance without introducing auto-reconciliation yet. The goal is to let the user inspect likely imported statement rows for a selected posting, ranked by explainable score, so the same matching model can later power auto-suggest and eventually controlled auto-clear workflows.
+
+### Extension Roles
+
+| Task | Agent | Description |
+|------|-------|-------------|
+| 10 | `dev-backend-elixir-engineer` | Candidate matching/scoring backend API |
+| 11 | `dev-frontend-ui-engineer` | Reconciliation UI candidate-inspection panel |
+| 12 | `qa-elixir-test-author` | Backend + LiveView regression and scoring tests |
+| 13 | `tl-architect` | ADR and system-doc updates for assisted matching |
+
+### Extension Task Sequence
+
+| # | Task | Status | Approved | Dependencies |
+|---|------|--------|----------|--------------|
+| 10 | Backend candidate matching API | PENDING | [ ] | Task 03, Task 07 |
+| 11 | Frontend candidate-inspection UI | PENDING | [ ] | Task 10 |
+| 12 | Backend + LiveView tests | PENDING | [ ] | Task 10, Task 11 |
+| 13 | ADR + system docs update | PENDING | [ ] | Task 10, Task 11 |
+
 **Status Legend:**
 - PENDING - Ready to start (dependencies met)
 - IN_PROGRESS - Currently being executed
@@ -92,6 +114,7 @@ Implements the reconciliation status workflow as an overlay on the immutable pos
 | Date | Task | Change | Reason |
 |------|------|--------|--------|
 | 2026-03-11 | Plan | Initial creation | - |
+| 2026-03-12 | Plan | Added follow-up assisted matching extension tasks 10-13 | User requested posting-to-import comparison workflow |
 
 ---
 ---

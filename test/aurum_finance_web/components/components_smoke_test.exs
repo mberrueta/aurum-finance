@@ -206,32 +206,84 @@ defmodule AurumFinanceWeb.ComponentsSmokeTest do
   end
 
   test "reconciliation components render" do
-    assigns = %{}
+    entity = struct(AurumFinance.Entities.Entity, id: Ecto.UUID.generate(), name: "Personal")
+
+    account =
+      struct(AurumFinance.Ledger.Account,
+        id: Ecto.UUID.generate(),
+        name: "Cash account",
+        currency_code: "USD"
+      )
+
+    session =
+      struct(AurumFinance.Reconciliation.ReconciliationSession,
+        id: Ecto.UUID.generate(),
+        account: account,
+        account_id: account.id,
+        statement_date: ~D[2026-03-11],
+        statement_balance: Decimal.new("100.00"),
+        completed_at: nil
+      )
+
+    form =
+      AurumFinance.Reconciliation.change_reconciliation_session(
+        %AurumFinance.Reconciliation.ReconciliationSession{},
+        %{
+          entity_id: entity.id,
+          account_id: account.id,
+          statement_date: ~D[2026-03-11],
+          statement_balance: Decimal.new("100.00")
+        }
+      )
+      |> to_form(as: :reconciliation_session)
+
+    assigns = %{entity: entity, account: account, session: session, form: form}
 
     session_html =
       rendered_to_string(~H"""
-      <.session_item session={%{account: "a_cash_br", period: "2026-03", status: "in_progress"}} />
+      <.session_item
+        id={"reconciliation-session-#{@session.id}"}
+        session={@session}
+        selected?={false}
+        href="/reconciliation/#{@session.id}"
+      />
       """)
 
-    line_html =
+    row_html =
       rendered_to_string(~H"""
       <table>
         <tbody>
-          <.statement_line_row
-            line={%{date: "2026-01-01", desc: "Line", amount: -1.0, currency: "USD"}}
-            match={%{state: "reconciled", tx: "tx_1", confidence: 0.9}}
+          <.posting_row
+            id="posting-1"
+            posting={
+              %{
+                id: "posting-1",
+                transaction_date: ~D[2026-01-01],
+                transaction_description: "Line",
+                amount: Decimal.new("-1.00"),
+                reconciliation_status: :cleared,
+                reason: nil
+              }
+            }
+            currency_code="USD"
+            session_completed?={false}
+            selected?={false}
           />
         </tbody>
       </table>
       """)
 
-    discrepancy_html =
+    form_html =
       rendered_to_string(~H"""
-      <.discrepancy_item discrepancy={%{msg: "missing", type: "missing_tx", severity: "warn"}} />
+      <.session_form
+        form={@form}
+        current_entity={@entity}
+        institution_accounts={[@account]}
+      />
       """)
 
-    assert session_html =~ "a_cash_br"
-    assert line_html =~ "Line"
-    assert discrepancy_html =~ "missing"
+    assert session_html =~ "Cash account"
+    assert row_html =~ "Line"
+    assert form_html =~ "Create session"
   end
 end

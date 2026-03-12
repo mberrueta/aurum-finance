@@ -1,118 +1,305 @@
-## This file is a PO Template file.
-##
-## "msgid"s here are often extracted from source code.
-## Add new messages manually only if they're dynamic
-## messages that can't be statically extracted.
-##
-## Run "mix gettext.extract" to bring this file up to
-## date. Leave "msgstr"s empty as changing them here has no
-## effect: edit them in PO (.po) files instead.
-#
 msgid ""
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:36
-#, elixir-autogen, elixir-format
-msgid "badge_in_progress"
+msgid "badge_active_sessions"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:30
-#, elixir-autogen, elixir-format
+msgid "badge_detail_idle"
+msgstr ""
+
+msgid "btn_back_to_sessions"
+msgstr ""
+
+msgid "btn_clear_selection"
+msgstr ""
+
+msgid "btn_create_session"
+msgstr ""
+
+msgid "btn_mark_cleared"
+msgstr ""
+
 msgid "btn_new_session"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:77
-#, elixir-autogen, elixir-format
+msgid "btn_reconcile"
+msgstr ""
+
+msgid "btn_select_all"
+msgstr ""
+
+msgid "btn_select_all_disabled"
+msgstr ""
+
+msgid "btn_statement_date_last_month"
+msgstr ""
+
+msgid "btn_statement_date_last_year"
+msgstr ""
+
+msgid "btn_unclear"
+msgstr ""
+
+msgid "callout_how_use_item_1"
+msgstr ""
+
+msgid "callout_how_use_item_2"
+msgstr ""
+
+msgid "callout_how_use_item_3"
+msgstr ""
+
+msgid "callout_how_use_title"
+msgstr ""
+
+msgid "callout_tips_item_1"
+msgstr ""
+
+msgid "callout_tips_item_2"
+msgstr ""
+
+msgid "callout_tips_title"
+msgstr ""
+
+msgid "callout_warning_item_1"
+msgstr ""
+
+msgid "callout_warning_item_2"
+msgstr ""
+
+msgid "callout_warning_title"
+msgstr ""
+
+msgid "callout_what_is_body"
+msgstr ""
+
+msgid "callout_what_is_item_1"
+msgstr ""
+
+msgid "callout_what_is_item_2"
+msgstr ""
+
+msgid "callout_what_is_item_3"
+msgstr ""
+
+msgid "callout_what_is_title"
+msgstr ""
+
+msgid "col_actions"
+msgstr ""
+
 msgid "col_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:75
-#, elixir-autogen, elixir-format
 msgid "col_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:76
-#, elixir-autogen, elixir-format
 msgid "col_description"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:79
-#, elixir-autogen, elixir-format
-msgid "col_match"
+msgid "col_select"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:78
-#, elixir-autogen, elixir-format
 msgid "col_state"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:62
-#, elixir-autogen, elixir-format
+msgid "confirm_complete_balanced"
+msgstr ""
+
+msgid "confirm_complete_unbalanced"
+msgstr ""
+
+msgid "difference_balanced"
+msgstr ""
+
+msgid "difference_unbalanced"
+msgstr ""
+
+msgid "empty_form_requires_account"
+msgstr ""
+
+msgid "empty_form_requires_entity"
+msgstr ""
+
+msgid "empty_no_entities"
+msgstr ""
+
+msgid "empty_no_institution_accounts"
+msgstr ""
+
+msgid "empty_no_postings"
+msgstr ""
+
+msgid "empty_no_sessions"
+msgstr ""
+
+msgid "empty_select_session"
+msgstr ""
+
+msgid "flash_audit_logging_failed"
+msgstr ""
+
+msgid "flash_posting_unclear_failed"
+msgstr ""
+
+msgid "flash_posting_uncleared"
+msgstr ""
+
+msgid "flash_postings_clear_failed"
+msgstr ""
+
+msgid "flash_postings_cleared"
+msgstr ""
+
+msgid "flash_postings_not_clearable"
+msgstr ""
+
+msgid "flash_postings_not_unclearable"
+msgstr ""
+
+msgid "flash_session_already_completed"
+msgstr ""
+
+msgid "flash_session_complete_failed"
+msgstr ""
+
+msgid "flash_session_completed"
+msgstr ""
+
+msgid "flash_session_created"
+msgstr ""
+
+msgid "flash_session_create_failed"
+msgstr ""
+
+msgid "flash_session_not_found"
+msgstr ""
+
 msgid "label_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:95
-#, elixir-autogen, elixir-format
-msgid "label_discrepancies"
+msgid "label_account_currency"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:72
-#, elixir-autogen, elixir-format
-msgid "label_match_none"
+msgid "label_account_filter"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:100
-#, elixir-autogen, elixir-format
-msgid "label_no_discrepancies"
+msgid "label_completed_at"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:69
-#, elixir-autogen, elixir-format
-msgid "label_statement_lines"
+msgid "label_created_at"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:33
-#, elixir-autogen, elixir-format
-msgid "label_status"
+msgid "label_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:118
-#, elixir-autogen, elixir-format
-msgid "label_type"
+msgid "label_statement_balance"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:27
-#, elixir-autogen, elixir-format
+msgid "label_statement_date"
+msgstr ""
+
+msgid "option_all_accounts"
+msgstr ""
+
+msgid "option_select_account"
+msgstr ""
+
+msgid "option_select_entity"
+msgstr ""
+
 msgid "page_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:13
-#: lib/aurum_finance_web/live/reconciliation_live.ex:26
-#, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:57
-#, elixir-autogen, elixir-format
+msgid "panel_new_session_subtitle"
+msgstr ""
+
+msgid "panel_new_session_title"
+msgstr ""
+
+msgid "panel_session_flow_item_1"
+msgstr ""
+
+msgid "panel_session_flow_item_2"
+msgstr ""
+
+msgid "panel_session_flow_item_3"
+msgstr ""
+
+msgid "panel_session_flow_title"
+msgstr ""
+
+msgid "postings_hint"
+msgstr ""
+
 msgid "section_detail"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:39
-#, elixir-autogen, elixir-format
+msgid "section_detail_for_account"
+msgstr ""
+
+msgid "section_guidance"
+msgstr ""
+
+msgid "section_postings"
+msgstr ""
+
 msgid "section_sessions"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:91
-#, elixir-autogen, elixir-format
+msgid "section_workflow"
+msgstr ""
+
+msgid "sessions_hint"
+msgstr ""
+
 msgid "status_cleared"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:90
-#, elixir-autogen, elixir-format
+msgid "status_completed"
+msgstr ""
+
+msgid "status_in_progress"
+msgstr ""
+
 msgid "status_reconciled"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:92
-#, elixir-autogen, elixir-format
 msgid "status_unreconciled"
+msgstr ""
+
+msgid "summary_cleared_balance"
+msgstr ""
+
+msgid "summary_cleared_caption"
+msgstr ""
+
+msgid "summary_difference"
+msgstr ""
+
+msgid "summary_statement_balance"
+msgstr ""
+
+msgid "summary_statement_date"
+msgstr ""
+
+msgid "workflow_step_clear"
+msgstr ""
+
+msgid "workflow_step_clear_body"
+msgstr ""
+
+msgid "workflow_step_complete"
+msgstr ""
+
+msgid "workflow_step_complete_body"
+msgstr ""
+
+msgid "workflow_step_open"
+msgstr ""
+
+msgid "workflow_step_open_body"
 msgstr ""

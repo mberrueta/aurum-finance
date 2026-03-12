@@ -2,108 +2,305 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:36
-#, elixir-autogen, elixir-format
-msgid "badge_in_progress"
-msgstr ""
+msgid "badge_active_sessions"
+msgstr "%{count} active sessions"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:30
-#, elixir-autogen, elixir-format
+msgid "badge_detail_idle"
+msgstr "Select a session"
+
+msgid "btn_back_to_sessions"
+msgstr "Back to sessions"
+
+msgid "btn_clear_selection"
+msgstr "Clear selection"
+
+msgid "btn_create_session"
+msgstr "Create session"
+
+msgid "btn_mark_cleared"
+msgstr "Mark cleared"
+
 msgid "btn_new_session"
-msgstr ""
+msgstr "New session"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:77
-#, elixir-autogen, elixir-format
+msgid "btn_reconcile"
+msgstr "Reconcile"
+
+msgid "btn_select_all"
+msgstr "Select all unreconciled"
+
+msgid "btn_select_all_disabled"
+msgstr "No unreconciled postings"
+
+msgid "btn_statement_date_last_month"
+msgstr "Last month"
+
+msgid "btn_statement_date_last_year"
+msgstr "Last year"
+
+msgid "btn_unclear"
+msgstr "Un-clear"
+
+msgid "callout_how_use_item_1"
+msgstr "Select the entity first so the session list and account scope stay inside one ownership boundary."
+
+msgid "callout_how_use_item_2"
+msgstr "Create one active session per institution account, then clear postings as you match them against the statement."
+
+msgid "callout_how_use_item_3"
+msgstr "Use the difference card as the final checkpoint before you complete the session."
+
+msgid "callout_how_use_title"
+msgstr "How to use reconciliation"
+
+msgid "callout_tips_item_1"
+msgstr "If a posting was cleared by mistake, un-clear it before the session is completed."
+
+msgid "callout_tips_item_2"
+msgstr "Completed sessions remain visible as history, so you can review the final balance and timestamps later."
+
+msgid "callout_tips_title"
+msgstr "Tips"
+
+msgid "callout_warning_item_1"
+msgstr "A completed reconciliation session is read-only; the UI will not let you clear or un-clear postings after completion."
+
+msgid "callout_warning_item_2"
+msgstr "Voiding a transaction with reconciled postings is blocked by the ledger guard."
+
+msgid "callout_warning_title"
+msgstr "Warnings"
+
+msgid "callout_what_is_body"
+msgstr "Reconciliation is the workflow layer that sits on top of immutable ledger postings and helps you match one account against one statement."
+
+msgid "callout_what_is_item_1"
+msgstr "A session stores the statement date and statement balance for one institution account."
+
+msgid "callout_what_is_item_2"
+msgstr "Cleared postings are provisional and can still be removed while the session stays active."
+
+msgid "callout_what_is_item_3"
+msgstr "Completing the session promotes cleared postings into reconciled history without mutating the original postings."
+
+msgid "callout_what_is_title"
+msgstr "What reconciliation is"
+
+msgid "col_actions"
+msgstr "Actions"
+
 msgid "col_amount"
-msgstr ""
+msgstr "Amount"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:75
-#, elixir-autogen, elixir-format
 msgid "col_date"
-msgstr ""
+msgstr "Date"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:76
-#, elixir-autogen, elixir-format
 msgid "col_description"
-msgstr ""
+msgstr "Description"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:79
-#, elixir-autogen, elixir-format
-msgid "col_match"
-msgstr ""
+msgid "col_select"
+msgstr "Select"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:78
-#, elixir-autogen, elixir-format
 msgid "col_state"
-msgstr ""
+msgstr "State"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:62
-#, elixir-autogen, elixir-format
+msgid "confirm_complete_balanced"
+msgstr "Finalize this reconciliation session?"
+
+msgid "confirm_complete_unbalanced"
+msgstr "The difference is not zero. Finalize this reconciliation session anyway?"
+
+msgid "difference_balanced"
+msgstr "Statement balance and cleared balance match."
+
+msgid "difference_unbalanced"
+msgstr "Difference remains. Review cleared postings before finalizing."
+
+msgid "empty_form_requires_account"
+msgstr "Create an institution account first before opening a reconciliation session."
+
+msgid "empty_form_requires_entity"
+msgstr "Select an entity before creating a reconciliation session."
+
+msgid "empty_no_entities"
+msgstr "Create an entity first to scope reconciliation work."
+
+msgid "empty_no_institution_accounts"
+msgstr "Create an institution account first."
+
+msgid "empty_no_postings"
+msgstr "No postings available for this account."
+
+msgid "empty_no_sessions"
+msgstr "No reconciliation sessions yet."
+
+msgid "empty_select_session"
+msgstr "Select a session to review postings, balances, and finalization state."
+
+msgid "flash_audit_logging_failed"
+msgstr "The reconciliation change succeeded, but audit logging failed."
+
+msgid "flash_posting_unclear_failed"
+msgstr "The posting could not be un-cleared."
+
+msgid "flash_posting_uncleared"
+msgstr "Posting returned to unreconciled."
+
+msgid "flash_postings_clear_failed"
+msgstr "The selected postings could not be marked as cleared."
+
+msgid "flash_postings_cleared"
+msgstr "Postings marked as cleared."
+
+msgid "flash_postings_not_clearable"
+msgstr "One or more selected postings are no longer clearable."
+
+msgid "flash_postings_not_unclearable"
+msgstr "The posting is no longer eligible to be un-cleared."
+
+msgid "flash_session_already_completed"
+msgstr "This reconciliation session is already completed."
+
+msgid "flash_session_complete_failed"
+msgstr "The reconciliation session could not be completed."
+
+msgid "flash_session_completed"
+msgstr "Reconciliation session completed."
+
+msgid "flash_session_created"
+msgstr "Reconciliation session created."
+
+msgid "flash_session_create_failed"
+msgstr "The reconciliation session could not be created."
+
+msgid "flash_session_not_found"
+msgstr "The requested reconciliation session was not found in the current entity."
+
 msgid "label_account"
-msgstr ""
+msgstr "Account"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:95
-#, elixir-autogen, elixir-format
-msgid "label_discrepancies"
-msgstr ""
+msgid "label_account_currency"
+msgstr "Account currency"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:72
-#, elixir-autogen, elixir-format
-msgid "label_match_none"
-msgstr ""
+msgid "label_account_filter"
+msgstr "Filter by account"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:100
-#, elixir-autogen, elixir-format
-msgid "label_no_discrepancies"
-msgstr ""
+msgid "label_completed_at"
+msgstr "Completed at"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:69
-#, elixir-autogen, elixir-format
-msgid "label_statement_lines"
-msgstr ""
+msgid "label_created_at"
+msgstr "Created at"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:33
-#, elixir-autogen, elixir-format
-msgid "label_status"
-msgstr ""
+msgid "label_entity"
+msgstr "Entity"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:118
-#, elixir-autogen, elixir-format
-msgid "label_type"
-msgstr ""
+msgid "label_statement_balance"
+msgstr "Statement balance"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:27
-#, elixir-autogen, elixir-format
+msgid "label_statement_date"
+msgstr "Statement closing date"
+
+msgid "option_all_accounts"
+msgstr "All accounts"
+
+msgid "option_select_account"
+msgstr "Select account"
+
+msgid "option_select_entity"
+msgstr "Select entity"
+
 msgid "page_subtitle"
-msgstr "Match statement lines to ledger postings — unreconciled / cleared / reconciled"
+msgstr "Open a session, clear matching postings, and finalize when the difference reaches zero."
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:13
-#: lib/aurum_finance_web/live/reconciliation_live.ex:26
-#, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr "Reconciliation"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:57
-#, elixir-autogen, elixir-format
+msgid "panel_new_session_subtitle"
+msgstr "Each session tracks one statement balance for one institution account."
+
+msgid "panel_new_session_title"
+msgstr "New reconciliation session"
+
+msgid "panel_session_flow_item_1"
+msgstr "Pick one institution account and capture the statement date and ending balance."
+
+msgid "panel_session_flow_item_2"
+msgstr "Use the active session to mark ledger postings as cleared while you compare them to the statement."
+
+msgid "panel_session_flow_item_3"
+msgstr "Complete the session to promote cleared postings into reconciled history."
+
+msgid "panel_session_flow_title"
+msgstr "Session flow"
+
+msgid "postings_hint"
+msgstr "Unreconciled postings can be selected in bulk. Cleared postings can still be un-cleared until completion."
+
 msgid "section_detail"
-msgstr ""
+msgstr "Session detail"
 
-#: lib/aurum_finance_web/live/reconciliation_live.ex:39
-#, elixir-autogen, elixir-format
+msgid "section_detail_for_account"
+msgstr "Session detail for %{account}"
+
+msgid "section_guidance"
+msgstr "Guidance"
+
+msgid "section_postings"
+msgstr "Postings"
+
 msgid "section_sessions"
-msgstr ""
+msgstr "Sessions"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:91
-#, elixir-autogen, elixir-format
+msgid "section_workflow"
+msgstr "Workflow"
+
+msgid "sessions_hint"
+msgstr "Active sessions stay at the top. Completed sessions remain available as read-only history."
+
 msgid "status_cleared"
-msgstr ""
+msgstr "Cleared"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:90
-#, elixir-autogen, elixir-format
+msgid "status_completed"
+msgstr "Completed"
+
+msgid "status_in_progress"
+msgstr "In progress"
+
 msgid "status_reconciled"
-msgstr ""
+msgstr "Reconciled"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:92
-#, elixir-autogen, elixir-format
 msgid "status_unreconciled"
-msgstr ""
+msgstr "Unreconciled"
+
+msgid "summary_cleared_balance"
+msgstr "Cleared balance"
+
+msgid "summary_cleared_caption"
+msgstr "Includes both cleared and reconciled postings."
+
+msgid "summary_difference"
+msgstr "Difference"
+
+msgid "summary_statement_balance"
+msgstr "Statement balance"
+
+msgid "summary_statement_date"
+msgstr "Statement date: %{date}"
+
+msgid "workflow_step_clear"
+msgstr "2. Clear"
+
+msgid "workflow_step_clear_body"
+msgstr "Mark matching postings as cleared. If you made a mistake, un-clear them before finalizing."
+
+msgid "workflow_step_complete"
+msgstr "3. Complete"
+
+msgid "workflow_step_complete_body"
+msgstr "Finalize the session to lock the run and convert cleared postings into reconciled status."
+
+msgid "workflow_step_open"
+msgstr "1. Open"
+
+msgid "workflow_step_open_body"
+msgstr "Start one active session per account with the statement date and balance you want to reconcile."
