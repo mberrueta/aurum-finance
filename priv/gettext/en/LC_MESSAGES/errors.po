@@ -200,3 +200,39 @@ msgstr "This field is required."
 
 msgid "error_reconciliation_statement_balance_invalid"
 msgstr "Statement balance must be a valid decimal value."
+
+msgid "error_rule_action_operation_invalid"
+msgstr "This operation is not valid for the selected classification field."
+
+msgid "error_rule_actions_required"
+msgstr "A rule must define at least one action."
+
+msgid "error_rule_expression_required"
+msgstr "A rule expression is required."
+
+msgid "error_rule_group_name_length_invalid"
+msgstr "Rule group name must be between 2 and 160 characters."
+
+msgid "error_rule_group_name_taken_for_scope"
+msgstr "A group with this name already exists in this scope."
+
+msgid "error_rule_group_priority_invalid"
+msgstr "Rule group priority must be greater than zero."
+
+msgid "error_rule_group_scope_invalid"
+msgstr "Rule group scope is inconsistent with the selected entity/account ownership."
+
+msgid "error_rule_name_length_invalid"
+msgstr "Rule name must be between 2 and 160 characters."
+
+msgid "error_rule_position_invalid"
+msgstr "Rule position must be greater than zero."
+
+msgid "error_rule_action_field_not_allowed"
+msgstr "Action field '%{field}' is not declared in this group's target fields."
+
+msgid "error_rule_expression_invalid"
+msgstr "Rule expression is invalid."
+
+msgid "error_rule_expression_invalid_regex"
+msgstr "Rule expression contains an invalid regular expression."

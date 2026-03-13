@@ -28,7 +28,10 @@ defmodule AurumFinance.Classification.RuleActionTest do
         })
 
       refute changeset.valid?
-      assert "error_rule_action_operation_invalid" in errors_on(changeset).operation
+
+      assert "This operation is not valid for the selected classification field." in errors_on(
+               changeset
+             ).operation
     end
   end
 end

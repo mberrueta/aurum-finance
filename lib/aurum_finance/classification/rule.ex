@@ -42,6 +42,22 @@ defmodule AurumFinance.Classification.Rule do
 
   @doc """
   Builds the rule changeset with validated embedded actions.
+
+  ## Examples
+
+      iex> changeset =
+      ...>   AurumFinance.Classification.Rule.changeset(
+      ...>     %AurumFinance.Classification.Rule{},
+      ...>     %{
+      ...>       rule_group_id: Ecto.UUID.generate(),
+      ...>       name: "Uber",
+      ...>       position: 1,
+      ...>       expression: ~s|description contains "Uber"|,
+      ...>       actions: [%{field: :tags, operation: :add, value: "ride"}]
+      ...>     }
+      ...>   )
+      iex> changeset.valid?
+      true
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(rule, attrs) do

@@ -60,7 +60,10 @@ defmodule AurumFinance.Classification.RuleGroupTest do
         })
 
       refute changeset.valid?
-      assert "error_rule_group_scope_invalid" in errors_on(changeset).scope_type
+
+      assert "Rule group scope is inconsistent with the selected entity/account ownership." in errors_on(
+               changeset
+             ).scope_type
     end
 
     test "rejects non-positive priority" do
@@ -72,7 +75,7 @@ defmodule AurumFinance.Classification.RuleGroupTest do
         })
 
       refute changeset.valid?
-      assert "error_rule_group_priority_invalid" in errors_on(changeset).priority
+      assert "Rule group priority must be greater than zero." in errors_on(changeset).priority
     end
   end
 end

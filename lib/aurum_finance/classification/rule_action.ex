@@ -40,6 +40,16 @@ defmodule AurumFinance.Classification.RuleAction do
 
   @doc """
   Builds the embedded changeset for one persisted rule action.
+
+  ## Examples
+
+      iex> changeset =
+      ...>   AurumFinance.Classification.RuleAction.changeset(
+      ...>     %AurumFinance.Classification.RuleAction{},
+      ...>     %{field: :tags, operation: :add, value: "ride"}
+      ...>   )
+      iex> changeset.valid?
+      true
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(rule_action, attrs) do
@@ -50,18 +60,6 @@ defmodule AurumFinance.Classification.RuleAction do
     )
     |> validate_field_operation_compatibility()
   end
-
-  @doc """
-  Returns the supported action fields.
-  """
-  @spec fields() :: [atom()]
-  def fields, do: @fields
-
-  @doc """
-  Returns the supported action operations.
-  """
-  @spec operations() :: [atom()]
-  def operations, do: @operations
 
   defp validate_field_operation_compatibility(changeset) do
     field = get_field(changeset, :field)

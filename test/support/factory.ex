@@ -8,7 +8,9 @@ defmodule AurumFinance.Factory do
   alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
   alias AurumFinance.Classification.Rule
+  alias AurumFinance.Classification.RuleAction
   alias AurumFinance.Classification.RuleGroup
+  alias AurumFinance.Classification
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
@@ -59,7 +61,7 @@ defmodule AurumFinance.Factory do
       name: sequence(:rule_group_name, fn n -> "Rule Group #{n}" end),
       description: Faker.Lorem.sentence(),
       priority: sequence(:rule_group_priority, & &1),
-      target_fields: ["category"],
+      target_fields: [],
       is_active: true
     }
   end
@@ -77,13 +79,42 @@ defmodule AurumFinance.Factory do
       stop_processing: true,
       expression: ~s(description contains "Uber"),
       actions: [
-        %AurumFinance.Classification.RuleAction{
+        %RuleAction{
           field: :tags,
           operation: :add,
           value: "ride"
         }
       ]
     }
+  end
+
+  def insert_rule_group(attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      :rule_group
+      |> params_for()
+      |> Map.merge(attrs)
+
+    {:ok, rule_group} = Classification.create_rule_group(params)
+    rule_group
+  end
+
+  def insert_rule(rule_group, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      %{
+        rule_group_id: rule_group.id,
+        name: sequence(:insert_rule_name, fn n -> "Inserted Rule #{n}" end),
+        position: sequence(:insert_rule_position, & &1),
+        expression: ~s(description contains "Uber"),
+        actions: [%{field: :tags, operation: :add, value: "ride"}]
+      }
+      |> Map.merge(attrs)
+
+    {:ok, rule} = Classification.create_rule(params)
+    rule
   end
 
   def transaction_factory do

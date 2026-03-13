@@ -49,6 +49,16 @@ defmodule AurumFinance.Classification.RuleGroup do
 
   @doc """
   Builds the rule group changeset with explicit scope validation.
+
+  ## Examples
+
+      iex> changeset =
+      ...>   AurumFinance.Classification.RuleGroup.changeset(
+      ...>     %AurumFinance.Classification.RuleGroup{},
+      ...>     %{scope_type: :global, name: "Rules", priority: 1}
+      ...>   )
+      iex> changeset.valid?
+      true
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(rule_group, attrs) do
@@ -107,12 +117,6 @@ defmodule AurumFinance.Classification.RuleGroup do
         )
     )
   end
-
-  @doc """
-  Returns the supported scope types.
-  """
-  @spec scope_types() :: [atom()]
-  def scope_types, do: @scope_types
 
   defp validate_scope_columns(changeset) do
     scope_type = get_field(changeset, :scope_type)

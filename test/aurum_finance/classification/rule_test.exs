@@ -34,7 +34,7 @@ defmodule AurumFinance.Classification.RuleTest do
         })
 
       refute changeset.valid?
-      assert "error_rule_actions_required" in errors_on(changeset).actions
+      assert "A rule must define at least one action." in errors_on(changeset).actions
     end
 
     test "rejects blank expressions" do
@@ -50,7 +50,7 @@ defmodule AurumFinance.Classification.RuleTest do
         })
 
       refute changeset.valid?
-      assert "error_rule_expression_required" in errors_on(changeset).expression
+      assert "A rule expression is required." in errors_on(changeset).expression
     end
   end
 end

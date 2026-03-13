@@ -224,3 +224,12 @@ msgstr ""
 
 msgid "error_rule_position_invalid"
 msgstr ""
+
+msgid "error_rule_action_field_not_allowed"
+msgstr ""
+
+msgid "error_rule_expression_invalid"
+msgstr ""
+
+msgid "error_rule_expression_invalid_regex"
+msgstr ""
