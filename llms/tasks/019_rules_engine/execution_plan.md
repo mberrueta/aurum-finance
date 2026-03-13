@@ -3,8 +3,8 @@
 ## Metadata
 - **Spec**: `llms/tasks/019_rules_engine/plan.md`
 - **Created**: 2026-03-12
-- **Status**: PLANNING
-- **Current Task**: N/A
+- **Status**: IN_PROGRESS
+- **Current Task**: 06 - Preview API
 
 ## Overview
 Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, and #21. The feature introduces a `Classification` context with unified scoped rule groups (`global`, `entity`, `account`), rules (expression-based conditions + JSONB actions), a pure-function evaluation engine with preview/dry-run, and a classification records layer with per-field manual override protection and audit trail integration.
@@ -54,12 +54,12 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 
 | # | Task | Status | Approved | Dependencies |
 |---|------|--------|----------|--------------|
-| 01 | Migration + Schemas | PENDING | [ ] | None |
-| 02 | Classification Context CRUD | BLOCKED | [ ] | Task 01 |
-| 03 | Context CRUD Tests | BLOCKED | [ ] | Task 02 |
-| 04 | RulesLive CRUD UI | BLOCKED | [ ] | Task 02 |
-| 05 | Classification.Engine | BLOCKED | [ ] | Task 02 |
-| 06 | Preview API | BLOCKED | [ ] | Task 05 |
+| 01 | Migration + Schemas | COMPLETED | [x] | None |
+| 02 | Classification Context CRUD | COMPLETED | [x] | Task 01 |
+| 03 | Context CRUD Tests | COMPLETED | [x] | Task 02 |
+| 04 | RulesLive CRUD UI | COMPLETED | [x] | Task 02 |
+| 05 | Classification.Engine | COMPLETED | [x] | Task 02 |
+| 06 | Preview API | PENDING | [ ] | Task 05 |
 | 07 | Engine + Preview Tests | BLOCKED | [ ] | Task 06 |
 | 08 | Preview UI | BLOCKED | [ ] | Task 06, Task 04 |
 | 09 | ClassificationRecord + Apply APIs | BLOCKED | [ ] | Task 05 |
@@ -104,3 +104,4 @@ No blocking open questions at planning time.
 | 2026-03-12 | Plan | Normalized `target_fields` to Postgres string array (`text[]`) instead of JSONB | Remove DB/schema mismatch and simplify implementation |
 | 2026-03-12 | Plan | Removed evaluator-library uncertainty from Task 02 and made the engine depend on an internal adapter boundary | Keep the DSL contract independent from `Excellerate` or any future backend |
 | 2026-03-12 | Plan | Replaced entity-only rule groups with unified explicit scopes (`global`, `entity`, `account`) and deterministic scope precedence | Support reusable groups without splitting the model into multiple tables |
+| 2026-03-13 | Tasks 01-05 | Marked backend/data model, CRUD, UI base, and engine work as completed; advanced current task to Preview API | Reflect implementation progress in the repo task tracker |

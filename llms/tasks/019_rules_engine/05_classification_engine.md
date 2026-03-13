@@ -1,8 +1,8 @@
 # Task 05: Classification.Engine Pure Evaluator
 
 ## Status
-- **Status**: BLOCKED
-- **Approved**: [ ] Human sign-off
+- **Status**: COMPLETED
+- **Approved**: [x] Human sign-off
 - **Blocked by**: Task 02
 - **Blocks**: Task 06, Task 09
 
@@ -31,10 +31,10 @@ Implement `AurumFinance.Classification.Engine` as a pure-function evaluator that
 
 ## Expected Outputs
 
-- [ ] New module: `lib/aurum_finance/classification/engine.ex`
-- [ ] Internal evaluator adapter/wrapper module(s) used by the engine so the underlying parser/evaluator can be swapped later without changing the DSL contract
-- [ ] Supporting structs/types inside the engine module or adjacent modules for preview results and per-field provenance
-- [ ] `@doc` documentation for the public evaluation entrypoints and core return structures
+- [x] New module: `lib/aurum_finance/classification/engine.ex`
+- [x] Internal evaluator adapter/wrapper module(s) used by the engine so the underlying parser/evaluator can be swapped later without changing the DSL contract
+- [x] Supporting structs/types inside the engine module or adjacent modules for preview results and per-field provenance
+- [x] `@doc` documentation for the public evaluation entrypoints and core return structures
 
 ## Acceptance Criteria
 
@@ -110,32 +110,43 @@ After agent completes:
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
+Completed on 2026-03-13.
 
 ### Work Performed
-- [To be filled]
+- Implemented a pure `AurumFinance.Classification.Engine` with deterministic scope/rule ordering and first-writer-wins field claiming
+- Added evaluator boundary module `AurumFinance.Classification.Engine.DslEvaluator`
+- Added result/proposed-change structs for preview/apply explainability
+- Added unit coverage for scope precedence, stop-processing, case-insensitive string operators, protected fields, and invalid-expression fail-safe behavior
 
 ### Outputs Created
-- [To be filled]
+- `lib/aurum_finance/classification/engine.ex`
+- `lib/aurum_finance/classification/engine/dsl_evaluator.ex`
+- `lib/aurum_finance/classification/engine/result.ex`
+- `lib/aurum_finance/classification/engine/proposed_change.ex`
+- `test/aurum_finance/classification/engine_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
+- String operators (`equals`, `contains`, `starts_with`, `ends_with`) should behave case-insensitively | Matches the plan/spec contract for v1 string comparisons |
+- Category action values remain UUID strings in engine output | The engine is pure and does not resolve category account names for display |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
+- Keep a separate `DslEvaluator` behind the engine boundary | Inlining evaluation logic directly into `Engine` | Preserves a replaceable evaluator backend without changing the engine contract |
+- Return explicit `Result` / `ProposedChange` structs | Returning untyped ad hoc maps | Makes preview/apply consumers and tests more stable and easier to reason about |
 
 ### Blockers Encountered
-- [To be filled]
+- None after Task 02 was available
 
 ### Questions for Human
-1. [To be filled]
+1. None
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
@@ -143,10 +154,10 @@ After agent completes:
 *[Filled by human reviewer]*
 
 ### Review Date
-[YYYY-MM-DD]
+2026-03-13
 
 ### Decision
-- [ ] APPROVED - Proceed to next task
+- [x] APPROVED - Proceed to next task
 - [ ] REJECTED - See feedback below
 
 ### Feedback
