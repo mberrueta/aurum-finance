@@ -79,6 +79,36 @@ defmodule AurumFinance.Ledger do
   end
 
   @doc """
+  Lists accounts across multiple entities with optional filters.
+
+  By default, archived accounts are excluded.
+
+  ## Examples
+
+  ```elixir
+  accounts =
+    AurumFinance.Ledger.list_accounts_for_entities([entity_a.id, entity_b.id])
+  ```
+
+      iex> AurumFinance.Ledger.list_accounts_for_entities([])
+      []
+  """
+  @spec list_accounts_for_entities([Ecto.UUID.t()], Keyword.t()) :: [Account.t()]
+  def list_accounts_for_entities(entity_ids, opts \\ [])
+
+  def list_accounts_for_entities([], _opts), do: []
+
+  def list_accounts_for_entities(entity_ids, opts) when is_list(entity_ids) do
+    opts = Keyword.put_new(opts, :include_archived, false)
+
+    Account
+    |> where([account], account.entity_id in ^entity_ids)
+    |> filter_query(opts)
+    |> order_by([account], asc: account.name)
+    |> Repo.all()
+  end
+
+  @doc """
   Lists accounts for a specific management group within one entity scope.
 
   ## Examples

@@ -207,6 +207,9 @@ msgstr "This operation is not valid for the selected classification field."
 msgid "error_rule_actions_required"
 msgstr "A rule must define at least one action."
 
+#: lib/aurum_finance_web/live/rules_live.ex:1506
+#: lib/aurum_finance_web/live/rules_live.ex:1509
+#, elixir-autogen
 msgid "error_rule_expression_required"
 msgstr "A rule expression is required."
 
@@ -231,8 +234,12 @@ msgstr "Rule position must be greater than zero."
 msgid "error_rule_action_field_not_allowed"
 msgstr "Action field '%{field}' is not declared in this group's target fields."
 
+#: lib/aurum_finance_web/live/rules_live.ex:1515
+#, elixir-autogen
 msgid "error_rule_expression_invalid"
 msgstr "Rule expression is invalid."
 
+#: lib/aurum_finance_web/live/rules_live.ex:1512
+#, elixir-autogen
 msgid "error_rule_expression_invalid_regex"
 msgstr "Rule expression contains an invalid regular expression."

@@ -48,7 +48,7 @@ defmodule AurumFinance.Classification do
     opts = normalize_rule_group_filters(opts)
 
     RuleGroup
-    |> preload([:entity, :account])
+    |> preload([:entity, :account, :rules])
     |> filter_query(opts)
     |> order_by(
       [rule_group],
@@ -77,6 +77,7 @@ defmodule AurumFinance.Classification do
         ]
   def list_visible_rule_groups(entity_id, account_ids, opts \\ []) do
     visible_rule_groups_query(entity_id, account_ids, opts)
+    |> preload([:entity, :account, :rules])
     |> order_by(
       [rule_group],
       asc:
@@ -141,10 +142,19 @@ defmodule AurumFinance.Classification do
           {:ok, RuleGroup.t()} | {:error, Ecto.Changeset.t()}
   @spec update_rule_group(RuleGroup.t(), map(), [audit_opt()]) ::
           {:ok, RuleGroup.t()} | {:error, Ecto.Changeset.t()} | {:error, {:audit_failed, term()}}
-  def update_rule_group(%RuleGroup{} = rule_group, attrs, opts \\ []) do
+  def update_rule_group(rule_group, attrs, opts \\ [])
+
+  def update_rule_group(%RuleGroup{} = rule_group, attrs, opts) do
     changeset = RuleGroup.changeset(rule_group, attrs)
 
     Audit.update_and_log(rule_group, changeset, rule_group_audit_meta(opts, action: "updated"))
+  end
+
+  def update_rule_group(%{id: rule_group_id}, attrs, opts)
+      when is_binary(rule_group_id) do
+    rule_group_id
+    |> get_rule_group!()
+    |> update_rule_group(attrs, opts)
   end
 
   @doc """
@@ -158,7 +168,9 @@ defmodule AurumFinance.Classification do
   """
   @spec delete_rule_group(RuleGroup.t()) :: {:ok, RuleGroup.t()} | {:error, term()}
   @spec delete_rule_group(RuleGroup.t(), [audit_opt()]) :: {:ok, RuleGroup.t()} | {:error, term()}
-  def delete_rule_group(%RuleGroup{} = rule_group, opts \\ []) do
+  def delete_rule_group(rule_group, opts \\ [])
+
+  def delete_rule_group(%RuleGroup{} = rule_group, opts) do
     before_snapshot = rule_group_snapshot(rule_group)
 
     new_multi()
@@ -170,6 +182,13 @@ defmodule AurumFinance.Classification do
     )
     |> Repo.transaction()
     |> normalize_delete_result(:rule_group)
+  end
+
+  def delete_rule_group(%{id: rule_group_id}, opts)
+      when is_binary(rule_group_id) do
+    rule_group_id
+    |> get_rule_group!()
+    |> delete_rule_group(opts)
   end
 
   @doc """
