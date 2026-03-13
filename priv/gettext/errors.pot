@@ -197,3 +197,30 @@ msgstr ""
 
 msgid "error_reconciliation_statement_balance_invalid"
 msgstr ""
+
+msgid "error_rule_action_operation_invalid"
+msgstr ""
+
+msgid "error_rule_actions_required"
+msgstr ""
+
+msgid "error_rule_expression_required"
+msgstr ""
+
+msgid "error_rule_group_name_length_invalid"
+msgstr ""
+
+msgid "error_rule_group_name_taken_for_scope"
+msgstr ""
+
+msgid "error_rule_group_priority_invalid"
+msgstr ""
+
+msgid "error_rule_group_scope_invalid"
+msgstr ""
+
+msgid "error_rule_name_length_invalid"
+msgstr ""
+
+msgid "error_rule_position_invalid"
+msgstr ""

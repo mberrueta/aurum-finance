@@ -7,6 +7,8 @@ defmodule AurumFinance.Factory do
 
   alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
+  alias AurumFinance.Classification.Rule
+  alias AurumFinance.Classification.RuleGroup
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
@@ -42,6 +44,45 @@ defmodule AurumFinance.Factory do
       institution_name: Faker.Company.name(),
       institution_account_ref: sequence(:account_ref, fn n -> Integer.to_string(1000 + n) end),
       notes: Faker.Lorem.sentence()
+    }
+  end
+
+  def rule_group_factory do
+    entity = insert(:entity)
+
+    %RuleGroup{
+      scope_type: :entity,
+      entity: entity,
+      entity_id: entity.id,
+      account: nil,
+      account_id: nil,
+      name: sequence(:rule_group_name, fn n -> "Rule Group #{n}" end),
+      description: Faker.Lorem.sentence(),
+      priority: sequence(:rule_group_priority, & &1),
+      target_fields: ["category"],
+      is_active: true
+    }
+  end
+
+  def rule_factory do
+    rule_group = insert(:rule_group)
+
+    %Rule{
+      rule_group: rule_group,
+      rule_group_id: rule_group.id,
+      name: sequence(:rule_name, fn n -> "Rule #{n}" end),
+      description: Faker.Lorem.sentence(),
+      position: sequence(:rule_position, & &1),
+      is_active: true,
+      stop_processing: true,
+      expression: ~s(description contains "Uber"),
+      actions: [
+        %AurumFinance.Classification.RuleAction{
+          field: :tags,
+          operation: :add,
+          value: "ride"
+        }
+      ]
     }
   end
 
