@@ -4,7 +4,7 @@
 - **Spec**: `llms/tasks/019_rules_engine/plan.md`
 - **Created**: 2026-03-12
 - **Status**: IN_PROGRESS
-- **Current Task**: 06 - Preview API
+- **Current Task**: 07 - Engine + Preview Tests
 
 ## Overview
 Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, and #21. The feature introduces a `Classification` context with unified scoped rule groups (`global`, `entity`, `account`), rules (expression-based conditions + JSONB actions), a pure-function evaluation engine with preview/dry-run, and a classification records layer with per-field manual override protection and audit trail integration.
@@ -59,8 +59,8 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 | 03 | Context CRUD Tests | COMPLETED | [x] | Task 02 |
 | 04 | RulesLive CRUD UI | COMPLETED | [x] | Task 02 |
 | 05 | Classification.Engine | COMPLETED | [x] | Task 02 |
-| 06 | Preview API | PENDING | [ ] | Task 05 |
-| 07 | Engine + Preview Tests | BLOCKED | [ ] | Task 06 |
+| 06 | Preview API | COMPLETED | [x] | Task 05 |
+| 07 | Engine + Preview Tests | PENDING | [ ] | Task 06 |
 | 08 | Preview UI | BLOCKED | [ ] | Task 06, Task 04 |
 | 09 | ClassificationRecord + Apply APIs | BLOCKED | [ ] | Task 05 |
 | 10 | Classification Record Tests | BLOCKED | [ ] | Task 09 |

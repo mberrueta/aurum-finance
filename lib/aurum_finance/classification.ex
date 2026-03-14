@@ -8,10 +8,13 @@ defmodule AurumFinance.Classification do
 
   alias AurumFinance.Audit
   alias AurumFinance.Audit.Multi, as: AuditMulti
+  alias AurumFinance.Classification.Engine
   alias AurumFinance.Classification.ExpressionCompiler
   alias AurumFinance.Classification.ExpressionValidator
   alias AurumFinance.Classification.Rule
   alias AurumFinance.Classification.RuleGroup
+  alias AurumFinance.Ledger.Posting
+  alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Repo
 
   @default_actor "system"
@@ -31,6 +34,53 @@ defmodule AurumFinance.Classification do
   @type rule_list_opt :: {:rule_group_id, Ecto.UUID.t()} | {:is_active, boolean()}
   @dialyzer {:nowarn_function,
              delete_rule_group: 2, delete_rule: 2, new_multi: 0, multi_delete: 3}
+
+  @type preview_opt ::
+          {:entity_id, Ecto.UUID.t()}
+          | {:date_from, Date.t()}
+          | {:date_to, Date.t()}
+
+  @doc """
+  Previews classification results for transactions in a date range without
+  writing to any table.
+
+  Loads entity-scoped transactions with all preloads needed by the engine,
+  loads visible rule groups (global + entity + account-scoped for the posting
+  accounts present in those transactions), and runs the pure engine to produce
+  explainable per-field proposals.
+
+  Returns `[]` when no transactions exist in the date range.
+
+  ## Options
+
+  - `:entity_id` (required) - the entity boundary for transactions and rules
+  - `:date_from` (required) - inclusive start date
+  - `:date_to` (required) - inclusive end date
+
+  ## Examples
+
+      iex> AurumFinance.Classification.preview_classification(%{
+      ...>   entity_id: Ecto.UUID.generate(),
+      ...>   date_from: ~D[2026-03-01],
+      ...>   date_to: ~D[2026-03-31]
+      ...> })
+      []
+  """
+  @spec preview_classification(map()) :: [Engine.Result.t()]
+  def preview_classification(%{entity_id: entity_id, date_from: date_from, date_to: date_to}) do
+    transactions = load_preview_transactions(entity_id, date_from, date_to)
+
+    case transactions do
+      [] ->
+        []
+
+      _ ->
+        account_ids = extract_posting_account_ids(transactions)
+        rule_groups = load_preview_rule_groups(entity_id, account_ids)
+
+        Engine.evaluate(transactions, rule_groups)
+    end
+  end
 
   @doc """
   Lists rule groups using public filters such as scope, ownership, visibility,
@@ -707,4 +757,32 @@ defmodule AurumFinance.Classification do
   end
 
   defp normalize_attr_key(key), do: key
+
+  # ---------------------------------------------------------------------------
+  # Preview helpers (read-only, no writes)
+  # ---------------------------------------------------------------------------
+
+  defp load_preview_transactions(entity_id, date_from, date_to) do
+    Transaction
+    |> where([t], t.entity_id == ^entity_id)
+    |> where([t], t.date >= ^date_from and t.date <= ^date_to)
+    |> where([t], is_nil(t.voided_at))
+    |> preload(postings: :account)
+    |> order_by([t], asc: t.date, asc: t.inserted_at)
+    |> Repo.all()
+  end
+
+  defp load_preview_rule_groups(entity_id, account_ids) do
+    list_visible_rule_groups(entity_id, account_ids, is_active: true)
+  end
+
+  defp extract_posting_account_ids(transactions) do
+    transactions
+    |> Enum.flat_map(fn %Transaction{} = t ->
+      t
+      |> Map.get(:postings, [])
+      |> Enum.map(fn %Posting{} = p -> p.account_id end)
+    end)
+    |> Enum.uniq()
+  end
 end
