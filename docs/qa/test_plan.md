@@ -102,5 +102,28 @@
 
 - Engine tests (S01-S38) use `ExUnit.Case` with in-memory structs only -- no DB access.
 - Preview tests (S39-S49) use `DataCase, async: true` with the SQL sandbox.
-- S47 (protected indicators) tests the engine directly because `preview_classification/1` does not yet pass `current_classifications` -- that is deferred to Task #21 when `ClassificationRecord` is implemented.
+- S47 originally covered the engine-only protected-field path; after Task 09 introduced persisted `ClassificationRecord` loading in `preview_classification/1`, the regression now lives in Task 10 scenario S12.
 - Transactions require double-entry balanced postings; preview tests use an expense-type contra account for the second posting leg.
+
+## Classification Record Scenario Mapping (Task 10)
+
+| Scenario | Acceptance Criteria Covered | Layer | File |
+|---|---|---|---|
+| S01 | `ClassificationRecord` changeset required fields, tag count/length, notes length, unique `transaction_id` | DataCase / schema integration | `test/aurum_finance/classification/classification_record_test.exs` |
+| S02 | `get_classification_record/1` returns `nil` when absent | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S03 | single-transaction apply creates a new record, writes rule provenance, emits per-field audit metadata | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S04 | single-transaction apply updates an existing unlocked record in place and refreshes `*_classified_by` | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S05 | bulk apply summary counts `classified`, `fields_applied`, `fields_skipped_manual`, `no_match`; locked category skipped while unlocked tags/notes update | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S06 | bulk apply reports `failed` transactions without rolling back successful ones | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S07 | scope-aware apply precedence across `account > entity > global` groups | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S08 | `set_manual_field/4` supports all persisted fields (`category`, `tags`, `investment_type`, `notes`) and emits audit entries | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S09 | `clear_manual_override/3` retains the current value while unlocking automation for future apply runs | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S10 | category validation accepts only same-entity category accounts | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S11 | persisted provenance remains readable and non-blocking after referenced rule/group deletion | DataCase / context | `test/aurum_finance/classification/classification_record_test.exs` |
+| S12 | persisted manual protection still surfaces through preview results | DataCase / context regression | `test/aurum_finance/classification/classification_record_test.exs` |
+
+## Classification Record Notes
+
+- Task 10 intentionally stays at the context/schema layer. LiveView coverage for apply and per-field display remains in Task 12.
+- Intra-scope conflict ordering (`priority ASC`, `name ASC`) is already covered by Task 07 engine tests and is not duplicated here.
+- No changes were required in `test/support/factory.ex` or `test/aurum_finance/classification_test.exs`; the existing factory surface was sufficient for deterministic Task 10 scenarios.

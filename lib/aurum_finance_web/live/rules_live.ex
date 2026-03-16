@@ -65,6 +65,7 @@ defmodule AurumFinanceWeb.RulesLive do
         selected_rule_lookup: %{},
         entity_accounts: [],
         category_accounts: [],
+        preview_category_lookup: %{},
         all_accounts: [],
         panel: nil,
         group_form_mode: :new,
@@ -72,7 +73,12 @@ defmodule AurumFinanceWeb.RulesLive do
         editing_rule_group: nil,
         editing_rule: nil,
         rule_group_count: 0,
-        rule_count: 0
+        rule_count: 0,
+        preview_date_from: default_preview_date_from(),
+        preview_date_to: default_preview_date_to(),
+        preview_results: nil,
+        preview_loading: false,
+        preview_error: nil
       )
       |> stream(:rule_groups, [], reset: true)
       |> stream(:rules, [], reset: true)
@@ -110,6 +116,10 @@ defmodule AurumFinanceWeb.RulesLive do
 
     panel = parse_panel(params["panel"])
 
+    entity_changed? =
+      current_entity_id(current_entity) !=
+        current_entity_id(socket.assigns[:current_entity])
+
     socket =
       socket
       |> assign(
@@ -117,6 +127,7 @@ defmodule AurumFinanceWeb.RulesLive do
         selected_account_id: selected_account_id,
         entity_accounts: entity_accounts,
         category_accounts: category_accounts,
+        preview_category_lookup: Map.new(category_accounts, &{&1.id, &1.name}),
         all_accounts: all_accounts,
         visible_groups: visible_groups,
         visible_group_lookup: visible_group_lookup,
@@ -132,6 +143,7 @@ defmodule AurumFinanceWeb.RulesLive do
       |> stream(:rule_groups, visible_groups, reset: true)
       |> stream(:rules, rules, reset: true)
       |> assign_panel_state(panel, params)
+      |> maybe_reset_preview(entity_changed?)
 
     {:noreply, socket}
   end
@@ -395,6 +407,100 @@ defmodule AurumFinanceWeb.RulesLive do
     target_rule = socket.assigns.editing_rule || %Rule{}
 
     {:noreply, assign_rule_form(socket, target_rule, params, socket.assigns.rule_form_mode)}
+  end
+
+  def handle_event("change_preview_params", %{"preview" => params}, socket) do
+    date_from = Map.get(params, "date_from", "")
+    date_to = Map.get(params, "date_to", "")
+
+    {:noreply,
+     assign(socket,
+       preview_date_from: date_from,
+       preview_date_to: date_to,
+       preview_results: nil,
+       preview_error: nil
+     )}
+  end
+
+  def handle_event("run_preview", %{"preview" => params}, socket) do
+    entity = socket.assigns.current_entity
+
+    if is_nil(entity) do
+      {:noreply,
+       assign(socket,
+         preview_error: dgettext("rules", "preview_error_no_entity"),
+         preview_results: nil,
+         preview_loading: false
+       )}
+    else
+      date_from_str = Map.get(params, "date_from", "")
+      date_to_str = Map.get(params, "date_to", "")
+
+      with {:from, {:ok, date_from}} <- {:from, Date.from_iso8601(date_from_str)},
+           {:to, {:ok, date_to}} <- {:to, Date.from_iso8601(date_to_str)},
+           :ok <- validate_preview_date_range(date_from, date_to) do
+        socket =
+          assign(socket,
+            preview_loading: true,
+            preview_results: nil,
+            preview_error: nil,
+            preview_date_from: date_from_str,
+            preview_date_to: date_to_str
+          )
+
+        send(self(), {:run_preview, entity.id, date_from, date_to})
+        {:noreply, socket}
+      else
+        {:from, _} ->
+          {:noreply,
+           assign(socket,
+             preview_error: dgettext("rules", "preview_error_invalid_date_from"),
+             preview_results: nil,
+             preview_loading: false
+           )}
+
+        {:to, _} ->
+          {:noreply,
+           assign(socket,
+             preview_error: dgettext("rules", "preview_error_invalid_date_to"),
+             preview_results: nil,
+             preview_loading: false
+           )}
+
+        {:error, :range} ->
+          {:noreply,
+           assign(socket,
+             preview_error: dgettext("rules", "preview_error_date_range"),
+             preview_results: nil,
+             preview_loading: false
+           )}
+      end
+    end
+  end
+
+  @impl true
+  def handle_info({:run_preview, entity_id, date_from, date_to}, socket) do
+    results =
+      Classification.preview_classification(%{
+        entity_id: entity_id,
+        date_from: date_from,
+        date_to: date_to
+      })
+
+    {:noreply,
+     assign(socket,
+       preview_loading: false,
+       preview_results: results,
+       preview_error: nil
+     )}
+  rescue
+    _error ->
+      {:noreply,
+       assign(socket,
+         preview_loading: false,
+         preview_results: nil,
+         preview_error: dgettext("rules", "preview_error_failed")
+       )}
   end
 
   attr :open, :boolean, required: true
@@ -1943,4 +2049,33 @@ defmodule AurumFinanceWeb.RulesLive do
 
   defp present_text?(value) when is_binary(value), do: String.trim(value) != ""
   defp present_text?(_value), do: false
+
+  # ============================================================
+  # Preview helpers
+  # ============================================================
+
+  defp maybe_reset_preview(socket, false), do: socket
+
+  defp maybe_reset_preview(socket, true) do
+    assign(socket, preview_results: nil, preview_error: nil, preview_loading: false)
+  end
+
+  defp current_entity_id(nil), do: nil
+  defp current_entity_id(%Entity{} = entity), do: entity.id
+
+  defp default_preview_date_from do
+    today = Date.utc_today()
+    first_of_month = Date.new!(today.year, today.month, 1)
+    Date.to_iso8601(first_of_month)
+  end
+
+  defp default_preview_date_to do
+    Date.to_iso8601(Date.utc_today())
+  end
+
+  defp validate_preview_date_range(date_from, date_to) do
+    if Date.compare(date_from, date_to) in [:lt, :eq],
+      do: :ok,
+      else: {:error, :range}
+  end
 end

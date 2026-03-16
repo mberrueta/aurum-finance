@@ -556,11 +556,11 @@ Classification.preview_classification(opts)
 - Internally loads: all active rule groups for the entity (with rules preloaded); transactions in range (with postings and accounts); existing `ClassificationRecord`s
 - Output: list of `%ClassificationPreview{}` structs, one per transaction:
   - `transaction` — the transaction
-  - `existing_classification` — current `ClassificationRecord` or nil
   - `proposed_changes` — list of `%{rule_group, rule, field, proposed_value, currently_overridden?}`
   - `no_match?` — true if no group matched
 - A transaction may have zero matches (no group fired) or multiple matches (one per group that matched)
 - **No DB writes occur during preview** — engine is pure-function (`Classification.Engine.evaluate/2`)
+- Existing-classification diff and manual-override protection in the preview UI are deferred until `ClassificationRecord` exists in Issue #21. Issue #20 preview remains a read-only view of proposed rule results and no-match states.
 
 ### User Stories -- Issue #20
 
@@ -607,24 +607,7 @@ As an **authenticated root user**, I want to see which transactions have no matc
 
 #### US-10: View Diff of Current vs. Proposed
 
-**Scenario: Transaction has a manually-overridden field**
-- **Given** a transaction has a `ClassificationRecord` with `category_account_id: <food-account-uuid>` (displayed as "Food") and `category_manually_overridden: true`
-- **When** I preview rules and a rule in group "Expense" proposes `category_account_id: <transport-account-uuid>` (displayed as "Transport")
-- **Then** the diff view shows for `category`: Current = "Food (manual — protected)", Proposed = "Transport (rule: Uber)" with a lock icon
-- **And** other fields (tags, notes) that are NOT manually overridden show their proposed changes normally
-
-**Scenario: Transaction has no existing classification**
-- **Given** a transaction has no `ClassificationRecord`
-- **When** I preview rules and a rule proposes `category_account_id: <transport-account-uuid>`
-- **Then** the diff view shows: Current = "(unclassified)", Proposed = "Transport (rule: Uber)" (account name resolved for display)
-
-**Criteria Checklist:**
-- [ ] Diff view is **per-field**: each classification field (category, tags, investment_type, notes) shown separately
-- [ ] For each field: show current value + provenance (`*_classified_by` source), proposed value + rule name
-- [ ] Fields with `*_manually_overridden: true` shown with lock icon and "protected — will not be overwritten" indicator
-- [ ] A manually-overridden field being "protected" does NOT block other fields on the same transaction from being proposed
-- [ ] New classifications (no existing record) shown as additions
-- [ ] Changed classifications shown with before/after comparison per field
+Deferred to Issue #21 once `ClassificationRecord` exists. Issue #20 preview stops at per-field proposed output, readable category names, and no-match visibility.
 
 ---
 

@@ -4,7 +4,7 @@
 - **Spec**: `llms/tasks/019_rules_engine/plan.md`
 - **Created**: 2026-03-12
 - **Status**: IN_PROGRESS
-- **Current Task**: 07 - Engine + Preview Tests
+- **Current Task**: 11 - Bulk Apply + Classification Display UI
 
 ## Overview
 Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, and #21. The feature introduces a `Classification` context with unified scoped rule groups (`global`, `entity`, `account`), rules (expression-based conditions + JSONB actions), a pure-function evaluation engine with preview/dry-run, and a classification records layer with per-field manual override protection and audit trail integration.
@@ -43,7 +43,7 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 | 05 | `dev-backend-elixir-engineer` | Classification.Engine pure-function evaluator |
 | 06 | `dev-backend-elixir-engineer` | Preview API (Classification.preview_classification/1) |
 | 07 | `qa-elixir-test-author` | Engine + preview tests |
-| 08 | `dev-frontend-ui-engineer` | Preview UI in RulesLive (diff view, per-field) |
+| 08 | `dev-frontend-ui-engineer` | Preview UI in RulesLive (per-field preview; protected/manual diff deferred until ClassificationRecord exists) |
 | 09 | `dev-backend-elixir-engineer` | ClassificationRecord schema + migration + classify/override APIs |
 | 10 | `qa-elixir-test-author` | Classification record tests (bulk apply, manual override, audit) |
 | 11 | `dev-frontend-ui-engineer` | Bulk apply UI + per-field classification display in TransactionsLive |
@@ -60,11 +60,11 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 | 04 | RulesLive CRUD UI | COMPLETED | [x] | Task 02 |
 | 05 | Classification.Engine | COMPLETED | [x] | Task 02 |
 | 06 | Preview API | COMPLETED | [x] | Task 05 |
-| 07 | Engine + Preview Tests | PENDING | [ ] | Task 06 |
-| 08 | Preview UI | BLOCKED | [ ] | Task 06, Task 04 |
-| 09 | ClassificationRecord + Apply APIs | BLOCKED | [ ] | Task 05 |
-| 10 | Classification Record Tests | BLOCKED | [ ] | Task 09 |
-| 11 | Bulk Apply + Classification Display UI | BLOCKED | [ ] | Task 09, Task 04 |
+| 07 | Engine + Preview Tests | COMPLETED | [x] | Task 06 |
+| 08 | Preview UI | COMPLETED | [x] | Task 06, Task 04 |
+| 09 | ClassificationRecord + Apply APIs | COMPLETED | [x] | Task 05 |
+| 10 | Classification Record Tests | COMPLETED | [x] | Task 09 |
+| 11 | Bulk Apply + Classification Display UI | IN_PROGRESS | [ ] | Task 09, Task 04 |
 | 12 | LiveView Integration Tests | BLOCKED | [ ] | Task 04, Task 08, Task 11 |
 | 13 | PR Audit | BLOCKED | [ ] | Task 12 |
 
@@ -91,6 +91,7 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 11. Factories for `rule_group`, `rule`, and `classification_record` will be added to the existing `test/support/factory.ex`.
 12. The `TransactionsLive` expanded detail view already uses `expanded_transaction_id` assigns -- per-field classification display will extend this existing pattern.
 13. If Task 05 uses `Excellerate` as the first backend implementation, it should be wired behind the adapter boundary; user-provided reference points to `geofflane/excellerate` release `0.3.0`.
+14. Protected/manual-override preview diff is deferred until the ClassificationRecord work lands; Task 08 is limited to read-only proposed results, no-match states, and human-readable category/per-field rendering.
 
 ## Open Questions
 
@@ -105,3 +106,7 @@ No blocking open questions at planning time.
 | 2026-03-12 | Plan | Removed evaluator-library uncertainty from Task 02 and made the engine depend on an internal adapter boundary | Keep the DSL contract independent from `Excellerate` or any future backend |
 | 2026-03-12 | Plan | Replaced entity-only rule groups with unified explicit scopes (`global`, `entity`, `account`) and deterministic scope precedence | Support reusable groups without splitting the model into multiple tables |
 | 2026-03-13 | Tasks 01-05 | Marked backend/data model, CRUD, UI base, and engine work as completed; advanced current task to Preview API | Reflect implementation progress in the repo task tracker |
+| 2026-03-16 | Tasks 08-09 boundary | Deferred protected/manual-override preview diff until ClassificationRecord work; narrowed Task 08 to read-only per-field preview UI | Keep the task sequence consistent with the current backend contract |
+| 2026-03-16 | Task 09 | Implemented `classification_records`, apply/manual override APIs, preview integration with persisted state, and backend coverage; advanced current task to ClassificationRecord review | Reflect backend completion before QA/UI follow-up tasks |
+| 2026-03-16 | Task 10 | Added Task 10 QA coverage for classification record validations, apply flows, manual overrides, audit metadata, bulk failure reporting, and deleted-rule provenance resilience; advanced current task to Task 10 review | Reflect focused backend test completion pending human sign-off |
+| 2026-03-16 | Task 11 | Implemented transactions-page bulk apply controls, inline per-field classification display, provenance badges, and manual override controls; advanced current task to Task 11 review | Reflect frontend integration of classification apply/display before LiveView test expansion |

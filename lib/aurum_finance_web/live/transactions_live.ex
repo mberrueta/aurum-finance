@@ -3,10 +3,12 @@ defmodule AurumFinanceWeb.TransactionsLive do
 
   import AurumFinanceWeb.TransactionsComponents
 
+  alias Ecto.Changeset
+  alias AurumFinance.Classification
   alias AurumFinance.Entities
-  alias AurumFinanceWeb.FilterQuery
-  alias AurumFinance.Ledger
   alias AurumFinance.Helpers
+  alias AurumFinance.Ledger
+  alias AurumFinanceWeb.FilterQuery
 
   @impl true
   def mount(_params, _session, socket) do
@@ -21,6 +23,15 @@ defmodule AurumFinanceWeb.TransactionsLive do
        current_entity: nil,
        filters_expanded: false,
        accounts: [],
+       category_accounts: [],
+       classification_records: %{},
+       classification_forms: %{},
+       provenance_lookup: %{rule_groups: %{}, rules: %{}},
+       bulk_apply_running?: false,
+       bulk_apply_summary: nil,
+       applying_transaction_ids: MapSet.new(),
+       editing_classification_transaction_id: nil,
+       transaction_apply_feedback: %{},
        expanded_transaction_id: nil,
        transactions: []
      )
@@ -37,7 +48,10 @@ defmodule AurumFinanceWeb.TransactionsLive do
      |> assign(
        current_entity: current_entity,
        filters_expanded: filters_expanded?(filters),
-       expanded_transaction_id: expanded_transaction_id
+       expanded_transaction_id: expanded_transaction_id,
+       editing_classification_transaction_id: nil,
+       bulk_apply_summary: nil,
+       transaction_apply_feedback: %{}
      )
      |> assign_filters(filters)
      |> load_transactions()}
@@ -78,19 +92,173 @@ defmodule AurumFinanceWeb.TransactionsLive do
         id
       end
 
-    {:noreply, assign(socket, :expanded_transaction_id, expanded)}
+    editing_transaction_id =
+      if expanded == socket.assigns.editing_classification_transaction_id do
+        socket.assigns.editing_classification_transaction_id
+      else
+        nil
+      end
+
+    {:noreply,
+     socket
+     |> assign(:expanded_transaction_id, expanded)
+     |> assign(:editing_classification_transaction_id, editing_transaction_id)}
+  end
+
+  def handle_event("toggle_classification_editor", %{"id" => transaction_id}, socket) do
+    editing_transaction_id =
+      if socket.assigns.editing_classification_transaction_id == transaction_id do
+        nil
+      else
+        transaction_id
+      end
+
+    {:noreply, assign(socket, :editing_classification_transaction_id, editing_transaction_id)}
+  end
+
+  def handle_event("bulk_apply", _params, socket) do
+    case bulk_apply_attrs(socket.assigns.current_entity, socket.assigns.filters) do
+      {:ok, attrs} ->
+        send(self(), {:bulk_apply_rules, attrs})
+
+        {:noreply,
+         socket
+         |> assign(:bulk_apply_running?, true)
+         |> assign(:bulk_apply_summary, nil)}
+
+      {:error, :missing_date_range} ->
+        {:noreply,
+         put_flash(
+           socket,
+           :error,
+           dgettext("transactions", "classification_bulk_apply_requires_range")
+         )}
+    end
+  end
+
+  def handle_event("apply_transaction_rules", %{"id" => transaction_id}, socket) do
+    send(self(), {:apply_transaction_rules, transaction_id})
+
+    {:noreply, update(socket, :applying_transaction_ids, &MapSet.put(&1, transaction_id))}
+  end
+
+  def handle_event(
+        "set_manual_field",
+        %{
+          "transaction_id" => transaction_id,
+          "field" => field,
+          "manual_override" => %{"value" => value}
+        },
+        socket
+      ) do
+    case Classification.set_manual_field(
+           transaction_id,
+           field,
+           value,
+           entity_id: socket.assigns.current_entity.id,
+           actor: "web",
+           channel: :web
+         ) do
+      {:ok, _record} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, dgettext("transactions", "classification_manual_saved"))
+         |> clear_transaction_feedback(transaction_id)
+         |> load_transactions()}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, manual_error_message(reason))}
+    end
+  end
+
+  def handle_event(
+        "clear_manual_override",
+        %{"transaction_id" => transaction_id, "field" => field},
+        socket
+      ) do
+    case Classification.clear_manual_override(
+           transaction_id,
+           field,
+           entity_id: socket.assigns.current_entity.id,
+           actor: "web",
+           channel: :web
+         ) do
+      {:ok, _record} ->
+        {:noreply,
+         socket
+         |> put_flash(:info, dgettext("transactions", "classification_override_cleared"))
+         |> clear_transaction_feedback(transaction_id)
+         |> load_transactions()}
+
+      {:error, reason} ->
+        {:noreply, put_flash(socket, :error, manual_error_message(reason))}
+    end
+  end
+
+  @impl true
+  def handle_info({:bulk_apply_rules, attrs}, socket) do
+    {:ok, summary} = Classification.classify_transactions(attrs)
+
+    socket =
+      socket
+      |> assign(:bulk_apply_running?, false)
+      |> assign(:bulk_apply_summary, summary)
+      |> load_transactions()
+
+    {:noreply, socket}
+  end
+
+  def handle_info({:apply_transaction_rules, transaction_id}, socket) do
+    socket =
+      case Classification.classify_transaction(
+             transaction_id,
+             entity_id: socket.assigns.current_entity.id,
+             actor: "web",
+             channel: :web
+           ) do
+        {:ok, result} ->
+          socket
+          |> update(:applying_transaction_ids, &MapSet.delete(&1, transaction_id))
+          |> put_transaction_feedback(transaction_id, result)
+          |> load_transactions()
+
+        {:error, reason} ->
+          socket
+          |> update(:applying_transaction_ids, &MapSet.delete(&1, transaction_id))
+          |> put_flash(:error, apply_error_message(reason))
+      end
+
+    {:noreply, socket}
   end
 
   defp load_transactions(%{assigns: %{current_entity: nil}} = socket) do
-    assign(socket, transactions: [], accounts: [])
+    assign(socket,
+      transactions: [],
+      accounts: [],
+      category_accounts: [],
+      classification_records: %{},
+      classification_forms: %{},
+      provenance_lookup: %{rule_groups: %{}, rules: %{}}
+    )
   end
 
   defp load_transactions(socket) do
     entity = socket.assigns.current_entity
     accounts = Ledger.list_accounts(entity_id: entity.id)
     transactions = Ledger.list_transactions(filter_opts(entity.id, socket.assigns.filters))
+    category_accounts = Enum.filter(accounts, &(&1.management_group == :category))
+    classification_records = load_classification_records(transactions)
+    provenance_lookup = load_provenance_lookup(entity.id, accounts)
+    classification_forms = build_classification_forms(transactions, classification_records)
 
-    assign(socket, transactions: transactions, accounts: accounts)
+    assign(socket,
+      transactions: transactions,
+      accounts: accounts,
+      category_accounts: category_accounts,
+      classification_records: classification_records,
+      classification_forms: classification_forms,
+      provenance_lookup: provenance_lookup
+    )
   end
 
   defp default_filters do
@@ -281,5 +449,134 @@ defmodule AurumFinanceWeb.TransactionsLive do
       source: FilterQuery.skip_default(filters.source_type, ""),
       voided: filters.include_voided && "true"
     )
+  end
+
+  defp bulk_apply_attrs(nil, _filters), do: {:error, :missing_date_range}
+
+  defp bulk_apply_attrs(current_entity, filters) do
+    with {:ok, date_from} <- require_date(filters.date_from),
+         {:ok, date_to} <- require_date(filters.date_to) do
+      {:ok,
+       %{
+         entity_id: current_entity.id,
+         date_from: date_from,
+         date_to: date_to,
+         actor: "web",
+         channel: :web
+       }}
+    end
+  end
+
+  defp require_date(value) do
+    case parse_date(value) do
+      %Date{} = date -> {:ok, date}
+      _date -> {:error, :missing_date_range}
+    end
+  end
+
+  defp load_classification_records(transactions) do
+    transactions
+    |> Enum.map(& &1.id)
+    |> Classification.list_classification_records()
+    |> Map.new(&{&1.transaction_id, &1})
+  end
+
+  defp load_provenance_lookup(entity_id, accounts) do
+    rule_groups =
+      Classification.list_visible_rule_groups(entity_id, Enum.map(accounts, & &1.id))
+
+    %{
+      rule_groups: Map.new(rule_groups, &{&1.id, &1}),
+      rules:
+        rule_groups
+        |> Enum.flat_map(& &1.rules)
+        |> Map.new(&{&1.id, &1})
+    }
+  end
+
+  defp build_classification_forms(transactions, classification_records) do
+    Map.new(transactions, fn transaction ->
+      record = Map.get(classification_records, transaction.id)
+
+      {transaction.id,
+       %{
+         category:
+           to_form(%{"value" => manual_field_value(record, :category)}, as: :manual_override),
+         tags: to_form(%{"value" => manual_field_value(record, :tags)}, as: :manual_override),
+         investment_type:
+           to_form(%{"value" => manual_field_value(record, :investment_type)},
+             as: :manual_override
+           ),
+         notes: to_form(%{"value" => manual_field_value(record, :notes)}, as: :manual_override)
+       }}
+    end)
+  end
+
+  defp manual_field_value(nil, _field), do: ""
+  defp manual_field_value(record, :category), do: record.category_account_id || ""
+  defp manual_field_value(record, :tags), do: Enum.join(record.tags || [], ", ")
+  defp manual_field_value(record, :investment_type), do: record.investment_type || ""
+  defp manual_field_value(record, :notes), do: record.notes || ""
+
+  defp put_transaction_feedback(socket, transaction_id, result) do
+    feedback =
+      cond do
+        result.no_match? ->
+          %{tone: :warn, kind: :no_match, fields_applied: 0, fields_skipped_manual: 0}
+
+        result.fields_applied > 0 ->
+          %{
+            tone: :good,
+            kind: :applied,
+            fields_applied: result.fields_applied,
+            fields_skipped_manual: result.fields_skipped_manual
+          }
+
+        result.fields_skipped_manual > 0 ->
+          %{
+            tone: :warn,
+            kind: :protected,
+            fields_applied: 0,
+            fields_skipped_manual: result.fields_skipped_manual
+          }
+
+        true ->
+          %{tone: :warn, kind: :no_change, fields_applied: 0, fields_skipped_manual: 0}
+      end
+
+    update(socket, :transaction_apply_feedback, &Map.put(&1, transaction_id, feedback))
+  end
+
+  defp clear_transaction_feedback(socket, transaction_id) do
+    update(socket, :transaction_apply_feedback, &Map.delete(&1, transaction_id))
+  end
+
+  defp manual_error_message(:invalid_category_account) do
+    dgettext("transactions", "classification_error_invalid_category")
+  end
+
+  defp manual_error_message(:not_found),
+    do: dgettext("transactions", "classification_error_not_found")
+
+  defp manual_error_message(%Changeset{} = changeset) do
+    changeset
+    |> first_changeset_error()
+    |> case do
+      nil -> dgettext("transactions", "classification_error_generic")
+      message -> message
+    end
+  end
+
+  defp manual_error_message(_reason), do: dgettext("transactions", "classification_error_generic")
+
+  defp apply_error_message(:not_found),
+    do: dgettext("transactions", "classification_error_not_found")
+
+  defp apply_error_message(_reason), do: dgettext("transactions", "classification_error_generic")
+
+  defp first_changeset_error(%Changeset{errors: []}), do: nil
+
+  defp first_changeset_error(%Changeset{errors: [{_field, {message, _opts}} | _rest]}) do
+    message
   end
 end

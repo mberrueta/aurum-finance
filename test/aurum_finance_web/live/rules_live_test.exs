@@ -4,6 +4,50 @@ defmodule AurumFinanceWeb.RulesLiveTest do
   import Phoenix.LiveViewTest
 
   alias AurumFinance.Classification
+  alias AurumFinance.Ledger
+
+  defp create_preview_transaction(entity, account, opts) do
+    date = Keyword.get(opts, :date, ~D[2026-03-14])
+    description = Keyword.get(opts, :description, "Uber trip")
+    amount = Keyword.get(opts, :amount, "-10.00")
+
+    contra_account =
+      case Keyword.get(opts, :contra_account) do
+        nil ->
+          insert_account(entity, %{
+            name: "Contra Expense",
+            account_type: :expense,
+            management_group: :category,
+            operational_subtype: nil,
+            institution_name: nil,
+            institution_account_ref: nil
+          })
+
+        account ->
+          account
+      end
+
+    {:ok, transaction} =
+      Ledger.create_transaction(%{
+        entity_id: entity.id,
+        date: date,
+        description: description,
+        source_type: :manual,
+        postings: [
+          %{account_id: account.id, amount: amount},
+          %{account_id: contra_account.id, amount: negate_amount(amount)}
+        ]
+      })
+
+    transaction
+  end
+
+  defp negate_amount(amount) when is_binary(amount) do
+    amount
+    |> Decimal.new()
+    |> Decimal.negate()
+    |> Decimal.to_string()
+  end
 
   test "renders only groups visible to the selected entity", %{conn: conn} do
     visible_entity = insert_entity(name: "Alpha Rules Entity")
@@ -210,5 +254,93 @@ defmodule AurumFinanceWeb.RulesLiveTest do
     assert updated_rule.name == "Uber Rule Updated"
     assert updated_rule.expression == ~s|description starts_with "Uber"|
     assert updated_rule.stop_processing == false
+  end
+
+  test "preview resolves category ids to names and groups duplicate field changes", %{conn: conn} do
+    entity = insert_entity(name: "Preview Rules Entity")
+    checking = insert_account(entity, %{name: "Checking"})
+
+    transport =
+      insert_account(entity, %{
+        name: "Transport",
+        account_type: :expense,
+        management_group: :category,
+        operational_subtype: nil,
+        institution_name: nil,
+        institution_account_ref: nil
+      })
+
+    travel =
+      insert_account(entity, %{
+        name: "Travel",
+        account_type: :expense,
+        management_group: :category,
+        operational_subtype: nil,
+        institution_name: nil,
+        institution_account_ref: nil
+      })
+
+    primary_group = insert_global_rule_group(%{name: "Primary Category", priority: 1})
+    secondary_group = insert_global_rule_group(%{name: "Secondary Category", priority: 2})
+
+    insert_rule(primary_group, %{
+      name: "Primary Uber",
+      expression: ~s|description contains "uber"|,
+      actions: [%{field: :category, operation: :set, value: transport.id}]
+    })
+
+    insert_rule(secondary_group, %{
+      name: "Backup Uber",
+      expression: ~s|description contains "uber"|,
+      actions: [%{field: :category, operation: :set, value: travel.id}]
+    })
+
+    create_preview_transaction(entity, checking, description: "Uber trip")
+
+    {:ok, view, _html} = conn |> log_in_root() |> live(~p"/rules?#{%{"entity_id" => entity.id}}")
+
+    view
+    |> form("#preview-form",
+      preview: %{"date_from" => "2026-03-01", "date_to" => "2026-03-31"}
+    )
+    |> render_submit()
+
+    assert has_element?(view, "#preview-results")
+    assert has_element?(view, "#preview-change-0-category", "Transport")
+    assert has_element?(view, "#preview-change-0-category", "Primary Category / Primary Uber")
+
+    assert has_element?(
+             view,
+             "#preview-change-0-category",
+             "Skipped: Secondary Category / Backup Uber"
+           )
+
+    refute has_element?(view, "#preview-change-0-category", transport.id)
+    refute has_element?(view, "#preview-change-0-category", travel.id)
+  end
+
+  test "preview shows no-match transactions without proposed field cells", %{conn: conn} do
+    entity = insert_entity(name: "Preview No Match Entity")
+    checking = insert_account(entity, %{name: "Checking"})
+    group = insert_global_rule_group(%{name: "Uber Only"})
+
+    insert_rule(group, %{
+      name: "Uber Rule",
+      expression: ~s|description contains "uber"|,
+      actions: [%{field: :tags, operation: :add, value: "ride"}]
+    })
+
+    create_preview_transaction(entity, checking, description: "Grocery store")
+
+    {:ok, view, _html} = conn |> log_in_root() |> live(~p"/rules?#{%{"entity_id" => entity.id}}")
+
+    view
+    |> form("#preview-form",
+      preview: %{"date_from" => "2026-03-01", "date_to" => "2026-03-31"}
+    )
+    |> render_submit()
+
+    assert has_element?(view, "#preview-row-0", "No match")
+    refute has_element?(view, "#preview-change-0-tags")
   end
 end

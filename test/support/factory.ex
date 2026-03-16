@@ -7,6 +7,7 @@ defmodule AurumFinance.Factory do
 
   alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
+  alias AurumFinance.Classification.ClassificationRecord
   alias AurumFinance.Classification.Rule
   alias AurumFinance.Classification.RuleAction
   alias AurumFinance.Classification.RuleGroup
@@ -88,6 +89,29 @@ defmodule AurumFinance.Factory do
     }
   end
 
+  def classification_record_factory do
+    transaction = insert(:transaction)
+
+    %ClassificationRecord{
+      transaction: transaction,
+      transaction_id: transaction.id,
+      entity_id: transaction.entity_id,
+      category_account: nil,
+      category_account_id: nil,
+      category_classified_by: nil,
+      category_manually_overridden: false,
+      tags: [],
+      tags_classified_by: nil,
+      tags_manually_overridden: false,
+      investment_type: nil,
+      investment_type_classified_by: nil,
+      investment_type_manually_overridden: false,
+      notes: nil,
+      notes_classified_by: nil,
+      notes_manually_overridden: false
+    }
+  end
+
   def insert_rule_group(attrs \\ %{}) do
     attrs = normalize_attrs(attrs)
 
@@ -160,6 +184,22 @@ defmodule AurumFinance.Factory do
 
   def insert_rule(_entity, rule_group, attrs) do
     insert_rule(rule_group, attrs)
+  end
+
+  def insert_classification_record(transaction, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      %{
+        transaction_id: transaction.id,
+        entity_id: transaction.entity_id,
+        tags: []
+      }
+      |> Map.merge(attrs)
+
+    %ClassificationRecord{}
+    |> ClassificationRecord.changeset(params)
+    |> Repo.insert!()
   end
 
   def transaction_factory do

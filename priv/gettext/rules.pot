@@ -16,18 +16,18 @@ msgstr ""
 msgid "btn_new_group"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:83
-#: lib/aurum_finance_web/components/rules_components.ex:142
+#: lib/aurum_finance_web/components/rules_components.ex:85
+#: lib/aurum_finance_web/components/rules_components.ex:144
 #, elixir-autogen, elixir-format
 msgid "label_rules"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:194
+#: lib/aurum_finance_web/components/rules_components.ex:196
 #, elixir-autogen, elixir-format
 msgid "label_stop_no"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:193
+#: lib/aurum_finance_web/components/rules_components.ex:195
 #, elixir-autogen, elixir-format
 msgid "label_stop_yes"
 msgstr ""
@@ -48,24 +48,24 @@ msgstr ""
 msgid "section_rule_groups"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:793
+#: lib/aurum_finance_web/live/rules_live.ex:899
 #, elixir-autogen, elixir-format
 msgid "actions_builder_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:716
+#: lib/aurum_finance_web/live/rules_live.ex:822
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_body"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:714
+#: lib/aurum_finance_web/live/rules_live.ex:820
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_title"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:68
-#: lib/aurum_finance_web/components/rules_components.ex:127
-#: lib/aurum_finance_web/components/rules_components.ex:189
+#: lib/aurum_finance_web/components/rules_components.ex:70
+#: lib/aurum_finance_web/components/rules_components.ex:129
+#: lib/aurum_finance_web/components/rules_components.ex:191
 #: lib/aurum_finance_web/live/rules_live.html.heex:170
 #, elixir-autogen, elixir-format
 msgid "badge_inactive"
@@ -76,18 +76,18 @@ msgstr ""
 msgid "btn_activate"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:798
+#: lib/aurum_finance_web/live/rules_live.ex:904
 #, elixir-autogen, elixir-format
 msgid "btn_add_action"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:642
+#: lib/aurum_finance_web/live/rules_live.ex:748
 #, elixir-autogen, elixir-format
 msgid "btn_add_condition"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:529
-#: lib/aurum_finance_web/live/rules_live.ex:862
+#: lib/aurum_finance_web/live/rules_live.ex:635
+#: lib/aurum_finance_web/live/rules_live.ex:968
 #, elixir-autogen, elixir-format
 msgid "btn_cancel"
 msgstr ""
@@ -107,14 +107,14 @@ msgstr ""
 msgid "btn_deactivate"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:117
-#: lib/aurum_finance_web/components/rules_components.ex:240
+#: lib/aurum_finance_web/components/rules_components.ex:119
+#: lib/aurum_finance_web/components/rules_components.ex:242
 #, elixir-autogen, elixir-format
 msgid "btn_delete"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:106
-#: lib/aurum_finance_web/components/rules_components.ex:229
+#: lib/aurum_finance_web/components/rules_components.ex:108
+#: lib/aurum_finance_web/components/rules_components.ex:231
 #, elixir-autogen, elixir-format
 msgid "btn_edit"
 msgstr ""
@@ -134,33 +134,33 @@ msgstr ""
 msgid "btn_new_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:705
-#: lib/aurum_finance_web/live/rules_live.ex:852
+#: lib/aurum_finance_web/live/rules_live.ex:811
+#: lib/aurum_finance_web/live/rules_live.ex:958
 #, elixir-autogen, elixir-format
 msgid "btn_remove"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:532
+#: lib/aurum_finance_web/live/rules_live.ex:638
 #, elixir-autogen, elixir-format
 msgid "btn_save_group"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:865
+#: lib/aurum_finance_web/live/rules_live.ex:971
 #, elixir-autogen, elixir-format
 msgid "btn_save_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:637
+#: lib/aurum_finance_web/live/rules_live.ex:743
 #, elixir-autogen, elixir-format
 msgid "conditions_builder_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:238
+#: lib/aurum_finance_web/components/rules_components.ex:240
 #, elixir-autogen, elixir-format
 msgid "confirm_delete_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:115
+#: lib/aurum_finance_web/components/rules_components.ex:117
 #, elixir-autogen, elixir-format
 msgid "confirm_delete_rule_group"
 msgstr ""
@@ -180,197 +180,197 @@ msgstr ""
 msgid "empty_select_group"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1692
+#: lib/aurum_finance_web/live/rules_live.ex:1798
 #, elixir-autogen, elixir-format
 msgid "field_abs_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1688
+#: lib/aurum_finance_web/live/rules_live.ex:1794
 #, elixir-autogen, elixir-format
 msgid "field_account_name"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1689
+#: lib/aurum_finance_web/live/rules_live.ex:1795
 #, elixir-autogen, elixir-format
 msgid "field_account_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:821
-#: lib/aurum_finance_web/live/rules_live.ex:1875
+#: lib/aurum_finance_web/live/rules_live.ex:927
+#: lib/aurum_finance_web/live/rules_live.ex:1981
 #, elixir-autogen, elixir-format
 msgid "field_action_field"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:830
-#: lib/aurum_finance_web/live/rules_live.ex:1876
+#: lib/aurum_finance_web/live/rules_live.ex:936
+#: lib/aurum_finance_web/live/rules_live.ex:1982
 #, elixir-autogen, elixir-format
 msgid "field_action_operation"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:839
-#: lib/aurum_finance_web/live/rules_live.ex:1877
+#: lib/aurum_finance_web/live/rules_live.ex:945
+#: lib/aurum_finance_web/live/rules_live.ex:1983
 #, elixir-autogen, elixir-format
 msgid "field_action_value"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1691
+#: lib/aurum_finance_web/live/rules_live.ex:1797
 #, elixir-autogen, elixir-format
 msgid "field_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:665
+#: lib/aurum_finance_web/live/rules_live.ex:771
 #, elixir-autogen, elixir-format
 msgid "field_condition_field"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:674
+#: lib/aurum_finance_web/live/rules_live.ex:780
 #, elixir-autogen, elixir-format
 msgid "field_condition_operator"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:683
+#: lib/aurum_finance_web/live/rules_live.ex:789
 #, elixir-autogen, elixir-format
 msgid "field_condition_value"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1686
+#: lib/aurum_finance_web/live/rules_live.ex:1792
 #, elixir-autogen, elixir-format
 msgid "field_currency_code"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1693
+#: lib/aurum_finance_web/live/rules_live.ex:1799
 #, elixir-autogen, elixir-format
 msgid "field_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:483
-#: lib/aurum_finance_web/live/rules_live.ex:608
-#: lib/aurum_finance_web/live/rules_live.ex:1685
+#: lib/aurum_finance_web/live/rules_live.ex:589
+#: lib/aurum_finance_web/live/rules_live.ex:714
+#: lib/aurum_finance_web/live/rules_live.ex:1791
 #, elixir-autogen, elixir-format
 msgid "field_description"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:781
+#: lib/aurum_finance_web/live/rules_live.ex:887
 #, elixir-autogen, elixir-format
 msgid "field_expression"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:426
+#: lib/aurum_finance_web/live/rules_live.ex:532
 #, elixir-autogen, elixir-format
 msgid "field_group_name"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1690
+#: lib/aurum_finance_web/live/rules_live.ex:1796
 #, elixir-autogen, elixir-format
 msgid "field_institution_name"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:518
-#: lib/aurum_finance_web/live/rules_live.ex:616
+#: lib/aurum_finance_web/live/rules_live.ex:624
+#: lib/aurum_finance_web/live/rules_live.ex:722
 #, elixir-autogen, elixir-format
 msgid "field_is_active"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:693
+#: lib/aurum_finance_web/live/rules_live.ex:799
 #, elixir-autogen, elixir-format
 msgid "field_negate"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:601
+#: lib/aurum_finance_web/live/rules_live.ex:707
 #, elixir-autogen, elixir-format
 msgid "field_position"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:472
+#: lib/aurum_finance_web/live/rules_live.ex:578
 #, elixir-autogen, elixir-format
 msgid "field_priority"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:595
+#: lib/aurum_finance_web/live/rules_live.ex:701
 #, elixir-autogen, elixir-format
 msgid "field_rule_name"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:458
+#: lib/aurum_finance_web/live/rules_live.ex:564
 #, elixir-autogen, elixir-format
 msgid "field_scope_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:443
+#: lib/aurum_finance_web/live/rules_live.ex:549
 #, elixir-autogen, elixir-format
 msgid "field_scope_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:430
+#: lib/aurum_finance_web/live/rules_live.ex:536
 #, elixir-autogen, elixir-format
 msgid "field_scope_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1687
+#: lib/aurum_finance_web/live/rules_live.ex:1793
 #, elixir-autogen, elixir-format
 msgid "field_source_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:623
+#: lib/aurum_finance_web/live/rules_live.ex:729
 #, elixir-autogen, elixir-format
 msgid "field_stop_processing"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:494
+#: lib/aurum_finance_web/live/rules_live.ex:600
 #, elixir-autogen, elixir-format
 msgid "field_target_fields"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:201
-#: lib/aurum_finance_web/live/rules_live.ex:325
-#: lib/aurum_finance_web/live/rules_live.ex:1201
+#: lib/aurum_finance_web/live/rules_live.ex:213
+#: lib/aurum_finance_web/live/rules_live.ex:337
+#: lib/aurum_finance_web/live/rules_live.ex:1307
 #, elixir-autogen, elixir-format
 msgid "flash_audit_logging_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:355
+#: lib/aurum_finance_web/live/rules_live.ex:367
 #, elixir-autogen, elixir-format
 msgid "flash_rule_created"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:328
+#: lib/aurum_finance_web/live/rules_live.ex:340
 #, elixir-autogen, elixir-format
 msgid "flash_rule_delete_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:321
+#: lib/aurum_finance_web/live/rules_live.ex:333
 #, elixir-autogen, elixir-format
 msgid "flash_rule_deleted"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:285
+#: lib/aurum_finance_web/live/rules_live.ex:297
 #, elixir-autogen, elixir-format
 msgid "flash_rule_group_created"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:205
+#: lib/aurum_finance_web/live/rules_live.ex:217
 #, elixir-autogen, elixir-format
 msgid "flash_rule_group_delete_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:190
+#: lib/aurum_finance_web/live/rules_live.ex:202
 #, elixir-autogen, elixir-format
 msgid "flash_rule_group_deleted"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:226
-#: lib/aurum_finance_web/live/rules_live.ex:284
-#: lib/aurum_finance_web/live/rules_live.ex:1134
+#: lib/aurum_finance_web/live/rules_live.ex:238
+#: lib/aurum_finance_web/live/rules_live.ex:296
+#: lib/aurum_finance_web/live/rules_live.ex:1240
 #, elixir-autogen, elixir-format
 msgid "flash_rule_group_updated"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:354
+#: lib/aurum_finance_web/live/rules_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "flash_rule_updated"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:415
+#: lib/aurum_finance_web/live/rules_live.ex:521
 #, elixir-autogen, elixir-format
 msgid "group_panel_subtitle"
 msgstr ""
@@ -380,14 +380,14 @@ msgstr ""
 msgid "label_entity_context"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:78
-#: lib/aurum_finance_web/components/rules_components.ex:137
+#: lib/aurum_finance_web/components/rules_components.ex:80
+#: lib/aurum_finance_web/components/rules_components.ex:139
 #: lib/aurum_finance_web/live/rules_live.html.heex:251
 #, elixir-autogen, elixir-format
 msgid "label_priority"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:578
+#: lib/aurum_finance_web/live/rules_live.ex:684
 #, elixir-autogen, elixir-format
 msgid "label_rule_group"
 msgstr ""
@@ -397,8 +397,8 @@ msgstr ""
 msgid "label_rules_in_group"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:77
-#: lib/aurum_finance_web/components/rules_components.ex:136
+#: lib/aurum_finance_web/components/rules_components.ex:79
+#: lib/aurum_finance_web/components/rules_components.ex:138
 #: lib/aurum_finance_web/live/rules_live.html.heex:242
 #, elixir-autogen, elixir-format
 msgid "label_scope_target"
@@ -409,7 +409,7 @@ msgstr ""
 msgid "label_target_fields"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:215
+#: lib/aurum_finance_web/components/rules_components.ex:217
 #, elixir-autogen, elixir-format
 msgid "label_then"
 msgstr ""
@@ -424,263 +424,267 @@ msgstr ""
 msgid "label_visible_groups"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:208
+#: lib/aurum_finance_web/components/rules_components.ex:210
 #, elixir-autogen, elixir-format
 msgid "label_when"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1871
+#: lib/aurum_finance_web/live/rules_live.ex:1977
 #, elixir-autogen, elixir-format
 msgid "operation_add"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1873
+#: lib/aurum_finance_web/live/rules_live.ex:1979
 #, elixir-autogen, elixir-format
 msgid "operation_append"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1872
+#: lib/aurum_finance_web/live/rules_live.ex:1978
 #, elixir-autogen, elixir-format
 msgid "operation_remove"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1870
+#: lib/aurum_finance_web/live/rules_live.ex:1976
 #, elixir-autogen, elixir-format
 msgid "operation_set"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1880
+#: lib/aurum_finance_web/live/rules_live.ex:1986
 #, elixir-autogen, elixir-format
 msgid "operator_contains"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1882
+#: lib/aurum_finance_web/live/rules_live.ex:1988
 #, elixir-autogen, elixir-format
 msgid "operator_ends_with"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1879
+#: lib/aurum_finance_web/live/rules_live.ex:1985
 #, elixir-autogen, elixir-format
 msgid "operator_equals"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1884
+#: lib/aurum_finance_web/live/rules_live.ex:1990
 #, elixir-autogen, elixir-format
 msgid "operator_greater_than"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1888
+#: lib/aurum_finance_web/live/rules_live.ex:1994
 #, elixir-autogen, elixir-format
 msgid "operator_greater_than_or_equal"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1891
+#: lib/aurum_finance_web/live/rules_live.ex:1997
 #, elixir-autogen, elixir-format
 msgid "operator_is_empty"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1892
+#: lib/aurum_finance_web/live/rules_live.ex:1998
 #, elixir-autogen, elixir-format
 msgid "operator_is_not_empty"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1885
+#: lib/aurum_finance_web/live/rules_live.ex:1991
 #, elixir-autogen, elixir-format
 msgid "operator_less_than"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1890
+#: lib/aurum_finance_web/live/rules_live.ex:1996
 #, elixir-autogen, elixir-format
 msgid "operator_less_than_or_equal"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1883
+#: lib/aurum_finance_web/live/rules_live.ex:1989
 #, elixir-autogen, elixir-format
 msgid "operator_matches_regex"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1881
+#: lib/aurum_finance_web/live/rules_live.ex:1987
 #, elixir-autogen, elixir-format
 msgid "operator_starts_with"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1907
+#: lib/aurum_finance_web/live/rules_live.ex:2013
 #, elixir-autogen, elixir-format
 msgid "panel_title_edit_group"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1910
+#: lib/aurum_finance_web/live/rules_live.ex:2016
 #, elixir-autogen, elixir-format
 msgid "panel_title_edit_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1908
+#: lib/aurum_finance_web/live/rules_live.ex:2014
 #, elixir-autogen, elixir-format
 msgid "panel_title_new_group"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1911
+#: lib/aurum_finance_web/live/rules_live.ex:2017
 #, elixir-autogen, elixir-format
 msgid "panel_title_new_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:467
+#: lib/aurum_finance_web/live/rules_live.ex:573
 #, elixir-autogen, elixir-format
 msgid "prompt_select_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:452
+#: lib/aurum_finance_web/live/rules_live.ex:558
 #, elixir-autogen, elixir-format
 msgid "prompt_select_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:556
+#: lib/aurum_finance_web/live/rules_live.ex:662
 #, elixir-autogen, elixir-format
 msgid "rule_panel_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:252
-#: lib/aurum_finance_web/live/rules_live.ex:1819
+#: lib/aurum_finance_web/components/rules_components.ex:470
+#: lib/aurum_finance_web/live/rules_live.ex:1925
 #, elixir-autogen, elixir-format
 msgid "scope_account"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:253
-#: lib/aurum_finance_web/live/rules_live.ex:1818
+#: lib/aurum_finance_web/components/rules_components.ex:471
+#: lib/aurum_finance_web/live/rules_live.ex:1924
 #, elixir-autogen, elixir-format
 msgid "scope_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:254
-#: lib/aurum_finance_web/live/rules_live.ex:1817
+#: lib/aurum_finance_web/components/rules_components.ex:472
+#: lib/aurum_finance_web/live/rules_live.ex:1923
 #, elixir-autogen, elixir-format
 msgid "scope_global"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:256
-#: lib/aurum_finance_web/live/rules_live.ex:1822
+#: lib/aurum_finance_web/components/rules_components.ex:474
+#: lib/aurum_finance_web/live/rules_live.ex:1928
 #, elixir-autogen, elixir-format
 msgid "scope_target_global"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1828
+#: lib/aurum_finance_web/live/rules_live.ex:1934
 #, elixir-autogen, elixir-format
 msgid "scope_target_unknown_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1660
-#: lib/aurum_finance_web/live/rules_live.ex:1825
+#: lib/aurum_finance_web/live/rules_live.ex:1766
+#: lib/aurum_finance_web/live/rules_live.ex:1931
 #, elixir-autogen, elixir-format
 msgid "scope_target_unknown_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:790
-#: lib/aurum_finance_web/live/rules_live.ex:1813
+#: lib/aurum_finance_web/live/rules_live.ex:896
+#: lib/aurum_finance_web/live/rules_live.ex:1919
 #, elixir-autogen, elixir-format
 msgid "section_actions"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:634
+#: lib/aurum_finance_web/live/rules_live.ex:740
 #, elixir-autogen, elixir-format
 msgid "section_conditions"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1895
+#: lib/aurum_finance_web/live/rules_live.ex:2001
 #, elixir-autogen, elixir-format
 msgid "section_group_detail"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1894
+#: lib/aurum_finance_web/live/rules_live.ex:2000
 #, elixir-autogen, elixir-format
 msgid "section_group_detail_empty"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1830
-#: lib/aurum_finance_web/live/rules_live.ex:1834
+#: lib/aurum_finance_web/components/rules_components.ex:428
+#: lib/aurum_finance_web/live/rules_live.ex:1936
+#: lib/aurum_finance_web/live/rules_live.ex:1940
 #, elixir-autogen, elixir-format
 msgid "target_field_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1832
-#: lib/aurum_finance_web/live/rules_live.ex:1838
+#: lib/aurum_finance_web/components/rules_components.ex:430
+#: lib/aurum_finance_web/live/rules_live.ex:1938
+#: lib/aurum_finance_web/live/rules_live.ex:1944
 #, elixir-autogen, elixir-format
 msgid "target_field_investment_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1833
-#: lib/aurum_finance_web/live/rules_live.ex:1840
+#: lib/aurum_finance_web/components/rules_components.ex:431
+#: lib/aurum_finance_web/live/rules_live.ex:1939
+#: lib/aurum_finance_web/live/rules_live.ex:1946
 #, elixir-autogen, elixir-format
 msgid "target_field_notes"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1831
-#: lib/aurum_finance_web/live/rules_live.ex:1835
+#: lib/aurum_finance_web/components/rules_components.ex:429
+#: lib/aurum_finance_web/live/rules_live.ex:1937
+#: lib/aurum_finance_web/live/rules_live.ex:1941
 #, elixir-autogen, elixir-format
 msgid "target_field_tags"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1757
-#: lib/aurum_finance_web/live/rules_live.ex:1904
+#: lib/aurum_finance_web/live/rules_live.ex:1863
+#: lib/aurum_finance_web/live/rules_live.ex:2010
 #, elixir-autogen, elixir-format
 msgid "target_fields_any"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:724
+#: lib/aurum_finance_web/live/rules_live.ex:830
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:730
+#: lib/aurum_finance_web/live/rules_live.ex:836
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_intro"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:734
+#: lib/aurum_finance_web/live/rules_live.ex:840
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_fields_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:737
+#: lib/aurum_finance_web/live/rules_live.ex:843
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_fields_strings"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:738
+#: lib/aurum_finance_web/live/rules_live.ex:844
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_fields_numbers"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:739
+#: lib/aurum_finance_web/live/rules_live.ex:845
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_fields_dates"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:745
+#: lib/aurum_finance_web/live/rules_live.ex:851
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_ops_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:748
+#: lib/aurum_finance_web/live/rules_live.ex:854
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_ops_strings"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:749
+#: lib/aurum_finance_web/live/rules_live.ex:855
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_ops_numbers"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:750
+#: lib/aurum_finance_web/live/rules_live.ex:856
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_ops_logic"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:756
+#: lib/aurum_finance_web/live/rules_live.ex:862
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_examples_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:772
+#: lib/aurum_finance_web/live/rules_live.ex:878
 #, elixir-autogen, elixir-format
 msgid "advanced_mode_help_docs_link"
 msgstr ""
@@ -695,57 +699,57 @@ msgstr ""
 msgid "btn_raise_group_priority"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:327
+#: lib/aurum_finance_web/live/rules_live.html.heex:438
 #, elixir-autogen, elixir-format
 msgid "callout_examples_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:328
+#: lib/aurum_finance_web/live/rules_live.html.heex:439
 #, elixir-autogen, elixir-format
 msgid "callout_examples_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:329
+#: lib/aurum_finance_web/live/rules_live.html.heex:440
 #, elixir-autogen, elixir-format
 msgid "callout_examples_item_3"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:325
+#: lib/aurum_finance_web/live/rules_live.html.heex:436
 #, elixir-autogen, elixir-format
 msgid "callout_examples_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:344
+#: lib/aurum_finance_web/live/rules_live.html.heex:455
 #, elixir-autogen, elixir-format
 msgid "callout_tips_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:345
+#: lib/aurum_finance_web/live/rules_live.html.heex:456
 #, elixir-autogen, elixir-format
 msgid "callout_tips_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:346
+#: lib/aurum_finance_web/live/rules_live.html.heex:457
 #, elixir-autogen, elixir-format
 msgid "callout_tips_item_3"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:342
+#: lib/aurum_finance_web/live/rules_live.html.heex:453
 #, elixir-autogen, elixir-format
 msgid "callout_tips_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:337
+#: lib/aurum_finance_web/live/rules_live.html.heex:448
 #, elixir-autogen, elixir-format
 msgid "callout_warning_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:338
+#: lib/aurum_finance_web/live/rules_live.html.heex:449
 #, elixir-autogen, elixir-format
 msgid "callout_warning_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:335
+#: lib/aurum_finance_web/live/rules_live.html.heex:446
 #, elixir-autogen, elixir-format
 msgid "callout_warning_title"
 msgstr ""
@@ -780,17 +784,17 @@ msgstr ""
 msgid "label_account_filter"
 msgstr ""
 
-#: lib/aurum_finance_web/components/rules_components.ex:166
+#: lib/aurum_finance_web/components/rules_components.ex:168
 #, elixir-autogen, elixir-format
 msgid "label_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1643
+#: lib/aurum_finance_web/live/rules_live.ex:1749
 #, elixir-autogen, elixir-format
 msgid "option_all_entities"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1783
+#: lib/aurum_finance_web/live/rules_live.ex:1889
 #, elixir-autogen, elixir-format
 msgid "option_no_categories_available"
 msgstr ""
@@ -800,17 +804,17 @@ msgstr ""
 msgid "prompt_all_accounts"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:589
+#: lib/aurum_finance_web/live/rules_live.ex:695
 #, elixir-autogen, elixir-format
 msgid "rule_allowed_actions_body"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:585
+#: lib/aurum_finance_web/live/rules_live.ex:691
 #, elixir-autogen, elixir-format
 msgid "rule_allowed_actions_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1183
+#: lib/aurum_finance_web/live/rules_live.ex:1289
 #, elixir-autogen, elixir-format
 msgid "rule_creation_blocked_missing_categories"
 msgstr ""
@@ -820,67 +824,172 @@ msgstr ""
 msgid "rule_creation_blocked_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.html.heex:320
+#: lib/aurum_finance_web/live/rules_live.html.heex:431
 #, elixir-autogen, elixir-format
 msgid "section_guidance"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:509
+#: lib/aurum_finance_web/live/rules_live.ex:615
 #, elixir-autogen, elixir-format
 msgid "target_fields_help_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:511
+#: lib/aurum_finance_web/live/rules_live.ex:617
 #, elixir-autogen, elixir-format
 msgid "target_fields_help_investment_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:512
+#: lib/aurum_finance_web/live/rules_live.ex:618
 #, elixir-autogen, elixir-format
 msgid "target_fields_help_notes"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:510
+#: lib/aurum_finance_web/live/rules_live.ex:616
 #, elixir-autogen, elixir-format
 msgid "target_fields_help_tags"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:507
+#: lib/aurum_finance_web/live/rules_live.ex:613
 #, elixir-autogen, elixir-format
 msgid "target_fields_help_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:484
+#: lib/aurum_finance_web/live/rules_live.ex:590
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_description"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:519
+#: lib/aurum_finance_web/live/rules_live.ex:625
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_is_active"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:473
+#: lib/aurum_finance_web/live/rules_live.ex:579
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_priority"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:459
+#: lib/aurum_finance_web/live/rules_live.ex:565
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_scope_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:444
+#: lib/aurum_finance_web/live/rules_live.ex:550
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_scope_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:431
+#: lib/aurum_finance_web/live/rules_live.ex:537
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_scope_type"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:495
+#: lib/aurum_finance_web/live/rules_live.ex:601
 #, elixir-autogen, elixir-format
 msgid "tooltip_group_target_fields"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:288
+#, elixir-autogen, elixir-format
+msgid "badge_no_match"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:368
+#, elixir-autogen, elixir-format
+msgid "btn_preview_running"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:370
+#, elixir-autogen, elixir-format
+msgid "btn_run_preview"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:425
+#, elixir-autogen, elixir-format
+msgid "change_status_invalid"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:422
+#, elixir-autogen, elixir-format
+msgid "change_status_proposed"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:423
+#, elixir-autogen, elixir-format
+msgid "change_status_protected"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:424
+#, elixir-autogen, elixir-format
+msgid "change_status_skipped"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:342
+#, elixir-autogen, elixir-format
+msgid "label_preview_date_from"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:354
+#, elixir-autogen, elixir-format
+msgid "label_preview_date_to"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:410
+#, elixir-autogen, elixir-format
+msgid "label_preview_results"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:398
+#, elixir-autogen, elixir-format
+msgid "preview_empty_transactions"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:473
+#, elixir-autogen, elixir-format
+msgid "preview_error_date_range"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:502
+#, elixir-autogen, elixir-format
+msgid "preview_error_failed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:457
+#, elixir-autogen, elixir-format
+msgid "preview_error_invalid_date_from"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:465
+#, elixir-autogen, elixir-format
+msgid "preview_error_invalid_date_to"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:431
+#, elixir-autogen, elixir-format
+msgid "preview_error_no_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:376
+#, elixir-autogen, elixir-format
+msgid "preview_error_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:387
+#, elixir-autogen, elixir-format
+msgid "preview_loading"
+msgstr ""
+
+#: lib/aurum_finance_web/components/rules_components.ex:316
+#, elixir-autogen, elixir-format
+msgid "preview_no_proposed_changes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:321
+#, elixir-autogen, elixir-format
+msgid "section_preview"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.html.heex:323
+#, elixir-autogen, elixir-format
+msgid "section_preview_subtitle"
 msgstr ""

@@ -12,6 +12,8 @@ defmodule AurumFinanceWeb.RulesComponents do
   import AurumFinanceWeb.CoreComponents
   import AurumFinanceWeb.UiComponents
 
+  alias Decimal
+
   @doc """
   Renders one visible rule group row in the sidebar/list pane.
 
@@ -244,6 +246,222 @@ defmodule AurumFinanceWeb.RulesComponents do
     """
   end
 
+  @doc """
+  Renders one preview result row for a transaction, showing proposed changes
+  per classification field with scope/rule explainability and protected-field
+  indicators.
+
+  ## Examples
+
+      <.preview_result_row result={result} index={0} />
+  """
+  attr :result, :any, required: true
+  attr :index, :integer, required: true
+  attr :category_lookup, :map, default: %{}
+
+  def preview_result_row(assigns) do
+    transaction = assigns.result.transaction
+    postings = Map.get(transaction, :postings, [])
+
+    assigns =
+      assigns
+      |> assign(:transaction, transaction)
+      |> assign(:postings, postings)
+      |> assign(:no_match?, assigns.result.no_match?)
+      |> assign(:field_summaries, summarize_proposed_changes(assigns.result.proposed_changes))
+
+    ~H"""
+    <div class="flex flex-wrap items-start gap-3 lg:gap-4">
+      <div class="min-w-[220px] flex-1 basis-[260px]">
+        <div class="flex flex-wrap items-center gap-2">
+          <span class="au-badge au-badge-purple au-mono">#{@index + 1}</span>
+          <time
+            class="text-[12px] font-semibold text-white/82"
+            datetime={Date.to_iso8601(@transaction.date)}
+          >
+            {Calendar.strftime(@transaction.date, "%Y-%m-%d")}
+          </time>
+          <span class="text-[13px] font-semibold text-white/92">
+            {@transaction.description}
+          </span>
+          <.badge :if={@no_match?} variant={:warn}>
+            {dgettext("rules", "badge_no_match")}
+          </.badge>
+        </div>
+      </div>
+
+      <div :if={@postings != []} class="flex min-w-[240px] flex-1 basis-[280px] flex-wrap gap-2">
+        <span
+          :for={posting <- @postings}
+          class="inline-flex items-center gap-1.5 rounded-full border border-white/8 bg-slate-950/40 px-2.5 py-0.5 text-[11px] text-white/62"
+        >
+          <span :if={account_name(posting)}>{account_name(posting)}</span>
+          <span class="au-mono">{format_posting_amount(posting.amount)}</span>
+        </span>
+      </div>
+
+      <div
+        :if={!@no_match? && @field_summaries != []}
+        class="flex min-w-[280px] flex-[2_1_420px] basis-[420px] flex-wrap gap-2"
+      >
+        <.proposed_change_cell
+          :for={summary <- @field_summaries}
+          change_summary={summary}
+          category_lookup={@category_lookup}
+          dom_id={"preview-change-#{@index}-#{summary.field}"}
+        />
+      </div>
+
+      <div :if={!@no_match? && @field_summaries == []} class="min-w-[180px] flex-1 basis-[240px]">
+        <p class="text-[12px] text-white/45">{dgettext("rules", "preview_no_proposed_changes")}</p>
+      </div>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders one proposed-change cell within a preview result row.
+
+  Distinguishes `:proposed`, `:protected`, `:skipped_claimed`, and `:invalid`
+  statuses with appropriate styling. Shows the group/rule name for
+  explainability.
+  """
+  attr :change_summary, :map, required: true
+  attr :category_lookup, :map, default: %{}
+  attr :dom_id, :string, required: true
+
+  def proposed_change_cell(assigns) do
+    summary = assigns.change_summary
+    primary_change = summary.primary_change
+
+    assigns =
+      assigns
+      |> assign(:status, primary_change.status)
+      |> assign(:field, summary.field)
+      |> assign(:proposed_value, primary_change.proposed_value)
+      |> assign(:rule_group, primary_change.rule_group)
+      |> assign(:rule, primary_change.rule)
+      |> assign(:scope_type, primary_change.rule_group && primary_change.rule_group.scope_type)
+      |> assign(:supporting_changes, summary.supporting_changes)
+
+    ~H"""
+    <div
+      id={@dom_id}
+      data-preview-field={@field}
+      class={[
+        "basis-[180px] grow rounded-2xl border px-3 py-2.5 text-[12px]",
+        @status == :proposed && "border-cyan-400/20 bg-cyan-400/[0.06]",
+        @status == :protected && "border-amber-400/20 bg-amber-400/[0.06]",
+        @status == :skipped_claimed && "border-white/8 bg-white/[0.02] opacity-60",
+        @status == :invalid && "border-red-400/20 bg-red-400/[0.06]"
+      ]}
+    >
+      <div class="flex flex-wrap items-center gap-2">
+        <span class="text-[10px] uppercase tracking-[0.16em] text-white/40">
+          {field_label(@field)}
+        </span>
+        <.change_status_badge status={@status} />
+        <.scope_badge :if={@scope_type} scope_type={@scope_type} />
+      </div>
+
+      <p class={[
+        "mt-1 au-mono text-[11px] leading-relaxed",
+        @status == :proposed && "text-cyan-200/90",
+        @status == :protected && "text-amber-200/80",
+        @status in [:skipped_claimed, :invalid] && "text-white/45"
+      ]}>
+        {format_proposed_value(@field, @proposed_value, @category_lookup)}
+      </p>
+
+      <p :if={@rule_group && @rule} class="mt-1 text-[10px] text-white/38 truncate">
+        {@rule_group.name} / {@rule.name}
+      </p>
+
+      <p
+        :for={supporting_change <- @supporting_changes}
+        class="mt-1 text-[10px] leading-relaxed text-white/38"
+      >
+        {change_status_label(supporting_change.status)}: {supporting_change.rule_group.name} / {supporting_change.rule.name}
+      </p>
+    </div>
+    """
+  end
+
+  @doc """
+  Renders a small badge for the proposed-change status.
+  """
+  attr :status, :atom, required: true
+
+  def change_status_badge(assigns) do
+    ~H"""
+    <span class={["au-badge text-[9px]", change_status_badge_class(@status)]}>
+      {change_status_label(@status)}
+    </span>
+    """
+  end
+
+  @doc """
+  Renders a small scope badge used within preview cells.
+  """
+  attr :scope_type, :atom, required: true
+
+  def scope_badge(assigns) do
+    ~H"""
+    <.badge variant={scope_badge_variant(@scope_type)}>
+      {scope_label(@scope_type)}
+    </.badge>
+    """
+  end
+
+  defp change_status_badge_class(:proposed), do: "au-badge-good"
+  defp change_status_badge_class(:protected), do: "au-badge-warn"
+  defp change_status_badge_class(:skipped_claimed), do: ""
+  defp change_status_badge_class(:invalid), do: "au-badge-bad"
+  defp change_status_badge_class(_), do: ""
+
+  defp change_status_label(:proposed), do: dgettext("rules", "change_status_proposed")
+  defp change_status_label(:protected), do: dgettext("rules", "change_status_protected")
+  defp change_status_label(:skipped_claimed), do: dgettext("rules", "change_status_skipped")
+  defp change_status_label(:invalid), do: dgettext("rules", "change_status_invalid")
+  defp change_status_label(_status), do: ""
+
+  defp field_label(:category), do: dgettext("rules", "target_field_category")
+  defp field_label(:tags), do: dgettext("rules", "target_field_tags")
+  defp field_label(:investment_type), do: dgettext("rules", "target_field_investment_type")
+  defp field_label(:notes), do: dgettext("rules", "target_field_notes")
+  defp field_label(field) when is_atom(field), do: Atom.to_string(field)
+  defp field_label(field) when is_binary(field), do: field
+  defp field_label(_), do: ""
+
+  defp format_proposed_value(:category, value, category_lookup) when is_binary(value) do
+    Map.get(category_lookup, value, value)
+  end
+
+  defp format_proposed_value(:tags, values, _category_lookup) when is_list(values),
+    do: Enum.join(values, ", ")
+
+  defp format_proposed_value(_field, nil, _category_lookup), do: "—"
+  defp format_proposed_value(_field, value, _category_lookup) when is_binary(value), do: value
+  defp format_proposed_value(_field, value, _category_lookup), do: inspect(value)
+
+  defp format_posting_amount(nil), do: "—"
+
+  defp format_posting_amount(%Decimal{} = amount) do
+    Decimal.to_string(amount, :normal)
+  end
+
+  defp format_posting_amount(amount) when is_binary(amount), do: amount
+  defp format_posting_amount(amount), do: inspect(amount)
+
+  defp account_name(posting) do
+    posting
+    |> Map.get(:account)
+    |> case do
+      nil -> nil
+      account -> Map.get(account, :name)
+    end
+  end
+
   defp scope_badge_variant(:account), do: :good
   defp scope_badge_variant(:entity), do: :purple
   defp scope_badge_variant(:global), do: :default
@@ -258,6 +476,51 @@ defmodule AurumFinanceWeb.RulesComponents do
   defp group_value(map, key, default) do
     Map.get(map, key, default)
   end
+
+  defp summarize_proposed_changes(proposed_changes) do
+    {field_order, grouped_changes} =
+      Enum.reduce(proposed_changes, {[], %{}}, fn change, {field_order, grouped_changes} ->
+        field = change.field
+
+        if Map.has_key?(grouped_changes, field) do
+          {field_order, Map.update!(grouped_changes, field, &(&1 ++ [change]))}
+        else
+          {field_order ++ [field], Map.put(grouped_changes, field, [change])}
+        end
+      end)
+
+    Enum.map(field_order, fn field ->
+      changes = Map.fetch!(grouped_changes, field)
+      primary_change = select_primary_change(changes)
+
+      %{
+        field: field,
+        primary_change: primary_change,
+        supporting_changes: Enum.reject(changes, &(&1 == primary_change))
+      }
+    end)
+  end
+
+  defp select_primary_change(changes) do
+    Enum.reduce(changes, nil, fn change, best_change ->
+      cond do
+        is_nil(best_change) ->
+          change
+
+        change_priority(change) > change_priority(best_change) ->
+          change
+
+        true ->
+          best_change
+      end
+    end)
+  end
+
+  defp change_priority(%{status: :proposed}), do: 4
+  defp change_priority(%{status: :protected}), do: 3
+  defp change_priority(%{status: :invalid}), do: 2
+  defp change_priority(%{status: :skipped_claimed}), do: 1
+  defp change_priority(_change), do: 0
 
   defp present?(value) when is_binary(value), do: String.trim(value) != ""
   defp present?(_value), do: false

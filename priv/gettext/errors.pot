@@ -204,8 +204,8 @@ msgstr ""
 msgid "error_rule_actions_required"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1506
-#: lib/aurum_finance_web/live/rules_live.ex:1509
+#: lib/aurum_finance_web/live/rules_live.ex:1612
+#: lib/aurum_finance_web/live/rules_live.ex:1615
 #, elixir-autogen
 msgid "error_rule_expression_required"
 msgstr ""
@@ -231,12 +231,12 @@ msgstr ""
 msgid "error_rule_action_field_not_allowed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1515
+#: lib/aurum_finance_web/live/rules_live.ex:1621
 #, elixir-autogen
 msgid "error_rule_expression_invalid"
 msgstr ""
 
-#: lib/aurum_finance_web/live/rules_live.ex:1512
+#: lib/aurum_finance_web/live/rules_live.ex:1618
 #, elixir-autogen
 msgid "error_rule_expression_invalid_regex"
 msgstr ""

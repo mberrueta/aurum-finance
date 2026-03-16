@@ -7,12 +7,16 @@ defmodule AurumFinance.Classification do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Audit
+  alias AurumFinance.Audit.AuditEvent
   alias AurumFinance.Audit.Multi, as: AuditMulti
+  alias AurumFinance.Classification.ClassificationRecord
   alias AurumFinance.Classification.Engine
   alias AurumFinance.Classification.ExpressionCompiler
   alias AurumFinance.Classification.ExpressionValidator
   alias AurumFinance.Classification.Rule
   alias AurumFinance.Classification.RuleGroup
+  alias AurumFinance.Ledger
+  alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Repo
@@ -20,6 +24,8 @@ defmodule AurumFinance.Classification do
   @default_actor "system"
   @rule_group_entity_type "rule_group"
   @rule_entity_type "rule"
+  @classification_record_entity_type "classification_record"
+  @classification_fields [:category, :tags, :investment_type, :notes]
 
   @type audit_opt :: {:actor, String.t()} | {:channel, Audit.audit_channel()}
 
@@ -33,12 +39,20 @@ defmodule AurumFinance.Classification do
 
   @type rule_list_opt :: {:rule_group_id, Ecto.UUID.t()} | {:is_active, boolean()}
   @dialyzer {:nowarn_function,
-             delete_rule_group: 2, delete_rule: 2, new_multi: 0, multi_delete: 3}
+             delete_rule_group: 2,
+             delete_rule: 2,
+             new_multi: 0,
+             multi_delete: 3,
+             persist_classification_record: 5,
+             put_classification_record_step: 3,
+             append_classification_audits: 4}
 
   @type preview_opt ::
           {:entity_id, Ecto.UUID.t()}
           | {:date_from, Date.t()}
           | {:date_to, Date.t()}
+
+  @type classification_field :: :category | :tags | :investment_type | :notes
 
   @doc """
   Previews classification results for transactions in a date range without
@@ -77,8 +91,380 @@ defmodule AurumFinance.Classification do
       _ ->
         account_ids = extract_posting_account_ids(transactions)
         rule_groups = load_preview_rule_groups(entity_id, account_ids)
+        current_classifications = load_current_classifications(transactions)
 
-        Engine.evaluate(transactions, rule_groups)
+        Engine.evaluate(transactions, rule_groups,
+          current_classifications: current_classifications
+        )
+    end
+  end
+
+  @doc """
+  Returns the persisted classification record for one transaction or `nil`.
+
+  ## Examples
+
+  Typical read after applying rules:
+
+  ```elixir
+  {:ok, %{classification_record: record}} =
+    AurumFinance.Classification.classify_transaction(transaction.id, entity_id: entity.id)
+
+  same_record =
+    AurumFinance.Classification.get_classification_record(transaction.id)
+
+  same_record.id == record.id
+  #=> true
+  ```
+
+  Missing records return `nil`:
+
+      iex> AurumFinance.Classification.get_classification_record(Ecto.UUID.generate())
+      nil
+  """
+  @spec get_classification_record(Ecto.UUID.t()) :: ClassificationRecord.t() | nil
+  def get_classification_record(transaction_id) do
+    transaction_id
+    |> List.wrap()
+    |> list_classification_records()
+    |> List.first()
+  end
+
+  @doc """
+  Returns persisted classification records for multiple transactions in one query.
+
+  The returned records include the same preloads used by `get_classification_record/1`
+  so callers can render category labels without additional queries.
+
+  ## Examples
+
+  ```elixir
+  records =
+    AurumFinance.Classification.list_classification_records([
+      transaction_a.id,
+      transaction_b.id
+    ])
+
+  Enum.map(records, & &1.transaction_id)
+  #=> [transaction_a.id, transaction_b.id]
+  ```
+  """
+  @spec list_classification_records([Ecto.UUID.t()]) :: [ClassificationRecord.t()]
+  def list_classification_records([]), do: []
+
+  def list_classification_records(transaction_ids) when is_list(transaction_ids) do
+    ClassificationRecord
+    |> where([classification_record], classification_record.transaction_id in ^transaction_ids)
+    |> preload([:transaction, :category_account])
+    |> Repo.all()
+  end
+
+  @doc """
+  Applies active rules to one transaction and upserts its classification record.
+
+  Returns the updated record (when any field changed or a record already exists),
+  together with per-transaction summary counters.
+
+  ## Examples
+
+  Happy path:
+
+  ```elixir
+  {:ok, result} =
+    AurumFinance.Classification.classify_transaction(transaction.id, entity_id: entity.id)
+
+  result.classified?
+  #=> true
+
+  result.fields_applied
+  #=> 2
+
+  result.classification_record.category_account_id
+  #=> transport_account.id
+  ```
+
+  Missing transactions fail safely:
+
+  ```elixir
+  AurumFinance.Classification.classify_transaction(
+    Ecto.UUID.generate(),
+    entity_id: entity.id
+  )
+  #=> {:error, :not_found}
+  ```
+  """
+  @spec classify_transaction(Transaction.t(), [audit_opt()]) ::
+          {:ok,
+           %{
+             classification_record: ClassificationRecord.t() | nil,
+             classified?: boolean(),
+             fields_applied: non_neg_integer(),
+             fields_skipped_manual: non_neg_integer(),
+             no_match?: boolean()
+           }}
+          | {:error, term()}
+  @spec classify_transaction(Ecto.UUID.t(), [audit_opt() | {:entity_id, Ecto.UUID.t()}]) ::
+          {:ok,
+           %{
+             classification_record: ClassificationRecord.t() | nil,
+             classified?: boolean(),
+             fields_applied: non_neg_integer(),
+             fields_skipped_manual: non_neg_integer(),
+             no_match?: boolean()
+           }}
+          | {:error, term()}
+  def classify_transaction(transaction, opts \\ [])
+
+  def classify_transaction(%Transaction{} = transaction, opts) do
+    transaction = Repo.preload(transaction, postings: :account)
+
+    if transaction.voided_at do
+      {:ok,
+       %{
+         classification_record: get_classification_record(transaction.id),
+         classified?: false,
+         fields_applied: 0,
+         fields_skipped_manual: 0,
+         no_match?: true
+       }}
+    else
+      existing_record = get_classification_record(transaction.id)
+      current_classifications = build_current_classifications([transaction], [existing_record])
+      account_ids = extract_posting_account_ids([transaction])
+      rule_groups = load_preview_rule_groups(transaction.entity_id, account_ids)
+
+      [result] =
+        Engine.evaluate([transaction], rule_groups,
+          current_classifications: current_classifications
+        )
+
+      do_apply_engine_result(transaction, existing_record, result, opts)
+    end
+  end
+
+  def classify_transaction(transaction_id, opts) when is_binary(transaction_id) do
+    entity_id = Keyword.fetch!(opts, :entity_id)
+
+    try do
+      entity_id
+      |> Ledger.get_transaction!(transaction_id)
+      |> classify_transaction(opts)
+    rescue
+      Ecto.NoResultsError -> {:error, :not_found}
+    end
+  end
+
+  @doc """
+  Applies active rules to all non-voided transactions in one entity/date range.
+
+  The operation is atomic per transaction. Failures on one transaction do not
+  roll back successful classifications for others.
+
+  ## Examples
+
+  ```elixir
+  {:ok, summary} =
+    AurumFinance.Classification.classify_transactions(%{
+      entity_id: entity.id,
+      date_from: ~D[2026-03-01],
+      date_to: ~D[2026-03-31]
+    })
+
+  summary
+  #=> %{
+  #=>   classified: 15,
+  #=>   fields_applied: 23,
+  #=>   fields_skipped_manual: 4,
+  #=>   no_match: 5,
+  #=>   failed: 0,
+  #=>   failures: []
+  #=> }
+  ```
+  """
+  @spec classify_transactions(map()) ::
+          {:ok,
+           %{
+             classified: non_neg_integer(),
+             fields_applied: non_neg_integer(),
+             fields_skipped_manual: non_neg_integer(),
+             no_match: non_neg_integer(),
+             failed: non_neg_integer(),
+             failures: [map()]
+           }}
+  def classify_transactions(
+        %{entity_id: entity_id, date_from: date_from, date_to: date_to} = attrs
+      ) do
+    opts = Map.drop(attrs, [:entity_id, :date_from, :date_to]) |> Enum.to_list()
+
+    entity_id
+    |> load_preview_transactions(date_from, date_to)
+    |> Enum.reduce(
+      %{
+        classified: 0,
+        fields_applied: 0,
+        fields_skipped_manual: 0,
+        no_match: 0,
+        failed: 0,
+        failures: []
+      },
+      fn transaction, acc ->
+        case classify_transaction(transaction, [{:entity_id, entity_id} | opts]) do
+          {:ok, result} ->
+            %{
+              acc
+              | classified: acc.classified + if(result.classified?, do: 1, else: 0),
+                fields_applied: acc.fields_applied + result.fields_applied,
+                fields_skipped_manual: acc.fields_skipped_manual + result.fields_skipped_manual,
+                no_match: acc.no_match + if(result.no_match?, do: 1, else: 0)
+            }
+
+          {:error, reason} ->
+            %{
+              acc
+              | failed: acc.failed + 1,
+                failures:
+                  acc.failures ++ [%{transaction_id: transaction.id, reason: inspect(reason)}]
+            }
+        end
+      end
+    )
+    |> then(&{:ok, &1})
+  end
+
+  @doc """
+  Manually sets one classification field and locks it from future automation.
+
+  The value is stored together with user provenance and the field-specific manual
+  override flag.
+
+  ## Examples
+
+  Setting notes manually:
+
+  ```elixir
+  {:ok, record} =
+    AurumFinance.Classification.set_manual_field(
+      transaction.id,
+      :notes,
+      "review manually",
+      entity_id: entity.id
+    )
+
+  record.notes
+  #=> "review manually"
+
+  record.notes_manually_overridden
+  #=> true
+
+  record.notes_classified_by["source"]
+  #=> "user"
+  ```
+
+  Setting category manually uses a same-entity category account id:
+
+  ```elixir
+  {:ok, record} =
+    AurumFinance.Classification.set_manual_field(
+      transaction.id,
+      :category,
+      category_account.id,
+      entity_id: entity.id
+    )
+  ```
+  """
+  @spec set_manual_field(Ecto.UUID.t(), classification_field() | String.t(), term(), [
+          audit_opt() | {:entity_id, Ecto.UUID.t()}
+        ]) ::
+          {:ok, ClassificationRecord.t() | nil} | {:error, term()}
+  def set_manual_field(transaction_id, field, value, opts \\ []) do
+    with {:ok, normalized_field} <- normalize_classification_field(field),
+         {:ok, transaction} <- fetch_transaction_for_write(transaction_id, opts),
+         {:ok, normalized_value} <-
+           normalize_manual_value(transaction.entity_id, normalized_field, value) do
+      existing_record = get_classification_record(transaction.id)
+      current_value = record_value(existing_record, normalized_field)
+      current_lock? = record_locked?(existing_record, normalized_field)
+      timestamp = utc_now()
+
+      attrs =
+        %{
+          field_column(normalized_field) => normalized_value,
+          classified_by_column(normalized_field) => user_provenance(timestamp),
+          manually_overridden_column(normalized_field) => true
+        }
+        |> maybe_put_new_record_identity(existing_record, transaction)
+
+      audit_entries = [
+        %{
+          step_name: {:audit, normalized_field, :manual_override},
+          action: "manual_override",
+          field: normalized_field,
+          metadata: %{
+            "field" => Atom.to_string(normalized_field),
+            "old_value" => serialize_field_value(normalized_field, current_value),
+            "new_value" => serialize_field_value(normalized_field, normalized_value)
+          }
+        }
+      ]
+
+      if current_value == normalized_value and current_lock? do
+        {:ok, existing_record}
+      else
+        persist_classification_record(existing_record, transaction, attrs, audit_entries, opts)
+      end
+    end
+  end
+
+  @doc """
+  Clears the manual override flag for one field without clearing its value.
+
+  ## Examples
+
+  ```elixir
+  {:ok, record} =
+    AurumFinance.Classification.clear_manual_override(
+      transaction.id,
+      :notes,
+      entity_id: entity.id
+    )
+
+  record.notes
+  #=> "review manually"
+
+  record.notes_manually_overridden
+  #=> false
+  ```
+  """
+  @spec clear_manual_override(Ecto.UUID.t(), classification_field() | String.t(), [
+          audit_opt() | {:entity_id, Ecto.UUID.t()}
+        ]) ::
+          {:ok, ClassificationRecord.t() | nil} | {:error, term()}
+  def clear_manual_override(transaction_id, field, opts \\ []) do
+    with {:ok, normalized_field} <- normalize_classification_field(field),
+         {:ok, transaction} <- fetch_transaction_for_write(transaction_id, opts) do
+      existing_record = get_classification_record(transaction.id)
+
+      cond do
+        is_nil(existing_record) ->
+          {:ok, nil}
+
+        not record_locked?(existing_record, normalized_field) ->
+          {:ok, existing_record}
+
+        true ->
+          attrs = %{manually_overridden_column(normalized_field) => false}
+
+          audit_entries = [
+            %{
+              step_name: {:audit, normalized_field, :override_cleared},
+              action: "override_cleared",
+              field: normalized_field,
+              metadata: %{"field" => Atom.to_string(normalized_field)}
+            }
+          ]
+
+          persist_classification_record(existing_record, transaction, attrs, audit_entries, opts)
+      end
     end
   end
 
@@ -757,6 +1143,408 @@ defmodule AurumFinance.Classification do
   end
 
   defp normalize_attr_key(key), do: key
+
+  # ---------------------------------------------------------------------------
+  # Classification record helpers
+  # ---------------------------------------------------------------------------
+
+  defp do_apply_engine_result(transaction, existing_record, result, opts) do
+    proposed_changes = Enum.filter(result.proposed_changes, &(&1.status == :proposed))
+    fields_skipped_manual = Enum.count(result.proposed_changes, &(&1.status == :protected))
+
+    {attrs, audit_entries, applied_fields} =
+      build_rule_application(existing_record, transaction, proposed_changes)
+
+    case {map_size(attrs), existing_record} do
+      {0, nil} ->
+        {:ok,
+         %{
+           classification_record: nil,
+           classified?: false,
+           fields_applied: 0,
+           fields_skipped_manual: fields_skipped_manual,
+           no_match?: result.no_match?
+         }}
+
+      {0, %ClassificationRecord{} = record} ->
+        {:ok,
+         %{
+           classification_record: record,
+           classified?: false,
+           fields_applied: 0,
+           fields_skipped_manual: fields_skipped_manual,
+           no_match?: result.no_match?
+         }}
+
+      _ ->
+        case persist_classification_record(
+               existing_record,
+               transaction,
+               attrs,
+               audit_entries,
+               opts
+             ) do
+          {:ok, classification_record} ->
+            {:ok,
+             %{
+               classification_record: classification_record,
+               classified?: applied_fields > 0,
+               fields_applied: applied_fields,
+               fields_skipped_manual: fields_skipped_manual,
+               no_match?: result.no_match?
+             }}
+
+          {:error, reason} ->
+            {:error, reason}
+        end
+    end
+  end
+
+  defp build_rule_application(existing_record, transaction, proposed_changes) do
+    timestamp = utc_now()
+
+    Enum.reduce(proposed_changes, {%{}, [], 0}, fn change,
+                                                   {attrs, audit_entries, applied_fields} ->
+      case normalize_proposed_value(transaction.entity_id, change.field, change.proposed_value) do
+        {:ok, normalized_value} ->
+          apply_rule_change(
+            existing_record,
+            change,
+            normalized_value,
+            attrs,
+            audit_entries,
+            applied_fields,
+            timestamp
+          )
+
+        {:error, :invalid_category_account} ->
+          {attrs, audit_entries, applied_fields}
+      end
+    end)
+    |> then(fn {attrs, audit_entries, applied_fields} ->
+      {maybe_put_new_record_identity(attrs, existing_record, transaction), audit_entries,
+       applied_fields}
+    end)
+  end
+
+  defp apply_rule_change(
+         existing_record,
+         change,
+         normalized_value,
+         attrs,
+         audit_entries,
+         applied_fields,
+         timestamp
+       ) do
+    current_value = record_value(existing_record, change.field)
+
+    if current_value == normalized_value do
+      {attrs, audit_entries, applied_fields}
+    else
+      field_attrs = %{
+        field_column(change.field) => normalized_value,
+        classified_by_column(change.field) =>
+          rule_provenance(change.rule_group.id, change.rule.id, timestamp)
+      }
+
+      audit_entry = %{
+        step_name: {:audit, change.field, change.rule.id},
+        action: "rule_applied",
+        field: change.field,
+        metadata: %{
+          "field" => Atom.to_string(change.field),
+          "old_value" => serialize_field_value(change.field, current_value),
+          "new_value" => serialize_field_value(change.field, normalized_value),
+          "rule_group_id" => change.rule_group.id,
+          "rule_id" => change.rule.id
+        }
+      }
+
+      {Map.merge(attrs, field_attrs), audit_entries ++ [audit_entry], applied_fields + 1}
+    end
+  end
+
+  defp persist_classification_record(existing_record, _transaction, attrs, audit_entries, opts) do
+    record = existing_record || %ClassificationRecord{}
+    before_snapshot = existing_record && classification_record_snapshot(existing_record)
+    changeset = ClassificationRecord.changeset(record, attrs)
+
+    multi =
+      new_multi()
+      |> put_classification_record_step(changeset, existing_record)
+      |> append_classification_audits(before_snapshot, audit_entries, opts)
+
+    case Repo.transaction(multi) do
+      {:ok, %{classification_record: classification_record}} ->
+        {:ok, Repo.preload(classification_record, [:transaction, :category_account])}
+
+      {:error, :classification_record, %Ecto.Changeset{} = changeset, _changes} ->
+        {:error, changeset}
+
+      {:error, _step, reason, _changes} ->
+        {:error, reason}
+    end
+  end
+
+  @spec put_classification_record_step(any(), Ecto.Changeset.t(), ClassificationRecord.t() | nil) ::
+          any()
+  defp put_classification_record_step(multi, changeset, nil) do
+    Ecto.Multi.insert(multi, :classification_record, changeset)
+  end
+
+  defp put_classification_record_step(multi, changeset, _existing_record) do
+    Ecto.Multi.update(multi, :classification_record, changeset)
+  end
+
+  @spec append_classification_audits(any(), map() | nil, [map()], [
+          audit_opt() | {:entity_id, Ecto.UUID.t()}
+        ]) ::
+          any()
+  defp append_classification_audits(multi, before_snapshot, audit_entries, opts) do
+    Enum.reduce(audit_entries, multi, fn audit_entry, acc ->
+      Ecto.Multi.insert(acc, audit_entry.step_name, fn %{
+                                                         classification_record:
+                                                           classification_record
+                                                       } ->
+        AuditEvent.changeset(
+          %AuditEvent{},
+          %{
+            entity_type: @classification_record_entity_type,
+            entity_id: classification_record.id,
+            action: audit_entry.action,
+            actor: audit_actor(opts),
+            channel: audit_channel(opts),
+            before: before_snapshot,
+            after: classification_record_snapshot(classification_record),
+            metadata: audit_entry.metadata,
+            occurred_at: utc_now()
+          }
+        )
+      end)
+    end)
+  end
+
+  defp fetch_transaction_for_write(transaction_id, opts) do
+    entity_id = Keyword.fetch!(opts, :entity_id)
+
+    try do
+      {:ok, Ledger.get_transaction!(entity_id, transaction_id)}
+    rescue
+      Ecto.NoResultsError -> {:error, :not_found}
+    end
+  end
+
+  defp load_classification_records(transaction_ids) do
+    ClassificationRecord
+    |> where([classification_record], classification_record.transaction_id in ^transaction_ids)
+    |> Repo.all()
+  end
+
+  defp load_current_classifications(transactions) do
+    transaction_ids = Enum.map(transactions, & &1.id)
+    classification_records = load_classification_records(transaction_ids)
+
+    build_current_classifications(transactions, classification_records)
+  end
+
+  defp build_current_classifications(transactions, classification_records) do
+    records_by_transaction_id =
+      classification_records
+      |> Enum.reject(&is_nil/1)
+      |> Map.new(&{&1.transaction_id, &1})
+
+    Enum.reduce(transactions, %{}, fn transaction, acc ->
+      case Map.get(records_by_transaction_id, transaction.id) do
+        nil ->
+          acc
+
+        record ->
+          Map.put(acc, transaction.id, current_classification(record))
+      end
+    end)
+  end
+
+  defp current_classification(record) do
+    %{
+      category: record.category_account_id,
+      tags: record.tags || [],
+      investment_type: record.investment_type,
+      notes: record.notes,
+      protected_fields: protected_fields(record)
+    }
+  end
+
+  defp protected_fields(record) do
+    @classification_fields
+    |> Enum.filter(&record_locked?(record, &1))
+  end
+
+  defp record_locked?(nil, _field), do: false
+
+  defp record_locked?(record, field) do
+    Map.get(record, manually_overridden_column(field), false)
+  end
+
+  defp record_value(nil, :tags), do: []
+  defp record_value(nil, _field), do: nil
+
+  defp record_value(record, field) do
+    Map.get(record, field_column(field), default_field_value(field))
+  end
+
+  defp field_column(:category), do: :category_account_id
+  defp field_column(:tags), do: :tags
+  defp field_column(:investment_type), do: :investment_type
+  defp field_column(:notes), do: :notes
+
+  defp classified_by_column(:category), do: :category_classified_by
+  defp classified_by_column(:tags), do: :tags_classified_by
+  defp classified_by_column(:investment_type), do: :investment_type_classified_by
+  defp classified_by_column(:notes), do: :notes_classified_by
+
+  defp manually_overridden_column(:category), do: :category_manually_overridden
+  defp manually_overridden_column(:tags), do: :tags_manually_overridden
+  defp manually_overridden_column(:investment_type), do: :investment_type_manually_overridden
+  defp manually_overridden_column(:notes), do: :notes_manually_overridden
+
+  defp default_field_value(:tags), do: []
+  defp default_field_value(_field), do: nil
+
+  defp normalize_classification_field(field) when field in @classification_fields,
+    do: {:ok, field}
+
+  defp normalize_classification_field("category"), do: {:ok, :category}
+  defp normalize_classification_field("tags"), do: {:ok, :tags}
+  defp normalize_classification_field("investment_type"), do: {:ok, :investment_type}
+  defp normalize_classification_field("notes"), do: {:ok, :notes}
+  defp normalize_classification_field(_field), do: {:error, :invalid_field}
+
+  defp normalize_manual_value(entity_id, :category, value),
+    do: normalize_category_value(entity_id, value)
+
+  defp normalize_manual_value(_entity_id, :tags, value), do: {:ok, normalize_tags_value(value)}
+
+  defp normalize_manual_value(_entity_id, :investment_type, value),
+    do: {:ok, normalize_optional_string(value)}
+
+  defp normalize_manual_value(_entity_id, :notes, value),
+    do: {:ok, normalize_optional_string(value)}
+
+  defp normalize_proposed_value(entity_id, :category, value),
+    do: normalize_category_value(entity_id, value)
+
+  defp normalize_proposed_value(_entity_id, :tags, value), do: {:ok, normalize_tags_value(value)}
+
+  defp normalize_proposed_value(_entity_id, :investment_type, value),
+    do: {:ok, normalize_optional_string(value)}
+
+  defp normalize_proposed_value(_entity_id, :notes, value),
+    do: {:ok, normalize_optional_string(value)}
+
+  defp normalize_category_value(_entity_id, nil), do: {:ok, nil}
+  defp normalize_category_value(_entity_id, ""), do: {:ok, nil}
+
+  defp normalize_category_value(entity_id, value) when is_binary(value) do
+    case Ledger.get_account(entity_id, value) do
+      %Account{} = account ->
+        if Account.category_account?(account),
+          do: {:ok, account.id},
+          else: {:error, :invalid_category_account}
+
+      nil ->
+        {:error, :invalid_category_account}
+    end
+  end
+
+  defp normalize_category_value(_entity_id, _value), do: {:error, :invalid_category_account}
+
+  defp normalize_tags_value(nil), do: []
+
+  defp normalize_tags_value(values) when is_list(values) do
+    values
+    |> Enum.filter(&is_binary/1)
+    |> Enum.map(&String.trim/1)
+    |> Enum.reject(&(&1 == ""))
+    |> Enum.reduce([], fn value, acc ->
+      if value in acc, do: acc, else: acc ++ [value]
+    end)
+  end
+
+  defp normalize_tags_value(value) when is_binary(value) do
+    value
+    |> String.split(",")
+    |> normalize_tags_value()
+  end
+
+  defp normalize_tags_value(_value), do: []
+
+  defp normalize_optional_string(nil), do: nil
+  defp normalize_optional_string(""), do: nil
+
+  defp normalize_optional_string(value) when is_binary(value) do
+    case String.trim(value) do
+      "" -> nil
+      normalized_value -> normalized_value
+    end
+  end
+
+  defp normalize_optional_string(value), do: value
+
+  defp maybe_put_new_record_identity(attrs, nil, transaction) do
+    attrs
+    |> Map.put_new(:transaction_id, transaction.id)
+    |> Map.put_new(:entity_id, transaction.entity_id)
+  end
+
+  defp maybe_put_new_record_identity(attrs, _existing_record, _transaction), do: attrs
+
+  defp user_provenance(timestamp) do
+    %{
+      "source" => "user",
+      "classified_at" => DateTime.to_iso8601(timestamp)
+    }
+  end
+
+  defp rule_provenance(rule_group_id, rule_id, timestamp) do
+    %{
+      "source" => "rule",
+      "rule_group_id" => rule_group_id,
+      "rule_id" => rule_id,
+      "classified_at" => DateTime.to_iso8601(timestamp)
+    }
+  end
+
+  defp serialize_field_value(:tags, nil), do: Jason.encode!([])
+  defp serialize_field_value(:tags, value) when is_list(value), do: Jason.encode!(value)
+  defp serialize_field_value(_field, nil), do: nil
+  defp serialize_field_value(_field, value), do: to_string(value)
+
+  defp classification_record_snapshot(%ClassificationRecord{} = classification_record) do
+    %{
+      "id" => classification_record.id,
+      "transaction_id" => classification_record.transaction_id,
+      "entity_id" => classification_record.entity_id,
+      "category_account_id" => classification_record.category_account_id,
+      "category_classified_by" => classification_record.category_classified_by,
+      "category_manually_overridden" => classification_record.category_manually_overridden,
+      "tags" => classification_record.tags || [],
+      "tags_classified_by" => classification_record.tags_classified_by,
+      "tags_manually_overridden" => classification_record.tags_manually_overridden,
+      "investment_type" => classification_record.investment_type,
+      "investment_type_classified_by" => classification_record.investment_type_classified_by,
+      "investment_type_manually_overridden" =>
+        classification_record.investment_type_manually_overridden,
+      "notes" => classification_record.notes,
+      "notes_classified_by" => classification_record.notes_classified_by,
+      "notes_manually_overridden" => classification_record.notes_manually_overridden,
+      "inserted_at" => maybe_datetime_to_iso8601(classification_record.inserted_at),
+      "updated_at" => maybe_datetime_to_iso8601(classification_record.updated_at)
+    }
+  end
+
+  defp utc_now do
+    DateTime.utc_now() |> DateTime.truncate(:microsecond)
+  end
 
   # ---------------------------------------------------------------------------
   # Preview helpers (read-only, no writes)

@@ -314,6 +314,117 @@
     </.section_panel>
   </div>
 
+  <div id="rules-preview">
+    <.au_card>
+      <:header>
+        <div>
+          <span>{dgettext("rules", "section_preview")}</span>
+          <p class="mt-1 text-[12px] font-normal text-white/45">
+            {dgettext("rules", "section_preview_subtitle")}
+          </p>
+        </div>
+      </:header>
+
+      <.form
+        for={
+          to_form(
+            %{"date_from" => @preview_date_from, "date_to" => @preview_date_to},
+            as: :preview
+          )
+        }
+        id="preview-form"
+        phx-change="change_preview_params"
+        phx-submit="run_preview"
+      >
+        <div class="flex flex-wrap items-end gap-4">
+          <div>
+            <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              {dgettext("rules", "label_preview_date_from")}
+            </p>
+            <.input
+              id="preview-date-from"
+              name="preview[date_from]"
+              type="date"
+              value={@preview_date_from}
+            />
+          </div>
+
+          <div>
+            <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              {dgettext("rules", "label_preview_date_to")}
+            </p>
+            <.input
+              id="preview-date-to"
+              name="preview[date_to]"
+              type="date"
+              value={@preview_date_to}
+            />
+          </div>
+
+          <.button
+            id="run-preview-button"
+            type="submit"
+            variant="primary"
+            phx-disable-with={dgettext("rules", "btn_preview_running")}
+          >
+            {dgettext("rules", "btn_run_preview")}
+          </.button>
+        </div>
+      </.form>
+
+      <div :if={@preview_error} id="preview-error-state" class="mt-5">
+        <.info_callout title={dgettext("rules", "preview_error_title")} tone={:warn}>
+          <p class="text-[12px] leading-relaxed text-white/74">{@preview_error}</p>
+        </.info_callout>
+      </div>
+
+      <div
+        :if={@preview_loading}
+        id="preview-loading-state"
+        class="mt-5 flex items-center gap-3 py-4"
+      >
+        <span class="loading loading-spinner loading-sm text-white/52"></span>
+        <p class="text-[13px] text-white/52">{dgettext("rules", "preview_loading")}</p>
+      </div>
+
+      <div
+        :if={!@preview_loading && @preview_results != nil && @preview_results == []}
+        id="preview-empty-transactions"
+        class="mt-5"
+      >
+        <.empty_state>
+          <div class="space-y-2 text-center">
+            <p class="text-[13px] text-white/70">
+              {dgettext("rules", "preview_empty_transactions")}
+            </p>
+          </div>
+        </.empty_state>
+      </div>
+
+      <div
+        :if={!@preview_loading && @preview_results != nil && @preview_results != []}
+        id="preview-results"
+        class="mt-5 space-y-2"
+      >
+        <p class="text-[11px] uppercase tracking-[0.18em] text-white/38">
+          {dgettext("rules", "label_preview_results", count: length(@preview_results))}
+        </p>
+
+        <div
+          :for={{result, index} <- Enum.with_index(@preview_results)}
+          id={"preview-row-#{index}"}
+          class="rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3"
+        >
+          <.preview_result_row
+            result={result}
+            index={index}
+            category_lookup={@preview_category_lookup}
+          />
+        </div>
+      </div>
+    </.au_card>
+  </div>
+
   <div id="rules-guidance">
     <.au_card class="mt-[14px]">
       <:header>

@@ -314,14 +314,10 @@ defmodule AurumFinance.Classification.PreviewTest do
       assert hd(result.proposed_changes).status == :proposed
     end
 
-    # Assumption: ClassificationRecord is not yet implemented (Task #21),
-    # so protected/manual-override indicators are not yet surfaced in preview.
-    # This test verifies the engine respects protected fields when
-    # current_classifications are passed directly.
+    # The context now loads persisted ClassificationRecords during preview.
+    # This engine-level test still verifies the protected-field contract
+    # directly, independent of the DB-backed integration coverage.
     test "S47: protected indicators are surfaced when current_classifications provided" do
-      # This test exercises the engine's protected field logic through evaluate/3
-      # directly, since preview_classification/1 does not yet pass
-      # current_classifications (deferred to Task #21).
       alias AurumFinance.Classification.Engine
 
       txn_id = Ecto.UUID.generate()

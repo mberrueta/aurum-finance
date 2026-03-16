@@ -3,6 +3,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
 
   import Phoenix.LiveViewTest
 
+  alias AurumFinance.Classification
   alias AurumFinance.Ledger
 
   describe "mount" do
@@ -323,6 +324,77 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
       assert_patch(view, "/transactions?q=entity:#{entity.id}&source:import")
       assert has_element?(view, "#transaction-#{import_tx.id}")
       refute has_element?(view, "#transaction-#{manual_tx.id}")
+    end
+  end
+
+  describe "classification UI" do
+    test "manual overrides keep the row reopenable after saving", %{conn: conn} do
+      entity = insert_entity(name: "Transactions Classification Entity")
+      checking = insert_account(entity, %{name: "Checking Classification"})
+
+      fuel =
+        insert_account(entity, %{
+          name: "Fuel Category",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      {:ok, transaction} =
+        Ledger.create_transaction(%{
+          entity_id: entity.id,
+          date: ~D[2026-03-07],
+          description: "Fuel station",
+          source_type: :manual,
+          postings: [
+            %{account_id: checking.id, amount: Decimal.new("-70.00")},
+            %{account_id: fuel.id, amount: Decimal.new("70.00")}
+          ]
+        })
+
+      {:ok, view, _html} =
+        conn
+        |> log_in_root()
+        |> live("/transactions?q=entity:#{entity.id}")
+
+      view
+      |> element("#transaction-#{transaction.id}-summary")
+      |> render_click()
+
+      view
+      |> element("#transaction-#{transaction.id}-edit-classification")
+      |> render_click()
+
+      view
+      |> form("#transaction-#{transaction.id}-field-tags-manual-form", %{
+        "transaction_id" => transaction.id,
+        "field" => "tags",
+        "manual_override" => %{"value" => "gass"}
+      })
+      |> render_submit()
+
+      assert Classification.get_classification_record(transaction.id).tags == ["gass"]
+      assert has_element?(view, "#transaction-#{transaction.id}-field-tags-clear-override")
+
+      view
+      |> element("#transaction-#{transaction.id}-summary")
+      |> render_click()
+
+      refute has_element?(view, "#transaction-#{transaction.id}-detail")
+
+      view
+      |> element("#transaction-#{transaction.id}-summary")
+      |> render_click()
+
+      assert has_element?(view, "#transaction-#{transaction.id}-detail")
+      refute has_element?(view, "#transaction-#{transaction.id}-field-tags-manual-form")
+      assert has_element?(view, "#transaction-#{transaction.id}-edit-classification")
+
+      view
+      |> element("#transaction-#{transaction.id}-edit-classification")
+      |> render_click()
+
+      assert has_element?(view, "#transaction-#{transaction.id}-field-tags-clear-override")
     end
   end
 

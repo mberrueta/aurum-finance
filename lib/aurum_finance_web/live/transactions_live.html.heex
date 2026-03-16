@@ -59,6 +59,26 @@
           <div class="flex items-center gap-2 self-start xl:self-center">
             <.badge variant={:purple}>{length(@transactions)}</.badge>
             <button
+              id="transactions-bulk-apply"
+              type="button"
+              phx-click="bulk_apply"
+              phx-disable-with={dgettext("transactions", "classification_bulk_apply_loading")}
+              disabled={@bulk_apply_running?}
+              class={[
+                "rounded-xl border px-3 py-2 text-sm font-medium transition",
+                if(@bulk_apply_running?,
+                  do: "cursor-wait border-emerald-300/25 bg-emerald-300/10 text-emerald-100/70",
+                  else:
+                    "border-emerald-300/35 bg-emerald-300/12 text-emerald-100 hover:border-emerald-200/60 hover:bg-emerald-300/18"
+                )
+              ]}
+            >
+              {if(@bulk_apply_running?,
+                do: dgettext("transactions", "classification_bulk_apply_loading"),
+                else: dgettext("transactions", "classification_bulk_apply")
+              )}
+            </button>
+            <button
               id="transactions-toggle-filters"
               type="button"
               phx-click="toggle_filters"
@@ -117,6 +137,106 @@
 
     <.au_card>
       <:header>
+        <span>{dgettext("transactions", "classification_bulk_apply_title")}</span>
+      </:header>
+
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+        <div>
+          <div class="text-sm font-medium text-white/90">
+            {dgettext("transactions", "classification_bulk_apply_scope")}
+          </div>
+          <div class="mt-1 text-sm text-white/58">
+            {if(@current_entity,
+              do:
+                dgettext("transactions", "classification_bulk_apply_scope_value",
+                  entity: @current_entity.name,
+                  date_from: @filters.date_from,
+                  date_to: @filters.date_to
+                ),
+              else: dgettext("transactions", "classification_bulk_apply_empty_entity")
+            )}
+          </div>
+        </div>
+
+        <div class="flex items-center gap-2">
+          <.badge :if={@filters.date_from != "" and @filters.date_to != ""} variant={:good}>
+            {dgettext("transactions", "classification_bulk_apply_ready")}
+          </.badge>
+          <.badge :if={@filters.date_from == "" or @filters.date_to == ""} variant={:warn}>
+            {dgettext("transactions", "classification_bulk_apply_missing_range")}
+          </.badge>
+        </div>
+      </div>
+
+      <div
+        :if={@bulk_apply_summary}
+        id="transactions-bulk-apply-summary"
+        class="mt-4 grid gap-3 md:grid-cols-5"
+      >
+        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            {dgettext("transactions", "classification_summary_classified")}
+          </div>
+          <div class="mt-2 text-2xl font-semibold text-white/92">
+            {@bulk_apply_summary.classified}
+          </div>
+        </div>
+        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            {dgettext("transactions", "classification_summary_fields_applied")}
+          </div>
+          <div class="mt-2 text-2xl font-semibold text-white/92">
+            {@bulk_apply_summary.fields_applied}
+          </div>
+        </div>
+        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            {dgettext("transactions", "classification_summary_fields_skipped_manual")}
+          </div>
+          <div class="mt-2 text-2xl font-semibold text-white/92">
+            {@bulk_apply_summary.fields_skipped_manual}
+          </div>
+        </div>
+        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            {dgettext("transactions", "classification_summary_no_match")}
+          </div>
+          <div class="mt-2 text-2xl font-semibold text-white/92">
+            {@bulk_apply_summary.no_match}
+          </div>
+        </div>
+        <div class="rounded-2xl border border-white/8 bg-white/[0.03] p-3">
+          <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
+            {dgettext("transactions", "classification_summary_failed")}
+          </div>
+          <div class="mt-2 text-2xl font-semibold text-white/92">
+            {@bulk_apply_summary.failed}
+          </div>
+        </div>
+      </div>
+
+      <div
+        :if={@bulk_apply_summary && @bulk_apply_summary.failed > 0}
+        id="transactions-bulk-apply-failures"
+        class="mt-4 rounded-2xl border border-rose-300/20 bg-rose-300/10 p-4"
+      >
+        <div class="text-sm font-medium text-rose-100">
+          {dgettext("transactions", "classification_summary_failures_title")}
+        </div>
+        <div class="mt-3 space-y-2 text-sm text-rose-50/88">
+          <div
+            :for={failure <- @bulk_apply_summary.failures}
+            class="rounded-xl bg-black/15 px-3 py-2"
+          >
+            <div class="au-mono text-xs text-rose-100/78">{failure.transaction_id}</div>
+            <div class="mt-1">{failure.reason}</div>
+          </div>
+        </div>
+      </div>
+    </.au_card>
+
+    <.au_card>
+      <:header>
         <span>{dgettext("transactions", "page_title")}</span>
       </:header>
 
@@ -134,6 +254,8 @@
             <tr>
               <th>{dgettext("transactions", "col_date")}</th>
               <th>{dgettext("transactions", "col_description")}</th>
+              <th>{dgettext("transactions", "col_category")}</th>
+              <th>{dgettext("transactions", "col_tags")}</th>
               <th>{dgettext("transactions", "col_source")}</th>
               <th>{dgettext("transactions", "col_postings")}</th>
               <th>{dgettext("transactions", "col_status")}</th>
@@ -144,6 +266,13 @@
             id={"transaction-#{transaction.id}"}
             transaction={transaction}
             expanded_transaction_id={@expanded_transaction_id}
+            classification_record={Map.get(@classification_records, transaction.id)}
+            classification_forms={Map.get(@classification_forms, transaction.id, %{})}
+            category_accounts={@category_accounts}
+            provenance_lookup={@provenance_lookup}
+            apply_feedback={Map.get(@transaction_apply_feedback, transaction.id)}
+            applying?={MapSet.member?(@applying_transaction_ids, transaction.id)}
+            editor_open={@editing_classification_transaction_id == transaction.id}
           />
         </table>
       </div>
