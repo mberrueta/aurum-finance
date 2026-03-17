@@ -7,6 +7,11 @@ defmodule AurumFinance.Factory do
 
   alias AurumFinance.Entities
   alias AurumFinance.Entities.Entity
+  alias AurumFinance.Classification.ClassificationRecord
+  alias AurumFinance.Classification.Rule
+  alias AurumFinance.Classification.RuleAction
+  alias AurumFinance.Classification.RuleGroup
+  alias AurumFinance.Classification
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
@@ -43,6 +48,158 @@ defmodule AurumFinance.Factory do
       institution_account_ref: sequence(:account_ref, fn n -> Integer.to_string(1000 + n) end),
       notes: Faker.Lorem.sentence()
     }
+  end
+
+  def rule_group_factory do
+    entity = insert(:entity)
+
+    %RuleGroup{
+      scope_type: :entity,
+      entity: entity,
+      entity_id: entity.id,
+      account: nil,
+      account_id: nil,
+      name: sequence(:rule_group_name, fn n -> "Rule Group #{n}" end),
+      description: Faker.Lorem.sentence(),
+      priority: sequence(:rule_group_priority, &(&1 + 1)),
+      target_fields: [],
+      is_active: true
+    }
+  end
+
+  def rule_factory do
+    rule_group = insert(:rule_group)
+
+    %Rule{
+      rule_group: rule_group,
+      rule_group_id: rule_group.id,
+      name: sequence(:rule_name, fn n -> "Rule #{n}" end),
+      description: Faker.Lorem.sentence(),
+      position: sequence(:rule_position, & &1),
+      is_active: true,
+      stop_processing: true,
+      expression: ~s(description contains "Uber"),
+      actions: [
+        %RuleAction{
+          field: :tags,
+          operation: :add,
+          value: "ride"
+        }
+      ]
+    }
+  end
+
+  def classification_record_factory do
+    transaction = insert(:transaction)
+
+    %ClassificationRecord{
+      transaction: transaction,
+      transaction_id: transaction.id,
+      entity_id: transaction.entity_id,
+      category_account: nil,
+      category_account_id: nil,
+      category_classified_by: nil,
+      category_manually_overridden: false,
+      tags: [],
+      tags_classified_by: nil,
+      tags_manually_overridden: false,
+      investment_type: nil,
+      investment_type_classified_by: nil,
+      investment_type_manually_overridden: false,
+      notes: nil,
+      notes_classified_by: nil,
+      notes_manually_overridden: false
+    }
+  end
+
+  def insert_rule_group(attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      :rule_group
+      |> params_for()
+      |> Map.merge(attrs)
+
+    {:ok, rule_group} = Classification.create_rule_group(params)
+    rule_group
+  end
+
+  def insert_rule_group(entity, attrs) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      %{
+        scope_type: :entity,
+        entity_id: entity.id,
+        account_id: nil,
+        name: sequence(:insert_rule_group_name, fn n -> "Inserted Rule Group #{n}" end),
+        priority: sequence(:insert_rule_group_priority, &(&1 + 1)),
+        target_fields: [],
+        is_active: true
+      }
+      |> Map.merge(Map.drop(attrs, [:entity, :account]))
+
+    {:ok, rule_group} = Classification.create_rule_group(params)
+    rule_group
+  end
+
+  def insert_global_rule_group(attrs \\ %{}) do
+    insert_rule_group(
+      %{
+        scope_type: :global,
+        entity_id: nil,
+        account_id: nil
+      }
+      |> Map.merge(normalize_attrs(attrs))
+    )
+  end
+
+  def insert_account_rule_group(account, attrs \\ %{}) do
+    insert_rule_group(
+      %{
+        scope_type: :account,
+        entity_id: nil,
+        account_id: account.id
+      }
+      |> Map.merge(normalize_attrs(attrs))
+    )
+  end
+
+  def insert_rule(rule_group, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      %{
+        rule_group_id: rule_group.id,
+        name: sequence(:insert_rule_name, fn n -> "Inserted Rule #{n}" end),
+        position: sequence(:insert_rule_position, &(&1 + 1)),
+        expression: ~s(description contains "Uber"),
+        actions: [%{field: :tags, operation: :add, value: "ride"}]
+      }
+      |> Map.merge(attrs)
+
+    {:ok, rule} = Classification.create_rule(params)
+    rule
+  end
+
+  def insert_rule(_entity, rule_group, attrs) do
+    insert_rule(rule_group, attrs)
+  end
+
+  def insert_classification_record(transaction, attrs \\ %{}) do
+    attrs = normalize_attrs(attrs)
+
+    params =
+      %{
+        transaction_id: transaction.id,
+        entity_id: transaction.entity_id,
+        tags: []
+      }
+      |> Map.merge(attrs)
+
+    %ClassificationRecord{}
+    |> ClassificationRecord.changeset(params)
+    |> Repo.insert!()
   end
 
   def transaction_factory do

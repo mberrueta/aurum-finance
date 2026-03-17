@@ -75,19 +75,19 @@ defmodule AurumFinance.Reconciliation.ReconciliationAuditLog do
     reconciliation_audit_log
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:actor,
       min: 1,
       max: 120,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_audit_actor_invalid")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_audit_actor_invalid")
     )
     |> validate_length(:channel,
       min: 1,
       max: 120,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_reconciliation_audit_channel_invalid"
         )

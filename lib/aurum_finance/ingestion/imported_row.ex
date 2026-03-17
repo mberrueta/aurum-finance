@@ -81,13 +81,13 @@ defmodule AurumFinance.Ingestion.ImportedRow do
     imported_row
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_number(:row_index,
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_row_index_must_be_non_negative"
         )
@@ -96,7 +96,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       max: 500,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_description_length_invalid"
         )
@@ -105,7 +105,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       max: 500,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_description_length_invalid"
         )
@@ -114,7 +114,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       is: 3,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_currency_length_invalid"
         )
@@ -124,7 +124,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       max: 255,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_fingerprint_length_invalid"
         )
@@ -133,7 +133,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       max: 500,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_skip_reason_length_invalid"
         )
@@ -142,7 +142,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
       max: 2000,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_row_validation_error_length_invalid"
         )
@@ -176,7 +176,7 @@ defmodule AurumFinance.Ingestion.ImportedRow do
           changeset,
           :fingerprint,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_imported_row_fingerprint_required"
           )

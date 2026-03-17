@@ -1,0 +1,513 @@
+<div id="rules-page" class="space-y-6">
+  <.page_header title={dgettext("rules", "page_title")}>
+    <:subtitle>{dgettext("rules", "page_subtitle")}</:subtitle>
+    <:actions>
+      <button
+        id="new-rule-group-button"
+        type="button"
+        class="au-btn au-btn-primary"
+        phx-click="new_group"
+      >
+        {dgettext("rules", "btn_new_group")}
+      </button>
+    </:actions>
+  </.page_header>
+
+  <div id="rules-what-is" class="mb-[14px]">
+    <.info_callout title={dgettext("rules", "callout_what_is_title")} tone={:info}>
+      <p>{dgettext("rules", "callout_what_is_body")}</p>
+      <ul class="mt-2 list-disc space-y-1 pl-5">
+        <li>{dgettext("rules", "callout_what_is_item_1")}</li>
+        <li>{dgettext("rules", "callout_what_is_item_2")}</li>
+        <li>{dgettext("rules", "callout_what_is_item_3")}</li>
+      </ul>
+    </.info_callout>
+  </div>
+
+  <.au_card>
+    <div class="grid gap-4 lg:grid-cols-2 lg:items-end">
+      <div class="min-w-0">
+        <.form
+          for={
+            to_form(
+              %{
+                "entity_id" => current_entity_option_value(@current_entity),
+                "account_id" => @selected_account_id || ""
+              },
+              as: :scope
+            )
+          }
+          id="rules-scope-filters"
+          phx-change="change_scope_filters"
+        >
+          <div class="grid gap-4 lg:grid-cols-2">
+            <div>
+              <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+                {dgettext("rules", "label_entity_context")}
+              </p>
+              <.input
+                id="rules-entity-select"
+                name="scope[entity_id]"
+                type="select"
+                value={current_entity_option_value(@current_entity)}
+                options={context_entity_options(@entities)}
+              />
+            </div>
+
+            <div>
+              <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+                {dgettext("rules", "label_account_filter")}
+              </p>
+              <.input
+                id="rules-account-select"
+                name="scope[account_id]"
+                type="select"
+                value={@selected_account_id}
+                options={account_options(@entity_accounts)}
+                prompt={dgettext("rules", "prompt_all_accounts")}
+                disabled={is_nil(@current_entity)}
+              />
+            </div>
+          </div>
+        </.form>
+      </div>
+
+      <div class="grid gap-3 sm:grid-cols-3">
+        <div class="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+            {dgettext("rules", "label_visible_groups")}
+          </p>
+          <p class="mt-2 text-2xl font-semibold text-white/92">{@rule_group_count}</p>
+        </div>
+
+        <div class="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+            {dgettext("rules", "label_visible_accounts")}
+          </p>
+          <p class="mt-2 text-2xl font-semibold text-white/92">{length(@entity_accounts)}</p>
+        </div>
+
+        <div class="rounded-[24px] border border-white/10 bg-white/[0.03] p-4">
+          <p class="text-[11px] uppercase tracking-[0.18em] text-white/40">
+            {dgettext("rules", "label_rules_in_group")}
+          </p>
+          <p class="mt-2 text-2xl font-semibold text-white/92">{@rule_count}</p>
+        </div>
+      </div>
+    </div>
+  </.au_card>
+
+  <div class="grid gap-6 xl:grid-cols-[360px_minmax(0,1fr)]">
+    <.section_panel
+      title={dgettext("rules", "section_rule_groups")}
+      badge={Integer.to_string(@rule_group_count)}
+      badge_variant={:purple}
+      class="xl:flex xl:max-h-[calc(100vh-14rem)] xl:flex-col"
+    >
+      <:actions>
+        <button type="button" class="au-btn au-btn-primary" phx-click="new_group">
+          {dgettext("rules", "btn_new_group_short")}
+        </button>
+      </:actions>
+
+      <div
+        id="rule-groups"
+        phx-update="stream"
+        class="space-y-3 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-2"
+      >
+        <div
+          id="rule-group-empty-state"
+          class="hidden rounded-[24px] border border-dashed border-white/12 bg-white/[0.02] p-6 only:block"
+        >
+          <.empty_state>
+            <div class="space-y-3 text-center">
+              <p class="text-[13px] text-white/70">{dgettext("rules", "empty_rule_groups")}</p>
+              <button type="button" class="au-btn au-btn-primary" phx-click="new_group">
+                {dgettext("rules", "btn_create_first_group")}
+              </button>
+            </div>
+          </.empty_state>
+        </div>
+
+        <div
+          :for={{dom_id, group} <- @streams.rule_groups}
+          id={dom_id}
+          class="space-y-2"
+        >
+          <.rule_group_item
+            group={group}
+            selected={@selected_group_card && @selected_group_card.id == group.id}
+          />
+        </div>
+      </div>
+    </.section_panel>
+
+    <.section_panel
+      title={dgettext("rules", "label_rules_in_group")}
+      badge={if(@selected_group_card, do: Integer.to_string(@rule_count), else: nil)}
+      badge_variant={:purple}
+      class="xl:flex xl:max-h-[calc(100vh-14rem)] xl:flex-col"
+    >
+      <:actions>
+        <button
+          :if={@selected_group && is_nil(@rule_creation_blocker)}
+          id="new-rule-button"
+          type="button"
+          class="au-btn au-btn-primary"
+          phx-click="new_rule"
+        >
+          {dgettext("rules", "btn_new_rule")}
+        </button>
+      </:actions>
+
+      <div id="rule-group-detail" class="space-y-5 xl:flex xl:min-h-0 xl:flex-col">
+        <div
+          :if={@selected_group_card}
+          class="rounded-[24px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.09] via-sky-400/[0.06] to-slate-950/55 p-5 shadow-[0_20px_48px_rgba(8,28,54,0.32)]"
+        >
+          <div class="mb-4 flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100/72">
+              {dgettext("rules", "section_group_detail")}
+            </span>
+            <.badge variant={:purple}>{@rule_count}</.badge>
+          </div>
+
+          <div class="flex flex-wrap items-start justify-between gap-3">
+            <div class="min-w-0 flex-1">
+              <div class="flex flex-wrap items-center gap-2">
+                <h3 class="text-lg font-semibold text-white">{@selected_group_card.name}</h3>
+                <.badge variant={selected_scope_badge_variant(@selected_group_card.scope_type)}>
+                  {@selected_group_card.scope_label}
+                </.badge>
+                <.badge :if={!@selected_group_card.is_active} variant={:warn}>
+                  {dgettext("rules", "badge_inactive")}
+                </.badge>
+              </div>
+
+              <p
+                :if={present_text?(@selected_group_card.description)}
+                class="mt-3 text-[13px] leading-relaxed text-white/72"
+              >
+                {@selected_group_card.description}
+              </p>
+            </div>
+
+            <div class="flex flex-wrap items-center justify-end gap-2">
+              <button
+                id="toggle-selected-rule-group-active"
+                type="button"
+                class="au-btn inline-flex items-center gap-2"
+                phx-click="toggle_selected_group_active"
+              >
+                <.icon
+                  name={
+                    if(@selected_group_card.is_active,
+                      do: "hero-pause-mini",
+                      else: "hero-play-mini"
+                    )
+                  }
+                  class="size-4"
+                />
+                {if(@selected_group_card.is_active,
+                  do: dgettext("rules", "btn_deactivate"),
+                  else: dgettext("rules", "btn_activate")
+                )}
+              </button>
+
+              <button
+                :if={@selected_group_card.priority > 1}
+                id="raise-selected-rule-group-priority"
+                type="button"
+                class="au-btn inline-flex items-center gap-2"
+                phx-click="raise_selected_group_priority"
+              >
+                <.icon name="hero-arrow-up-mini" class="size-4" />
+                {dgettext("rules", "btn_raise_group_priority")}
+              </button>
+
+              <button
+                :if={@selected_group_card.priority < @max_group_priority}
+                id="lower-selected-rule-group-priority"
+                type="button"
+                class="au-btn inline-flex items-center gap-2"
+                phx-click="lower_selected_group_priority"
+              >
+                <.icon name="hero-arrow-down-mini" class="size-4" />
+                {dgettext("rules", "btn_lower_group_priority")}
+              </button>
+
+              <button
+                id={"edit-selected-rule-group-#{@selected_group_card.id}"}
+                type="button"
+                class="au-btn inline-flex items-center gap-2"
+                phx-click="edit_group"
+                phx-value-id={@selected_group_card.id}
+              >
+                <.icon name="hero-pencil-square-mini" class="size-4" />
+                {dgettext("rules", "btn_edit_group")}
+              </button>
+
+              <button
+                id={"delete-selected-rule-group-#{@selected_group_card.id}"}
+                type="button"
+                class="au-btn au-btn-danger inline-flex items-center gap-2"
+                phx-click="delete_group"
+                phx-value-id={@selected_group_card.id}
+                data-confirm={dgettext("rules", "confirm_delete_rule_group")}
+              >
+                <.icon name="hero-trash-mini" class="size-4" />
+                {dgettext("rules", "btn_delete")}
+              </button>
+            </div>
+          </div>
+
+          <div class="mt-4 grid gap-3 md:grid-cols-3">
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
+              <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
+                {dgettext("rules", "label_scope_target")}
+              </p>
+              <p class="mt-2 text-[12px] text-white/82">
+                {@selected_group_card.scope_target_label}
+              </p>
+            </div>
+
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
+              <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
+                {dgettext("rules", "label_priority")}
+              </p>
+              <p class="mt-2 text-[12px] text-white/82">{@selected_group_card.priority}</p>
+            </div>
+
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
+              <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
+                {dgettext("rules", "label_target_fields")}
+              </p>
+              <p class="mt-2 text-[12px] text-white/82">
+                {target_fields_summary(@selected_group_card.target_fields)}
+              </p>
+            </div>
+          </div>
+
+          <div :if={@rule_creation_blocker} class="mt-4">
+            <.info_callout title={dgettext("rules", "rule_creation_blocked_title")} tone={:warn}>
+              <p class="text-[12px] leading-relaxed text-white/74">{@rule_creation_blocker}</p>
+            </.info_callout>
+          </div>
+        </div>
+
+        <div
+          :if={!@selected_group_card}
+          class="rounded-[24px] border border-dashed border-white/12 bg-white/[0.02] p-6"
+        >
+          <.empty_state>
+            <div class="space-y-2 text-center">
+              <p class="text-[13px] text-white/70">{dgettext("rules", "empty_select_group")}</p>
+            </div>
+          </.empty_state>
+        </div>
+
+        <div
+          id="group-rules"
+          phx-update="stream"
+          class="space-y-3 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-2"
+        >
+          <div
+            :if={@selected_group}
+            id="rules-empty-state"
+            class="hidden rounded-[24px] border border-dashed border-white/12 bg-white/[0.02] p-6 only:block"
+          >
+            <.empty_state>
+              <div class="space-y-3 text-center">
+                <p class="text-[13px] text-white/70">{dgettext("rules", "empty_rules")}</p>
+                <button
+                  :if={is_nil(@rule_creation_blocker)}
+                  id="empty-new-rule-button"
+                  type="button"
+                  class="au-btn au-btn-primary"
+                  phx-click="new_rule"
+                >
+                  {dgettext("rules", "btn_create_first_rule")}
+                </button>
+                <p :if={@rule_creation_blocker} class="text-[12px] leading-relaxed text-white/60">
+                  {@rule_creation_blocker}
+                </p>
+              </div>
+            </.empty_state>
+          </div>
+
+          <div :for={{dom_id, rule} <- @streams.rules} id={dom_id}>
+            <.rule_row rule={rule} />
+          </div>
+        </div>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div id="rules-preview">
+    <.au_card>
+      <:header>
+        <div>
+          <span>{dgettext("rules", "section_preview")}</span>
+          <p class="mt-1 text-[12px] font-normal text-white/45">
+            {dgettext("rules", "section_preview_subtitle")}
+          </p>
+        </div>
+      </:header>
+
+      <.form
+        for={
+          to_form(
+            %{"date_from" => @preview_date_from, "date_to" => @preview_date_to},
+            as: :preview
+          )
+        }
+        id="preview-form"
+        phx-change="change_preview_params"
+        phx-submit="run_preview"
+      >
+        <div class="flex flex-wrap items-end gap-4">
+          <div>
+            <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              {dgettext("rules", "label_preview_date_from")}
+            </p>
+            <.input
+              id="preview-date-from"
+              name="preview[date_from]"
+              type="date"
+              value={@preview_date_from}
+            />
+          </div>
+
+          <div>
+            <p class="mb-2 text-[11px] uppercase tracking-[0.18em] text-white/38">
+              {dgettext("rules", "label_preview_date_to")}
+            </p>
+            <.input
+              id="preview-date-to"
+              name="preview[date_to]"
+              type="date"
+              value={@preview_date_to}
+            />
+          </div>
+
+          <.button
+            id="run-preview-button"
+            type="submit"
+            variant="primary"
+            phx-disable-with={dgettext("rules", "btn_preview_running")}
+          >
+            {dgettext("rules", "btn_run_preview")}
+          </.button>
+        </div>
+      </.form>
+
+      <div :if={@preview_error} id="preview-error-state" class="mt-5">
+        <.info_callout title={dgettext("rules", "preview_error_title")} tone={:warn}>
+          <p class="text-[12px] leading-relaxed text-white/74">{@preview_error}</p>
+        </.info_callout>
+      </div>
+
+      <div
+        :if={@preview_loading}
+        id="preview-loading-state"
+        class="mt-5 flex items-center gap-3 py-4"
+      >
+        <span class="loading loading-spinner loading-sm text-white/52"></span>
+        <p class="text-[13px] text-white/52">{dgettext("rules", "preview_loading")}</p>
+      </div>
+
+      <div
+        :if={!@preview_loading && @preview_results != nil && @preview_results == []}
+        id="preview-empty-transactions"
+        class="mt-5"
+      >
+        <.empty_state>
+          <div class="space-y-2 text-center">
+            <p class="text-[13px] text-white/70">
+              {dgettext("rules", "preview_empty_transactions")}
+            </p>
+          </div>
+        </.empty_state>
+      </div>
+
+      <div
+        :if={!@preview_loading && @preview_results != nil && @preview_results != []}
+        id="preview-results"
+        class="mt-5 space-y-2"
+      >
+        <p class="text-[11px] uppercase tracking-[0.18em] text-white/38">
+          {dgettext("rules", "label_preview_results", count: length(@preview_results))}
+        </p>
+
+        <div
+          :for={{result, index} <- Enum.with_index(@preview_results)}
+          id={"preview-row-#{index}"}
+          class="rounded-[24px] border border-white/10 bg-white/[0.03] px-4 py-3"
+        >
+          <.preview_result_row
+            result={result}
+            index={index}
+            category_lookup={@preview_category_lookup}
+          />
+        </div>
+      </div>
+    </.au_card>
+  </div>
+
+  <div id="rules-guidance">
+    <.au_card class="mt-[14px]">
+      <:header>
+        <span>{dgettext("rules", "section_guidance")}</span>
+      </:header>
+
+      <div class="grid grid-cols-1 gap-[10px] lg:grid-cols-2">
+        <div>
+          <.info_callout title={dgettext("rules", "callout_examples_title")} tone={:info}>
+            <ul class="list-disc space-y-1 pl-5">
+              <li>{dgettext("rules", "callout_examples_item_1")}</li>
+              <li>{dgettext("rules", "callout_examples_item_2")}</li>
+              <li>{dgettext("rules", "callout_examples_item_3")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+
+        <div class="space-y-[10px]">
+          <.info_callout title={dgettext("rules", "callout_warning_title")} tone={:warn}>
+            <ul class="list-disc space-y-1 pl-5">
+              <li>{dgettext("rules", "callout_warning_item_1")}</li>
+              <li>{dgettext("rules", "callout_warning_item_2")}</li>
+            </ul>
+          </.info_callout>
+
+          <.info_callout title={dgettext("rules", "callout_tips_title")} tone={:tip}>
+            <ul class="list-disc space-y-1 pl-5">
+              <li>{dgettext("rules", "callout_tips_item_1")}</li>
+              <li>{dgettext("rules", "callout_tips_item_2")}</li>
+              <li>{dgettext("rules", "callout_tips_item_3")}</li>
+              <li>{dgettext("rules", "callout_tips_item_4")}</li>
+            </ul>
+          </.info_callout>
+        </div>
+      </div>
+    </.au_card>
+  </div>
+
+  <.group_form_panel
+    open={@panel in [:new_group, :edit_group]}
+    group_form={@group_form}
+    group_form_mode={@group_form_mode}
+    current_entity={@current_entity}
+    entities={@entities}
+    accounts={@all_accounts}
+  />
+
+  <.rule_form_panel
+    open={@panel in [:new_rule, :edit_rule]}
+    rule_form={@rule_form}
+    rule_form_mode={@rule_form_mode}
+    rule_params={@rule_params}
+    selected_group={@selected_group}
+    selected_group_card={@selected_group_card}
+    category_accounts={@category_accounts}
+  />
+</div>

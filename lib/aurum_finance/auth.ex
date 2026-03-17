@@ -41,12 +41,12 @@ defmodule AurumFinance.Auth do
   def missing_root_password_hash_error_message do
     [
       Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
+        AurumFinance.Gettext,
         "errors",
         "error_missing_root_password_hash"
       ),
       Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
+        AurumFinance.Gettext,
         "errors",
         "error_missing_root_password_hash_hint"
       )

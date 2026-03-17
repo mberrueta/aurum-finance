@@ -6,6 +6,7 @@ defmodule AurumFinance.Ledger do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Audit
+  alias AurumFinance.Classification.ClassificationRecord
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
@@ -36,6 +37,8 @@ defmodule AurumFinance.Ledger do
              | :other_liability}
           | {:source_type, :manual | :import | :system}
           | {:account_id, Ecto.UUID.t()}
+          | {:category_account_id, Ecto.UUID.t()}
+          | {:search_text, String.t()}
           | {:date_from, Date.t()}
           | {:date_to, Date.t()}
 
@@ -73,6 +76,36 @@ defmodule AurumFinance.Ledger do
       |> Keyword.put_new(:include_archived, false)
 
     Account
+    |> filter_query(opts)
+    |> order_by([account], asc: account.name)
+    |> Repo.all()
+  end
+
+  @doc """
+  Lists accounts across multiple entities with optional filters.
+
+  By default, archived accounts are excluded.
+
+  ## Examples
+
+  ```elixir
+  accounts =
+    AurumFinance.Ledger.list_accounts_for_entities([entity_a.id, entity_b.id])
+  ```
+
+      iex> AurumFinance.Ledger.list_accounts_for_entities([])
+      []
+  """
+  @spec list_accounts_for_entities([Ecto.UUID.t()], Keyword.t()) :: [Account.t()]
+  def list_accounts_for_entities(entity_ids, opts \\ [])
+
+  def list_accounts_for_entities([], _opts), do: []
+
+  def list_accounts_for_entities(entity_ids, opts) when is_list(entity_ids) do
+    opts = Keyword.put_new(opts, :include_archived, false)
+
+    Account
+    |> where([account], account.entity_id in ^entity_ids)
     |> filter_query(opts)
     |> order_by([account], asc: account.name)
     |> Repo.all()
@@ -728,6 +761,29 @@ defmodule AurumFinance.Ledger do
     |> filter_query(rest)
   end
 
+  defp filter_query(query, [{:category_account_id, category_account_id} | rest]) do
+    query
+    |> ensure_classification_record_join()
+    |> where(
+      [classification_record: classification_record],
+      classification_record.category_account_id == ^category_account_id
+    )
+    |> filter_query(rest)
+  end
+
+  defp filter_query(query, [{:search_text, search_text} | rest]) when is_binary(search_text) do
+    search_pattern = "%#{String.trim(search_text)}%"
+
+    query
+    |> ensure_classification_record_join()
+    |> where(
+      [transaction, classification_record: classification_record],
+      ilike(transaction.description, ^search_pattern) or
+        fragment("coalesce(?::text, '[]') ILIKE ?", classification_record.tags, ^search_pattern)
+    )
+    |> filter_query(rest)
+  end
+
   defp filter_query(query, [{:date_from, %Date{} = date_from} | rest]) do
     query
     |> where([transaction], transaction.date >= ^date_from)
@@ -742,6 +798,17 @@ defmodule AurumFinance.Ledger do
 
   defp filter_query(query, [_unknown_filter | rest]) do
     filter_query(query, rest)
+  end
+
+  defp ensure_classification_record_join(query) do
+    if has_named_binding?(query, :classification_record) do
+      query
+    else
+      join(query, :left, [transaction], classification_record in ClassificationRecord,
+        on: classification_record.transaction_id == transaction.id,
+        as: :classification_record
+      )
+    end
   end
 
   defp posting_attrs(attrs) when is_map(attrs) do
@@ -776,7 +843,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_minimum_postings"
         )
@@ -802,7 +869,7 @@ defmodule AurumFinance.Ledger do
       Ecto.Changeset.add_error(
         changeset,
         :postings,
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
       )
     else
       changeset
@@ -819,7 +886,7 @@ defmodule AurumFinance.Ledger do
           changeset,
           :postings,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_posting_amount_invalid"
           )
@@ -857,7 +924,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_account_not_found"
         )
@@ -882,7 +949,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_cross_entity_account"
         )
@@ -915,7 +982,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_unbalanced"
         )

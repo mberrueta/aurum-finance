@@ -851,7 +851,7 @@ defmodule AurumFinance.Ingestion do
     do:
       {:error,
        Gettext.dgettext(
-         AurumFinanceWeb.Gettext,
+         AurumFinance.Gettext,
          "errors",
          "error_import_materialization_no_rows_to_materialize"
        )}
@@ -921,7 +921,7 @@ defmodule AurumFinance.Ingestion do
   defp ensure_imported_file_deletable_result(true) do
     {:error,
      Gettext.dgettext(
-       AurumFinanceWeb.Gettext,
+       AurumFinance.Gettext,
        "import",
        "error_import_delete_blocked_by_materialization"
      )}
@@ -932,7 +932,7 @@ defmodule AurumFinance.Ingestion do
   defp ensure_no_active_materialization_result(true) do
     {:error,
      Gettext.dgettext(
-       AurumFinanceWeb.Gettext,
+       AurumFinance.Gettext,
        "errors",
        "error_import_materialization_already_in_progress"
      )}

@@ -43,18 +43,18 @@ defmodule AurumFinance.Entities.Entity do
     entity
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:name,
       min: 2,
       max: 160,
       message:
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_entity_name_length_invalid")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_entity_name_length_invalid")
     )
     |> validate_length(:country_code,
       is: 2,
       message:
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_country_code_length_invalid")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_country_code_length_invalid")
     )
     |> update_change(:country_code, &normalize_to_upper/1)
     |> update_change(:fiscal_residency_country_code, &normalize_to_upper/1)
