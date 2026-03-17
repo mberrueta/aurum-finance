@@ -615,7 +615,9 @@ defmodule AurumFinanceWeb.TransactionsComponents do
     history_format_value(field, raw, accounts_by_id)
   end
 
-  defp history_format_value(:tags, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(:tags, nil, _),
+    do: dgettext("transactions", "classification_history_empty_value")
+
   defp history_format_value(:tags, json, _) do
     case Jason.decode(json) do
       {:ok, []} -> dgettext("transactions", "classification_history_empty_value")
@@ -624,7 +626,9 @@ defmodule AurumFinanceWeb.TransactionsComponents do
     end
   end
 
-  defp history_format_value(:category, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(:category, nil, _),
+    do: dgettext("transactions", "classification_history_empty_value")
+
   defp history_format_value(:category, uuid, accounts_by_id) do
     case Map.get(accounts_by_id, uuid) do
       nil -> uuid
@@ -632,7 +636,9 @@ defmodule AurumFinanceWeb.TransactionsComponents do
     end
   end
 
-  defp history_format_value(_field, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(_field, nil, _),
+    do: dgettext("transactions", "classification_history_empty_value")
+
   defp history_format_value(_field, value, _), do: value
 
   defp history_rule_source(event, provenance_lookup) do

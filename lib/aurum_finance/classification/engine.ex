@@ -116,31 +116,19 @@ defmodule AurumFinance.Classification.Engine do
       []
     }
 
+    # Pack stable group-level context into one map to keep evaluate_one_rule arity ≤ 8.
+    group_ctx = %{
+      rule_group: rule_group,
+      current_classification: current_classification,
+      protected_fields: protected_fields,
+      global_claims: global_claims
+    }
+
     {%{proposed_changes: group_proposed, group_claims: group_claims}, matched_rules} =
       rule_group
       |> active_sorted_rules()
       |> Enum.reduce_while(group_initial, fn rule, {group_acc, matched_rules} ->
-        case rule_matches?(transaction, rule, evaluator) do
-          true ->
-            next_group_acc =
-              apply_rule_actions(
-                group_acc,
-                rule_group,
-                rule,
-                current_classification,
-                protected_fields,
-                global_claims
-              )
-
-            next_matched = matched_rules ++ [rule]
-
-            if rule.stop_processing,
-              do: {:halt, {next_group_acc, next_matched}},
-              else: {:cont, {next_group_acc, next_matched}}
-
-          false ->
-            {:cont, {group_acc, matched_rules}}
-        end
+        evaluate_one_rule(rule, transaction, group_ctx, group_acc, matched_rules, evaluator)
       end)
 
     case matched_rules do
@@ -163,6 +151,33 @@ defmodule AurumFinance.Classification.Engine do
     end
   end
 
+  defp evaluate_one_rule(rule, transaction, group_ctx, group_acc, matched_rules, evaluator) do
+    case rule_matches?(transaction, rule, evaluator) do
+      true -> apply_matched_rule(rule, group_ctx, group_acc, matched_rules)
+      false -> {:cont, {group_acc, matched_rules}}
+    end
+  end
+
+  defp apply_matched_rule(rule, group_ctx, group_acc, matched_rules) do
+    next_group_acc =
+      apply_rule_actions(
+        group_acc,
+        group_ctx.rule_group,
+        rule,
+        group_ctx.current_classification,
+        group_ctx.protected_fields,
+        group_ctx.global_claims
+      )
+
+    continue_or_halt(rule, next_group_acc, matched_rules ++ [rule])
+  end
+
+  defp continue_or_halt(%Rule{stop_processing: true}, group_acc, matched_rules),
+    do: {:halt, {group_acc, matched_rules}}
+
+  defp continue_or_halt(%Rule{stop_processing: false}, group_acc, matched_rules),
+    do: {:cont, {group_acc, matched_rules}}
+
   defp rule_matches?(_transaction, %Rule{is_active: false}, _evaluator), do: false
 
   defp rule_matches?(transaction, %Rule{} = rule, evaluator) do
@@ -184,7 +199,14 @@ defmodule AurumFinance.Classification.Engine do
     end)
   end
 
-  defp apply_rule_actions(group_acc, rule_group, rule, current_classification, protected_fields, global_claims) do
+  defp apply_rule_actions(
+         group_acc,
+         rule_group,
+         rule,
+         current_classification,
+         protected_fields,
+         global_claims
+       ) do
     grouped_actions = group_actions_by_field(rule.actions)
 
     Enum.reduce(grouped_actions, group_acc, fn {field, actions}, inner_acc ->
@@ -194,7 +216,11 @@ defmodule AurumFinance.Classification.Engine do
       # baseline. Falls back to the external classification if no prior rule in this
       # group has touched the field yet.
       current_value =
-        Map.get(inner_acc.working_values, field, classification_value(current_classification, field))
+        Map.get(
+          inner_acc.working_values,
+          field,
+          classification_value(current_classification, field)
+        )
 
       change =
         build_field_change(
@@ -224,7 +250,15 @@ defmodule AurumFinance.Classification.Engine do
     end)
   end
 
-  defp build_field_change(field, actions, current_value, global_claims, rule_group, rule, protected_fields) do
+  defp build_field_change(
+         field,
+         actions,
+         current_value,
+         global_claims,
+         rule_group,
+         rule,
+         protected_fields
+       ) do
     value_result = apply_actions(field, actions, current_value)
 
     cond do

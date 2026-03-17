@@ -397,7 +397,12 @@ defmodule AurumFinance.ClassificationTest do
                })
 
       errors = errors_on(changeset).actions
-      assert Enum.any?(errors, &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity."))
+
+      assert Enum.any?(
+               errors,
+               &(&1 ==
+                   "Category account not found. The UUID must reference a category account belonging to this entity.")
+             )
     end
 
     test "rejects a category action UUID that references a non-category account" do
@@ -418,7 +423,12 @@ defmodule AurumFinance.ClassificationTest do
                })
 
       errors = errors_on(changeset).actions
-      assert Enum.any?(errors, &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity."))
+
+      assert Enum.any?(
+               errors,
+               &(&1 ==
+                   "Category account not found. The UUID must reference a category account belonging to this entity.")
+             )
     end
 
     test "rejects a category action on an account-scoped group whose account entity has no matching category account" do
@@ -448,7 +458,8 @@ defmodule AurumFinance.ClassificationTest do
 
       assert Enum.any?(
                errors_on(changeset).actions,
-               &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity.")
+               &(&1 ==
+                   "Category account not found. The UUID must reference a category account belonging to this entity.")
              )
     end
 

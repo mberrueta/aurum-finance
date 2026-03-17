@@ -327,40 +327,72 @@ defmodule AurumFinance.Classification do
         %{entity_id: entity_id, date_from: date_from, date_to: date_to} = attrs
       ) do
     opts = Map.drop(attrs, [:entity_id, :date_from, :date_to]) |> Enum.to_list()
+    transactions = load_preview_transactions(entity_id, date_from, date_to)
 
-    entity_id
-    |> load_preview_transactions(date_from, date_to)
-    |> Enum.reduce(
-      %{
-        classified: 0,
-        fields_applied: 0,
-        fields_skipped_manual: 0,
-        no_match: 0,
-        failed: 0,
-        failures: []
-      },
-      fn transaction, acc ->
-        case classify_transaction(transaction, [{:entity_id, entity_id} | opts]) do
-          {:ok, result} ->
-            %{
-              acc
-              | classified: acc.classified + if(result.classified?, do: 1, else: 0),
-                fields_applied: acc.fields_applied + result.fields_applied,
-                fields_skipped_manual: acc.fields_skipped_manual + result.fields_skipped_manual,
-                no_match: acc.no_match + if(result.no_match?, do: 1, else: 0)
-            }
+    case transactions do
+      [] -> {:ok, empty_classify_summary()}
+      _ -> {:ok, run_bulk_classification(transactions, entity_id, opts)}
+    end
+  end
 
-          {:error, reason} ->
-            %{
-              acc
-              | failed: acc.failed + 1,
-                failures:
-                  acc.failures ++ [%{transaction_id: transaction.id, reason: inspect(reason)}]
-            }
-        end
-      end
-    )
-    |> then(&{:ok, &1})
+  defp empty_classify_summary do
+    %{
+      classified: 0,
+      fields_applied: 0,
+      fields_skipped_manual: 0,
+      no_match: 0,
+      failed: 0,
+      failures: []
+    }
+  end
+
+  # Batch-loads classification records and rule groups once for the entire run,
+  # runs the engine over all transactions, then applies each result individually.
+  defp run_bulk_classification(transactions, entity_id, opts) do
+    {records_by_tid, results_by_tid} = bulk_evaluate(transactions, entity_id)
+
+    Enum.reduce(transactions, empty_classify_summary(), fn transaction, acc ->
+      existing_record = Map.get(records_by_tid, transaction.id)
+      engine_result = Map.fetch!(results_by_tid, transaction.id)
+      merge_bulk_result(acc, transaction, existing_record, engine_result, opts)
+    end)
+  end
+
+  defp bulk_evaluate(transactions, entity_id) do
+    classification_records =
+      transactions |> Enum.map(& &1.id) |> list_classification_records()
+
+    account_ids = extract_posting_account_ids(transactions)
+    rule_groups = load_preview_rule_groups(entity_id, account_ids)
+    current_classifications = build_current_classifications(transactions, classification_records)
+
+    engine_results =
+      Engine.evaluate(transactions, rule_groups, current_classifications: current_classifications)
+
+    records_by_tid = Map.new(classification_records, &{&1.transaction_id, &1})
+    results_by_tid = Map.new(engine_results, &{&1.transaction.id, &1})
+
+    {records_by_tid, results_by_tid}
+  end
+
+  defp merge_bulk_result(acc, transaction, existing_record, engine_result, opts) do
+    case do_apply_engine_result(transaction, existing_record, engine_result, opts) do
+      {:ok, result} ->
+        %{
+          acc
+          | classified: acc.classified + if(result.classified?, do: 1, else: 0),
+            fields_applied: acc.fields_applied + result.fields_applied,
+            fields_skipped_manual: acc.fields_skipped_manual + result.fields_skipped_manual,
+            no_match: acc.no_match + if(result.no_match?, do: 1, else: 0)
+        }
+
+      {:error, reason} ->
+        %{
+          acc
+          | failed: acc.failed + 1,
+            failures: acc.failures ++ [%{transaction_id: transaction.id, reason: inspect(reason)}]
+        }
+    end
   end
 
   @doc """
@@ -923,20 +955,12 @@ defmodule AurumFinance.Classification do
   end
 
   defp validate_one_category_action(changeset, action, entity_id) do
-    case Ecto.UUID.cast(action.value || "") do
-      {:ok, uuid} ->
-        case Ledger.get_account(entity_id, uuid) do
-          %Account{} = account ->
-            if Account.category_account?(account),
-              do: changeset,
-              else: add_category_account_error(changeset)
-
-          nil ->
-            add_category_account_error(changeset)
-        end
-
-      :error ->
-        add_category_account_error(changeset)
+    with {:ok, uuid} <- Ecto.UUID.cast(action.value || ""),
+         %Account{} = account <- Ledger.get_account(entity_id, uuid),
+         true <- Account.category_account?(account) do
+      changeset
+    else
+      _ -> add_category_account_error(changeset)
     end
   end
 
