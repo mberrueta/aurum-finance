@@ -103,24 +103,43 @@ defmodule AurumFinance.Classification.Engine do
          current_classification,
          protected_fields
        ) do
-    {acc, matched_rules} =
+    # Snapshot cross-group claims from already-completed groups.
+    # Within this group, only these claims gate field conflict detection.
+    # Claims produced by rules inside this group are accumulated in group_claims
+    # and merged into acc.claims only after the group finishes — so that
+    # stop_processing: false additive rules (e.g. multiple tag rules in one group)
+    # can all propose to the same field without being blocked by each other.
+    global_claims = acc.claims
+
+    group_initial = {
+      %{proposed_changes: [], group_claims: MapSet.new(), working_values: %{}},
+      []
+    }
+
+    {%{proposed_changes: group_proposed, group_claims: group_claims}, matched_rules} =
       rule_group
       |> active_sorted_rules()
-      |> Enum.reduce_while({acc, []}, fn rule, {inner_acc, matched_rules} ->
+      |> Enum.reduce_while(group_initial, fn rule, {group_acc, matched_rules} ->
         case rule_matches?(transaction, rule, evaluator) do
           true ->
-            advance_group_evaluation(
-              inner_acc,
-              matched_rules,
-              transaction,
-              rule_group,
-              rule,
-              current_classification,
-              protected_fields
-            )
+            next_group_acc =
+              apply_rule_actions(
+                group_acc,
+                rule_group,
+                rule,
+                current_classification,
+                protected_fields,
+                global_claims
+              )
+
+            next_matched = matched_rules ++ [rule]
+
+            if rule.stop_processing,
+              do: {:halt, {next_group_acc, next_matched}},
+              else: {:cont, {next_group_acc, next_matched}}
 
           false ->
-            {:cont, {inner_acc, matched_rules}}
+            {:cont, {group_acc, matched_rules}}
         end
       end)
 
@@ -129,48 +148,19 @@ defmodule AurumFinance.Classification.Engine do
         acc
 
       _ ->
-        append_matched_group(acc, rule_group, matched_rules)
-    end
-  end
+        %Result{} = result = acc.result
 
-  defp advance_group_evaluation(
-         acc,
-         matched_rules,
-         transaction,
-         rule_group,
-         rule,
-         current_classification,
-         protected_fields
-       ) do
-    next_acc =
-      apply_rule_actions(
-        acc,
-        transaction,
-        rule_group,
-        rule,
-        current_classification,
-        protected_fields
-      )
-
-    next_matched_rules = matched_rules ++ [rule]
-
-    if rule.stop_processing,
-      do: {:halt, {next_acc, next_matched_rules}},
-      else: {:cont, {next_acc, next_matched_rules}}
-  end
-
-  defp append_matched_group(acc, rule_group, matched_rules) do
-    %Result{} = result = acc.result
-
-    %{
-      acc
-      | result: %Result{
+        new_result = %Result{
           result
-          | matched_groups:
-              result.matched_groups ++ [%{rule_group: rule_group, matched_rules: matched_rules}],
+          | proposed_changes: result.proposed_changes ++ group_proposed,
+            matched_groups:
+              result.matched_groups ++
+                [%{rule_group: rule_group, matched_rules: matched_rules}],
             matched_rules: result.matched_rules ++ matched_rules
         }
-    }
+
+        %{acc | result: new_result, claims: MapSet.union(acc.claims, group_claims)}
+    end
   end
 
   defp rule_matches?(_transaction, %Rule{is_active: false}, _evaluator), do: false
@@ -194,62 +184,47 @@ defmodule AurumFinance.Classification.Engine do
     end)
   end
 
-  defp apply_rule_actions(
-         acc,
-         _transaction,
-         rule_group,
-         rule,
-         current_classification,
-         protected_fields
-       ) do
+  defp apply_rule_actions(group_acc, rule_group, rule, current_classification, protected_fields, global_claims) do
     grouped_actions = group_actions_by_field(rule.actions)
 
-    Enum.reduce(grouped_actions, acc, fn {field, actions}, inner_acc ->
-      current_value = classification_value(current_classification, field)
+    Enum.reduce(grouped_actions, group_acc, fn {field, actions}, inner_acc ->
+      # For within-group additive operations (stop_processing: false with multiple
+      # rules targeting the same field), chain values through working_values so each
+      # rule builds on the previous rule's proposed result rather than the original
+      # baseline. Falls back to the external classification if no prior rule in this
+      # group has touched the field yet.
+      current_value =
+        Map.get(inner_acc.working_values, field, classification_value(current_classification, field))
 
       change =
         build_field_change(
           field,
           actions,
           current_value,
-          inner_acc,
+          global_claims,
           rule_group,
           rule,
           protected_fields
         )
 
-      claims =
+      {group_claims, working_values} =
         if change.status == :proposed do
-          MapSet.put(inner_acc.claims, field)
+          {MapSet.put(inner_acc.group_claims, field),
+           Map.put(inner_acc.working_values, field, change.proposed_value)}
         else
-          inner_acc.claims
+          {inner_acc.group_claims, inner_acc.working_values}
         end
 
       %{
         inner_acc
-        | claims: claims,
-          result:
-            (
-              %Result{} = result = inner_acc.result
-
-              %Result{
-                result
-                | proposed_changes: result.proposed_changes ++ [change]
-              }
-            )
+        | group_claims: group_claims,
+          working_values: working_values,
+          proposed_changes: inner_acc.proposed_changes ++ [change]
       }
     end)
   end
 
-  defp build_field_change(
-         field,
-         actions,
-         current_value,
-         inner_acc,
-         rule_group,
-         rule,
-         protected_fields
-       ) do
+  defp build_field_change(field, actions, current_value, global_claims, rule_group, rule, protected_fields) do
     value_result = apply_actions(field, actions, current_value)
 
     cond do
@@ -265,7 +240,7 @@ defmodule AurumFinance.Classification.Engine do
           :protected
         )
 
-      MapSet.member?(inner_acc.claims, field) ->
+      MapSet.member?(global_claims, field) ->
         build_change(
           field,
           :skipped_claimed,

@@ -69,12 +69,12 @@ defmodule AurumFinance.Reconciliation.ReconciliationSession do
     reconciliation_session
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_number(:statement_balance,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_reconciliation_statement_balance_invalid"
         )
@@ -83,7 +83,7 @@ defmodule AurumFinance.Reconciliation.ReconciliationSession do
     |> foreign_key_constraint(:entity_id)
     |> unique_constraint(:account_id,
       name: :reconciliation_sessions_account_id_active_index,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_active_session_exists")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_active_session_exists")
     )
   end
 end

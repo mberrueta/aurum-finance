@@ -97,13 +97,13 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
 
       {rule_group, rule} =
         insert_matching_rule(
-          :global,
-          nil,
+          :entity,
+          entity,
           [
             %{field: :category, operation: :set, value: transport.id},
             %{field: :tags, operation: :add, value: "ride"}
           ],
-          group_name: "Global Defaults"
+          group_name: "Entity Defaults"
         )
 
       transaction = create_transaction(entity, account)
@@ -175,8 +175,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
 
       {rule_group, rule} =
         insert_matching_rule(
-          :global,
-          nil,
+          :entity,
+          entity,
           [
             %{field: :category, operation: :set, value: transport.id},
             %{field: :tags, operation: :add, value: "ride"},
@@ -242,16 +242,17 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
       entity = insert_entity()
       account = insert_account(entity)
       transaction = create_transaction(entity, account, description: "Uber commute")
-      global_category = insert_category_account(entity, "Global Category")
       entity_category = insert_category_account(entity, "Entity Category")
       account_category = insert_category_account(entity, "Account Category")
 
+      # Global groups cannot use category actions (entity-scoped field) — they use
+      # notes instead to verify that global scope still participates in apply.
       {_global_group, _global_rule} =
         insert_matching_rule(
           :global,
           nil,
-          [%{field: :category, operation: :set, value: global_category.id}],
-          group_name: "Global Winner If Ordered Wrong",
+          [%{field: :notes, operation: :set, value: "global matched"}],
+          group_name: "Global Applies Notes",
           priority: 1
         )
 
@@ -277,7 +278,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
                Classification.classify_transaction(transaction.id, entity_id: entity.id)
 
       assert result.classification_record.category_account_id == account_category.id
-      assert result.fields_applied == 1
+      # category (account) + notes (global) = 2 fields applied
+      assert result.fields_applied == 2
       refute result.no_match?
 
       assert result.classification_record.category_classified_by == %{
@@ -287,6 +289,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
                "classified_at" =>
                  result.classification_record.category_classified_by["classified_at"]
              }
+
+      assert result.classification_record.notes == "global matched"
     end
 
     test "S11: keeps historical provenance usable after the source rule and group are deleted" do
@@ -297,8 +301,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
 
       {rule_group, rule} =
         insert_matching_rule(
-          :global,
-          nil,
+          :entity,
+          entity,
           [%{field: :category, operation: :set, value: transport.id}],
           group_name: "Historical Provenance"
         )
@@ -336,8 +340,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
       food = insert_category_account(entity, "Food")
 
       insert_matching_rule(
-        :global,
-        nil,
+        :entity,
+        entity,
         [
           %{field: :category, operation: :set, value: transport.id},
           %{field: :tags, operation: :add, value: "ride"},
@@ -599,8 +603,8 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
       food = insert_category_account(entity, "Food")
 
       insert_matching_rule(
-        :global,
-        nil,
+        :entity,
+        entity,
         [
           %{field: :category, operation: :set, value: transport.id},
           %{field: :tags, operation: :add, value: "ride"}
@@ -725,7 +729,7 @@ defmodule AurumFinance.Classification.ClassificationRecordTest do
   end
 
   defp translated_error(key) do
-    Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", key)
+    Gettext.dgettext(AurumFinance.Gettext, "errors", key)
   end
 
   defp negate_amount(amount) do

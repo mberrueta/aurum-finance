@@ -108,20 +108,20 @@ defmodule AurumFinance.Ledger.Account do
     account
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:name,
       min: 2,
       max: 160,
       message:
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_account_name_length_invalid")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_account_name_length_invalid")
     )
     |> update_change(:currency_code, &normalize_to_upper/1)
     |> validate_length(:currency_code,
       is: 3,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_account_currency_code_length_invalid"
         )
@@ -129,7 +129,7 @@ defmodule AurumFinance.Ledger.Account do
     |> validate_format(:currency_code, ~r/^[A-Z]{3}$/,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_account_currency_code_format_invalid"
         )
@@ -386,7 +386,7 @@ defmodule AurumFinance.Ledger.Account do
           changeset,
           :operational_subtype,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_account_operational_subtype_required"
           )
@@ -397,7 +397,7 @@ defmodule AurumFinance.Ledger.Account do
           changeset,
           :operational_subtype,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_account_operational_subtype_not_allowed"
           )
@@ -408,7 +408,7 @@ defmodule AurumFinance.Ledger.Account do
           changeset,
           :operational_subtype,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_account_operational_subtype_invalid_for_type"
           )
@@ -436,7 +436,7 @@ defmodule AurumFinance.Ledger.Account do
       changeset,
       :management_group,
       Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
+        AurumFinance.Gettext,
         "errors",
         "error_account_management_group_invalid"
       )
@@ -477,7 +477,7 @@ defmodule AurumFinance.Ledger.Account do
       add_error(
         changeset,
         field,
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_account_immutable_field")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_account_immutable_field")
       )
     end
   end

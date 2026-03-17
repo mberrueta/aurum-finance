@@ -340,6 +340,36 @@ defmodule AurumFinance.Classification.EngineTest do
       assert :notes in proposed_fields(result)
     end
 
+    test "S09b: stop_processing false allows additive rules to compose the same field within a group" do
+      # Regression: previously the first rule claimed the field immediately via the
+      # global claims set, causing subsequent rules in the same group to be
+      # marked :skipped_claimed even with stop_processing: false.
+      txn = transaction("e1", [posting("a1", D.new("-5"))])
+
+      g =
+        group(:global, "G", 1, [
+          rule("First", 1, ~s|description contains "uber"|, [action(:tags, :add, "ride")],
+            stop_processing: false
+          ),
+          rule("Second", 2, ~s|description contains "uber"|, [action(:tags, :add, "uber")],
+            stop_processing: false
+          )
+        ])
+
+      [result] = Engine.evaluate([txn], [g])
+
+      assert Enum.map(result.matched_rules, & &1.name) == ["First", "Second"]
+
+      # Both rules must produce :proposed changes — not :skipped_claimed
+      tags_changes = Enum.filter(result.proposed_changes, &(&1.field == :tags))
+      assert length(tags_changes) == 2
+      assert Enum.all?(tags_changes, &(&1.status == :proposed))
+
+      # The second rule chains on the first: final proposed value includes both tags
+      last_tags_change = List.last(tags_changes)
+      assert last_tags_change.proposed_value == ["ride", "uber"]
+    end
+
     test "S10: stop_processing only affects current group, not subsequent groups" do
       txn = transaction("e1", [posting("a1", D.new("-5"))])
 

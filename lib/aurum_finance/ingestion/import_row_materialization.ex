@@ -40,13 +40,13 @@ defmodule AurumFinance.Ingestion.ImportRowMaterialization do
     import_row_materialization
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:outcome_reason,
       max: 2000,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_import_row_materialization_outcome_reason_length_invalid"
         )
@@ -79,7 +79,7 @@ defmodule AurumFinance.Ingestion.ImportRowMaterialization do
           changeset,
           :transaction_id,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_import_row_materialization_transaction_required"
           )
@@ -90,7 +90,7 @@ defmodule AurumFinance.Ingestion.ImportRowMaterialization do
           changeset,
           :transaction_id,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_import_row_materialization_transaction_forbidden"
           )

@@ -64,17 +64,16 @@ defmodule AurumFinance.Classification.Rule do
     rule
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:name,
       min: 2,
       max: 160,
-      message:
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_name_length_invalid")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_name_length_invalid")
     )
     |> validate_number(:position,
       greater_than: 0,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_position_invalid")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_position_invalid")
     )
     |> validate_expression_present()
     |> cast_embed(:actions, required: true, with: &RuleAction.changeset/2)
@@ -94,7 +93,7 @@ defmodule AurumFinance.Classification.Rule do
       add_error(
         changeset,
         :expression,
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_expression_required")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_expression_required")
       )
     end
   end
@@ -105,7 +104,7 @@ defmodule AurumFinance.Classification.Rule do
         add_error(
           changeset,
           :actions,
-          Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_actions_required")
+          Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_actions_required")
         )
 
       _actions ->

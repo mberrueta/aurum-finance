@@ -347,6 +347,128 @@ defmodule AurumFinance.ClassificationTest do
                changeset
              ).actions
     end
+
+    test "accepts a category action whose UUID resolves to an entity-scoped category account" do
+      entity = insert(:entity)
+      rule_group = insert_rule_group(entity, %{})
+
+      cat_account =
+        insert(:account,
+          entity: entity,
+          entity_id: entity.id,
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        )
+
+      assert {:ok, rule} =
+               Classification.create_rule(%{
+                 rule_group_id: rule_group.id,
+                 name: "Category Rule",
+                 position: 1,
+                 expression: ~s|description contains "Uber"|,
+                 actions: [%{field: :category, operation: :set, value: cat_account.id}]
+               })
+
+      assert hd(rule.actions).value == cat_account.id
+    end
+
+    test "rejects a category action UUID that does not belong to the group's entity" do
+      entity = insert(:entity)
+      other_entity = insert(:entity)
+      rule_group = insert_rule_group(entity, %{})
+
+      other_cat =
+        insert(:account,
+          entity: other_entity,
+          entity_id: other_entity.id,
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        )
+
+      assert {:error, changeset} =
+               Classification.create_rule(%{
+                 rule_group_id: rule_group.id,
+                 name: "Wrong Entity Category",
+                 position: 1,
+                 expression: ~s|description contains "Uber"|,
+                 actions: [%{field: :category, operation: :set, value: other_cat.id}]
+               })
+
+      errors = errors_on(changeset).actions
+      assert Enum.any?(errors, &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity."))
+    end
+
+    test "rejects a category action UUID that references a non-category account" do
+      entity = insert(:entity)
+      rule_group = insert_rule_group(entity, %{})
+
+      institution_account = insert(:account, entity: entity, entity_id: entity.id)
+
+      assert {:error, changeset} =
+               Classification.create_rule(%{
+                 rule_group_id: rule_group.id,
+                 name: "Non-Category Action",
+                 position: 1,
+                 expression: ~s|description contains "Uber"|,
+                 actions: [
+                   %{field: :category, operation: :set, value: institution_account.id}
+                 ]
+               })
+
+      errors = errors_on(changeset).actions
+      assert Enum.any?(errors, &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity."))
+    end
+
+    test "rejects a category action on an account-scoped group whose account entity has no matching category account" do
+      entity = insert(:entity)
+      account = insert(:account, entity: entity, entity_id: entity.id)
+      rule_group = insert_account_rule_group(account, %{})
+
+      other_entity = insert(:entity)
+
+      other_cat =
+        insert(:account,
+          entity: other_entity,
+          entity_id: other_entity.id,
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        )
+
+      assert {:error, changeset} =
+               Classification.create_rule(%{
+                 rule_group_id: rule_group.id,
+                 name: "Wrong Entity Via Account",
+                 position: 1,
+                 expression: ~s|description contains "Uber"|,
+                 actions: [%{field: :category, operation: :set, value: other_cat.id}]
+               })
+
+      assert Enum.any?(
+               errors_on(changeset).actions,
+               &(&1 == "Category account not found. The UUID must reference a category account belonging to this entity.")
+             )
+    end
+
+    test "rejects a category action on a global-scoped rule group" do
+      global_group = insert_global_rule_group(%{})
+      some_uuid = Ecto.UUID.generate()
+
+      assert {:error, changeset} =
+               Classification.create_rule(%{
+                 rule_group_id: global_group.id,
+                 name: "Global Category Rule",
+                 position: 1,
+                 expression: ~s|description contains "Uber"|,
+                 actions: [%{field: :category, operation: :set, value: some_uuid}]
+               })
+
+      assert "Category actions are not allowed on global rules. Category accounts are entity-scoped — use an entity-scoped or account-scoped group instead." in errors_on(
+               changeset
+             ).actions
+    end
   end
 
   describe "update_rule/2" do

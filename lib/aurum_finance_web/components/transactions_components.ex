@@ -18,6 +18,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
   attr :expanded_transaction_id, :any, default: nil
   attr :classification_record, :map, default: nil
   attr :classification_forms, :map, default: %{}
+  attr :classification_history, :list, default: []
   attr :category_accounts, :list, default: []
   attr :provenance_lookup, :map, default: %{rule_groups: %{}, rules: %{}}
   attr :apply_feedback, :map, default: nil
@@ -116,6 +117,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             transaction={@transaction}
             classification_record={@classification_record}
             classification_forms={@classification_forms}
+            classification_history={@classification_history}
             category_accounts={@category_accounts}
             provenance_lookup={@provenance_lookup}
             apply_feedback={@apply_feedback}
@@ -131,6 +133,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
   attr :transaction, :map, required: true
   attr :classification_record, :map, default: nil
   attr :classification_forms, :map, default: %{}
+  attr :classification_history, :list, default: []
   attr :category_accounts, :list, default: []
   attr :provenance_lookup, :map, default: %{rule_groups: %{}, rules: %{}}
   attr :apply_feedback, :map, default: nil
@@ -206,6 +209,12 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             </tbody>
           </table>
         </div>
+
+        <.classification_history
+          history={@classification_history}
+          category_accounts={@category_accounts}
+          provenance_lookup={@provenance_lookup}
+        />
       </div>
 
       <div
@@ -530,6 +539,114 @@ defmodule AurumFinanceWeb.TransactionsComponents do
       label={dgettext("transactions", "classification_manual_value")}
     />
     """
+  end
+
+  attr :history, :list, default: []
+  attr :category_accounts, :list, default: []
+  attr :provenance_lookup, :map, default: %{rule_groups: %{}, rules: %{}}
+
+  def classification_history(assigns) do
+    assigns = assign(assigns, :accounts_by_id, Map.new(assigns.category_accounts, &{&1.id, &1}))
+
+    ~H"""
+    <div class="mt-4">
+      <h5 class="text-[11px] font-semibold uppercase tracking-[0.16em] text-white/38">
+        {dgettext("transactions", "classification_history_title")}
+      </h5>
+
+      <p :if={@history == []} class="mt-2 text-xs text-white/45">
+        {dgettext("transactions", "classification_history_empty")}
+      </p>
+
+      <ol :if={@history != []} class="mt-2 space-y-2">
+        <li
+          :for={event <- @history}
+          class="flex flex-wrap items-start gap-x-3 gap-y-1 rounded-xl border border-white/6 bg-white/[0.03] px-3 py-2 text-xs"
+        >
+          <span class="au-mono text-white/38 shrink-0">
+            {Calendar.strftime(event.occurred_at, "%Y-%m-%d %H:%M")}
+          </span>
+          <.badge variant={history_action_badge_variant(event.action)}>
+            {history_action_label(event.action)}
+          </.badge>
+          <span class="font-medium text-white/72">
+            {field_label(history_event_field(event))}
+          </span>
+          <span class="text-white/45">
+            {history_value_display(event, :old_value, @accounts_by_id)}
+            <span class="mx-1 text-white/28">→</span>
+            {history_value_display(event, :new_value, @accounts_by_id)}
+          </span>
+          <span :if={history_rule_source(event, @provenance_lookup)} class="text-white/38 italic">
+            {history_rule_source(event, @provenance_lookup)}
+          </span>
+        </li>
+      </ol>
+    </div>
+    """
+  end
+
+  defp history_event_field(event) do
+    case Map.get(event.metadata || %{}, "field") do
+      nil -> :notes
+      f -> String.to_existing_atom(f)
+    end
+  end
+
+  defp history_action_label("rule_applied"),
+    do: dgettext("transactions", "classification_history_action_rule_applied")
+
+  defp history_action_label("manual_override"),
+    do: dgettext("transactions", "classification_history_action_manual_override")
+
+  defp history_action_label("override_cleared"),
+    do: dgettext("transactions", "classification_history_action_override_cleared")
+
+  defp history_action_label(action), do: action
+
+  defp history_action_badge_variant("rule_applied"), do: :good
+  defp history_action_badge_variant("manual_override"), do: :warn
+  defp history_action_badge_variant("override_cleared"), do: :default
+  defp history_action_badge_variant(_), do: :default
+
+  defp history_value_display(event, key, accounts_by_id) do
+    field = history_event_field(event)
+    raw = Map.get(event.metadata || %{}, Atom.to_string(key))
+    history_format_value(field, raw, accounts_by_id)
+  end
+
+  defp history_format_value(:tags, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(:tags, json, _) do
+    case Jason.decode(json) do
+      {:ok, []} -> dgettext("transactions", "classification_history_empty_value")
+      {:ok, tags} -> Enum.join(tags, ", ")
+      _ -> json
+    end
+  end
+
+  defp history_format_value(:category, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(:category, uuid, accounts_by_id) do
+    case Map.get(accounts_by_id, uuid) do
+      nil -> uuid
+      account -> account.name
+    end
+  end
+
+  defp history_format_value(_field, nil, _), do: dgettext("transactions", "classification_history_empty_value")
+  defp history_format_value(_field, value, _), do: value
+
+  defp history_rule_source(event, provenance_lookup) do
+    meta = event.metadata || %{}
+
+    case {event.action, Map.get(meta, "rule_group_id"), Map.get(meta, "rule_id")} do
+      {"rule_applied", group_id, rule_id} when is_binary(group_id) ->
+        group_name = provenance_group_name(Map.get(provenance_lookup.rule_groups, group_id))
+        rule_name = provenance_rule_name(Map.get(provenance_lookup.rules, rule_id))
+        "#{group_name} / #{rule_name}"
+
+      _ ->
+        nil
+    end
   end
 
   defp amount_class(%Decimal{} = amount) do

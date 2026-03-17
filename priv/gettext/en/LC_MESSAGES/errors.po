@@ -234,6 +234,12 @@ msgstr "Rule position must be greater than zero."
 msgid "error_rule_action_field_not_allowed"
 msgstr "Action field '%{field}' is not declared in this group's target fields."
 
+msgid "error_rule_action_category_account_not_found"
+msgstr "Category account not found. The UUID must reference a category account belonging to this entity."
+
+msgid "error_rule_action_category_global_not_allowed"
+msgstr "Category actions are not allowed on global rules. Category accounts are entity-scoped — use an entity-scoped or account-scoped group instead."
+
 #: lib/aurum_finance_web/live/rules_live.ex:1621
 #, elixir-autogen
 msgid "error_rule_expression_invalid"

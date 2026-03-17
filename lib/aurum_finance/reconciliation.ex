@@ -898,7 +898,7 @@ defmodule AurumFinance.Reconciliation do
       changeset,
       :account_id,
       Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
+        AurumFinance.Gettext,
         "errors",
         "error_reconciliation_account_invalid"
       )
@@ -913,7 +913,7 @@ defmodule AurumFinance.Reconciliation do
       changeset,
       :completed_at,
       Gettext.dgettext(
-        AurumFinanceWeb.Gettext,
+        AurumFinance.Gettext,
         "errors",
         "error_reconciliation_session_completed"
       )

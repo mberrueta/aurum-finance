@@ -843,7 +843,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_minimum_postings"
         )
@@ -869,7 +869,7 @@ defmodule AurumFinance.Ledger do
       Ecto.Changeset.add_error(
         changeset,
         :postings,
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
       )
     else
       changeset
@@ -886,7 +886,7 @@ defmodule AurumFinance.Ledger do
           changeset,
           :postings,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_posting_amount_invalid"
           )
@@ -924,7 +924,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_account_not_found"
         )
@@ -949,7 +949,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_cross_entity_account"
         )
@@ -982,7 +982,7 @@ defmodule AurumFinance.Ledger do
         changeset,
         :postings,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_unbalanced"
         )

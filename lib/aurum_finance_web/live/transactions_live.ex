@@ -32,6 +32,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
        editing_classification_transaction_id: nil,
        transaction_apply_feedback: %{},
        expanded_transaction_id: nil,
+       classification_histories: %{},
        transactions: []
      )
      |> assign_filters(default_filters())}
@@ -96,7 +97,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
     {:noreply,
      socket
      |> assign(:expanded_transaction_id, expanded)
-     |> assign(:editing_classification_transaction_id, editing_transaction_id)}
+     |> assign(:editing_classification_transaction_id, editing_transaction_id)
+     |> maybe_load_classification_history(expanded)}
   end
 
   def handle_event("toggle_classification_editor", %{"id" => transaction_id}, socket) do
@@ -245,7 +247,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
     provenance_lookup = load_provenance_lookup(entity.id, accounts)
     classification_forms = build_classification_forms(transactions, classification_records)
 
-    assign(socket,
+    socket
+    |> assign(
       transactions: transactions,
       accounts: accounts,
       category_accounts: category_accounts,
@@ -253,6 +256,7 @@ defmodule AurumFinanceWeb.TransactionsLive do
       classification_forms: classification_forms,
       provenance_lookup: provenance_lookup
     )
+    |> refresh_expanded_history()
   end
 
   defp default_filters do
@@ -501,6 +505,27 @@ defmodule AurumFinanceWeb.TransactionsLive do
     |> Enum.map(& &1.id)
     |> Classification.list_classification_records()
     |> Map.new(&{&1.transaction_id, &1})
+  end
+
+  defp maybe_load_classification_history(socket, nil), do: socket
+
+  defp maybe_load_classification_history(socket, transaction_id) do
+    if Map.has_key?(socket.assigns.classification_histories, transaction_id) do
+      socket
+    else
+      record = Map.get(socket.assigns.classification_records, transaction_id)
+      history = Classification.list_classification_history(record)
+      update(socket, :classification_histories, &Map.put(&1, transaction_id, history))
+    end
+  end
+
+  defp refresh_expanded_history(socket) do
+    maybe_load_classification_history(
+      update(socket, :classification_histories, fn histories ->
+        Map.delete(histories, socket.assigns.expanded_transaction_id)
+      end),
+      socket.assigns.expanded_transaction_id
+    )
   end
 
   defp load_provenance_lookup(entity_id, accounts) do

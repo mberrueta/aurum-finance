@@ -65,14 +65,14 @@ defmodule AurumFinance.Classification.RuleGroup do
     rule_group
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:name,
       min: 2,
       max: 160,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_group_name_length_invalid"
         )
@@ -81,7 +81,7 @@ defmodule AurumFinance.Classification.RuleGroup do
       greater_than: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_group_priority_invalid"
         )
@@ -93,7 +93,7 @@ defmodule AurumFinance.Classification.RuleGroup do
       name: :rule_groups_global_name_index,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_group_name_taken_for_scope"
         )
@@ -102,7 +102,7 @@ defmodule AurumFinance.Classification.RuleGroup do
       name: :rule_groups_entity_name_index,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_group_name_taken_for_scope"
         )
@@ -111,7 +111,7 @@ defmodule AurumFinance.Classification.RuleGroup do
       name: :rule_groups_account_name_index,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_group_name_taken_for_scope"
         )
@@ -139,7 +139,7 @@ defmodule AurumFinance.Classification.RuleGroup do
     add_error(
       changeset,
       :scope_type,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_group_scope_invalid")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_group_scope_invalid")
     )
   end
 end

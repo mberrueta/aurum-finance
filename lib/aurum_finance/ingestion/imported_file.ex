@@ -80,14 +80,14 @@ defmodule AurumFinance.Ingestion.ImportedFile do
     imported_file
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:filename,
       min: 1,
       max: 255,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_filename_length_invalid"
         )
@@ -96,7 +96,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       is: 64,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_sha256_length_invalid"
         )
@@ -106,7 +106,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       max: 1024,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_storage_path_length_invalid"
         )
@@ -115,7 +115,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       max: 2000,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_error_message_length_invalid"
         )
@@ -124,7 +124,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       max: 255,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_content_type_length_invalid"
         )
@@ -133,7 +133,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_count_must_be_non_negative"
         )
@@ -142,7 +142,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_count_must_be_non_negative"
         )
@@ -151,7 +151,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_count_must_be_non_negative"
         )
@@ -160,7 +160,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_count_must_be_non_negative"
         )
@@ -169,7 +169,7 @@ defmodule AurumFinance.Ingestion.ImportedFile do
       greater_than_or_equal_to: 0,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_imported_file_byte_size_must_be_non_negative"
         )

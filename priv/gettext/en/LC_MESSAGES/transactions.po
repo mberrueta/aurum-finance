@@ -556,3 +556,21 @@ msgstr "Clear filters"
 #, elixir-autogen, elixir-format
 msgid "label_total_results"
 msgstr "Total results"
+
+msgid "classification_history_title"
+msgstr "Classification History"
+
+msgid "classification_history_empty"
+msgstr "No classification events recorded."
+
+msgid "classification_history_empty_value"
+msgstr "(none)"
+
+msgid "classification_history_action_rule_applied"
+msgstr "Rule Applied"
+
+msgid "classification_history_action_manual_override"
+msgstr "Manual Override"
+
+msgid "classification_history_action_override_cleared"
+msgstr "Override Cleared"

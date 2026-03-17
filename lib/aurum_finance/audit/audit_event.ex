@@ -52,14 +52,14 @@ defmodule AurumFinance.Audit.AuditEvent do
     audit_event
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:entity_type,
       min: 1,
       max: 120,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_audit_entity_type_length_invalid"
         )
@@ -68,12 +68,12 @@ defmodule AurumFinance.Audit.AuditEvent do
       min: 1,
       max: 120,
       message:
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_audit_action_length_invalid")
+        Gettext.dgettext(AurumFinance.Gettext, "errors", "error_audit_action_length_invalid")
     )
     |> validate_length(:actor,
       min: 1,
       max: 120,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_audit_actor_invalid")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_audit_actor_invalid")
     )
   end
 end

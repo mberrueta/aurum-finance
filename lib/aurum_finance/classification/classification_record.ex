@@ -61,14 +61,14 @@ defmodule AurumFinance.Classification.ClassificationRecord do
     classification_record
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_tags()
     |> validate_length(:notes,
       max: 2000,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_classification_notes_length_invalid"
         )
@@ -93,7 +93,7 @@ defmodule AurumFinance.Classification.ClassificationRecord do
     add_error(
       changeset,
       :tags,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_classification_tags_too_many")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_classification_tags_too_many")
     )
   end
 
@@ -103,7 +103,7 @@ defmodule AurumFinance.Classification.ClassificationRecord do
         changeset,
         :tags,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_classification_tag_length_invalid"
         )

@@ -160,6 +160,38 @@ defmodule AurumFinance.Classification do
   end
 
   @doc """
+  Returns audit events for a classification record, ordered oldest-first.
+
+  Used to render the per-transaction classification history view, which shows
+  every rule application, manual override, and override-clear event in
+  chronological order.
+
+  Returns an empty list if `record` is `nil` (transaction never classified).
+
+  ## Examples
+
+  ```elixir
+  AurumFinance.Classification.list_classification_history(record)
+  #=> [%AuditEvent{action: "rule_applied", ...}, %AuditEvent{action: "manual_override", ...}]
+
+  AurumFinance.Classification.list_classification_history(nil)
+  #=> []
+  ```
+  """
+  @spec list_classification_history(ClassificationRecord.t() | nil) :: [AuditEvent.t()]
+  def list_classification_history(nil), do: []
+
+  def list_classification_history(%ClassificationRecord{id: record_id}) do
+    AuditEvent
+    |> where(
+      [ae],
+      ae.entity_type == ^@classification_record_entity_type and ae.entity_id == ^record_id
+    )
+    |> order_by([ae], asc: ae.occurred_at)
+    |> Repo.all()
+  end
+
+  @doc """
   Applies active rules to one transaction and upserts its classification record.
 
   Returns the updated record (when any field changed or a record already exists),
@@ -704,6 +736,7 @@ defmodule AurumFinance.Classification do
       %Rule{}
       |> Rule.changeset(prepared_attrs)
       |> validate_target_fields(rule_group)
+      |> validate_category_action_values(rule_group)
       |> Audit.insert_and_log(rule_audit_meta(opts))
     end
     |> normalize_rule_write_result(%Rule{}, attrs)
@@ -728,6 +761,7 @@ defmodule AurumFinance.Classification do
         rule
         |> Rule.changeset(prepared_attrs)
         |> validate_target_fields(rule_group)
+        |> validate_category_action_values(rule_group)
 
       Audit.update_and_log(rule, changeset, rule_audit_meta(opts, action: "updated"))
     end
@@ -857,6 +891,79 @@ defmodule AurumFinance.Classification do
     end
   end
 
+  # Validates that every `category` action in the changeset references an existing
+  # category account that belongs to the rule group's entity scope.
+  #
+  # Entity-scoped: validates UUID against the group's own entity.
+  # Account-scoped: derives entity_id from the linked account, then validates.
+  # Global-scoped:  no entity context exists — category UUIDs are entity-specific by
+  #                 definition and would silently fail at apply time for all other
+  #                 entities.  We block them at write time with a clear error.
+  defp validate_category_action_values(changeset, %RuleGroup{} = rule_group) do
+    entity_id = category_validation_entity_id(rule_group)
+
+    changeset
+    |> Ecto.Changeset.get_field(:actions, [])
+    |> Enum.filter(&(&1.field == :category and &1.operation == :set))
+    |> Enum.reduce(changeset, fn action, acc ->
+      validate_one_category_action(acc, action, entity_id)
+    end)
+  end
+
+  defp validate_one_category_action(changeset, _action, nil) do
+    Ecto.Changeset.add_error(
+      changeset,
+      :actions,
+      Gettext.dgettext(
+        AurumFinance.Gettext,
+        "errors",
+        "error_rule_action_category_global_not_allowed"
+      )
+    )
+  end
+
+  defp validate_one_category_action(changeset, action, entity_id) do
+    case Ecto.UUID.cast(action.value || "") do
+      {:ok, uuid} ->
+        case Ledger.get_account(entity_id, uuid) do
+          %Account{} = account ->
+            if Account.category_account?(account),
+              do: changeset,
+              else: add_category_account_error(changeset)
+
+          nil ->
+            add_category_account_error(changeset)
+        end
+
+      :error ->
+        add_category_account_error(changeset)
+    end
+  end
+
+  defp add_category_account_error(changeset) do
+    Ecto.Changeset.add_error(
+      changeset,
+      :actions,
+      Gettext.dgettext(
+        AurumFinance.Gettext,
+        "errors",
+        "error_rule_action_category_account_not_found"
+      )
+    )
+  end
+
+  defp category_validation_entity_id(%RuleGroup{scope_type: :entity, entity_id: entity_id}),
+    do: entity_id
+
+  defp category_validation_entity_id(%RuleGroup{scope_type: :account, account_id: account_id}) do
+    case Repo.get(Account, account_id) do
+      %Account{entity_id: entity_id} -> entity_id
+      nil -> nil
+    end
+  end
+
+  defp category_validation_entity_id(%RuleGroup{scope_type: :global}), do: nil
+
   defp validate_target_fields(changeset, %RuleGroup{target_fields: []}), do: changeset
 
   defp validate_target_fields(changeset, %RuleGroup{target_fields: target_fields}) do
@@ -872,7 +979,7 @@ defmodule AurumFinance.Classification do
         acc,
         :actions,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_action_field_not_allowed",
           field: field
@@ -886,7 +993,7 @@ defmodule AurumFinance.Classification do
     |> Rule.changeset(normalize_attrs(attrs))
     |> Ecto.Changeset.add_error(
       :expression,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_expression_required")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_expression_required")
     )
   end
 
@@ -895,7 +1002,7 @@ defmodule AurumFinance.Classification do
     |> Rule.changeset(normalize_attrs(attrs))
     |> Ecto.Changeset.add_error(
       :expression,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_expression_invalid_regex")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_expression_invalid_regex")
     )
   end
 
@@ -904,7 +1011,7 @@ defmodule AurumFinance.Classification do
     |> Rule.changeset(normalize_attrs(attrs))
     |> Ecto.Changeset.add_error(
       :expression,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_rule_expression_invalid")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_rule_expression_invalid")
     )
   end
 

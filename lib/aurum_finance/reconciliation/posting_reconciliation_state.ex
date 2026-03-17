@@ -74,13 +74,13 @@ defmodule AurumFinance.Reconciliation.PostingReconciliationState do
     posting_reconciliation_state
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:reason,
       max: 500,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_reconciliation_reason_length_invalid"
         )

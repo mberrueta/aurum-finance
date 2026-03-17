@@ -55,14 +55,14 @@ defmodule AurumFinance.Ingestion.ImportMaterialization do
     import_materialization
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:requested_by,
       min: 1,
       max: 255,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_import_materialization_requested_by_length_invalid"
         )
@@ -71,7 +71,7 @@ defmodule AurumFinance.Ingestion.ImportMaterialization do
       max: 2000,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_import_materialization_error_message_length_invalid"
         )
@@ -101,7 +101,7 @@ defmodule AurumFinance.Ingestion.ImportMaterialization do
           greater_than_or_equal_to: 0,
           message:
             Gettext.dgettext(
-              AurumFinanceWeb.Gettext,
+              AurumFinance.Gettext,
               "errors",
               "error_import_materialization_count_must_be_non_negative"
             )

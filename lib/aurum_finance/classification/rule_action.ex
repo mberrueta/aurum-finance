@@ -56,7 +56,7 @@ defmodule AurumFinance.Classification.RuleAction do
     rule_action
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_field_operation_compatibility()
   end
@@ -72,7 +72,7 @@ defmodule AurumFinance.Classification.RuleAction do
         changeset,
         :operation,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_rule_action_operation_invalid"
         )

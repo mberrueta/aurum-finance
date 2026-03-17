@@ -151,7 +151,7 @@ defmodule AurumFinanceWeb.RulesLiveTest do
     assert is_nil(created_group.entity_id)
 
     view
-    |> element("#edit-rule-group-#{created_group.id}")
+    |> element("#edit-selected-rule-group-#{created_group.id}")
     |> render_click()
 
     edit_params = %{
@@ -184,7 +184,7 @@ defmodule AurumFinanceWeb.RulesLiveTest do
     assert has_element?(view, "#rule-group-#{group.id}")
 
     view
-    |> element("#delete-rule-group-#{group.id}")
+    |> element("#delete-selected-rule-group-#{group.id}")
     |> render_click()
 
     refute has_element?(view, "#rule-group-#{group.id}")
@@ -349,8 +349,8 @@ defmodule AurumFinanceWeb.RulesLiveTest do
         institution_account_ref: nil
       })
 
-    primary_group = insert_global_rule_group(%{name: "Primary Category", priority: 1})
-    secondary_group = insert_global_rule_group(%{name: "Secondary Category", priority: 2})
+    primary_group = insert_rule_group(entity, %{name: "Primary Category", priority: 1})
+    secondary_group = insert_rule_group(entity, %{name: "Secondary Category", priority: 2})
 
     insert_rule(primary_group, %{
       name: "Primary Uber",

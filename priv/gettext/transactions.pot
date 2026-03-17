@@ -555,3 +555,21 @@ msgstr ""
 #, elixir-autogen, elixir-format
 msgid "label_total_results"
 msgstr ""
+
+msgid "classification_history_title"
+msgstr ""
+
+msgid "classification_history_empty"
+msgstr ""
+
+msgid "classification_history_empty_value"
+msgstr ""
+
+msgid "classification_history_action_rule_applied"
+msgstr ""
+
+msgid "classification_history_action_manual_override"
+msgstr ""
+
+msgid "classification_history_action_override_cleared"
+msgstr ""

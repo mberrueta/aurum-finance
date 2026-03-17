@@ -85,13 +85,13 @@ defmodule AurumFinance.Ledger.Transaction do
     transaction
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_length(:description,
       max: 500,
       message:
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_description_length_invalid"
         )
@@ -119,7 +119,7 @@ defmodule AurumFinance.Ledger.Transaction do
     transaction
     |> cast(attrs, [:voided_at, :correlation_id])
     |> validate_required([:voided_at],
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> validate_voidable()
   end
@@ -157,7 +157,7 @@ defmodule AurumFinance.Ledger.Transaction do
     add_error(
       changeset,
       :voided_at,
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_transaction_already_voided")
+      Gettext.dgettext(AurumFinance.Gettext, "errors", "error_transaction_already_voided")
     )
   end
 
@@ -176,7 +176,7 @@ defmodule AurumFinance.Ledger.Transaction do
           changeset,
           :correlation_id,
           Gettext.dgettext(
-            AurumFinanceWeb.Gettext,
+            AurumFinance.Gettext,
             "errors",
             "error_transaction_correlation_id_reserved"
           )
@@ -194,7 +194,7 @@ defmodule AurumFinance.Ledger.Transaction do
         changeset,
         field,
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "errors",
           "error_transaction_immutable_field"
         )

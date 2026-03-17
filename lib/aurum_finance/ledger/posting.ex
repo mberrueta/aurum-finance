@@ -49,7 +49,7 @@ defmodule AurumFinance.Ledger.Posting do
     posting
     |> cast(attrs, @required ++ @optional)
     |> validate_required(@required,
-      message: Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", "error_field_required")
+      message: Gettext.dgettext(AurumFinance.Gettext, "errors", "error_field_required")
     )
     |> foreign_key_constraint(:transaction_id)
     |> foreign_key_constraint(:account_id)

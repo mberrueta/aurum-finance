@@ -320,6 +320,7 @@
             expanded_transaction_id={@expanded_transaction_id}
             classification_record={Map.get(@classification_records, transaction.id)}
             classification_forms={Map.get(@classification_forms, transaction.id, %{})}
+            classification_history={Map.get(@classification_histories, transaction.id, [])}
             category_accounts={@category_accounts}
             provenance_lookup={@provenance_lookup}
             apply_feedback={Map.get(@transaction_apply_feedback, transaction.id)}
