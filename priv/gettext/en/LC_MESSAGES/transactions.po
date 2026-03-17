@@ -93,6 +93,16 @@ msgstr "Account"
 msgid "filter_account_all"
 msgstr "All accounts"
 
+#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#, elixir-autogen
+msgid "filter_category"
+msgstr "Category"
+
+#: lib/aurum_finance_web/live/transactions_live.ex:329
+#, elixir-autogen
+msgid "filter_category_all"
+msgstr "All categories"
+
 #: lib/aurum_finance_web/live/transactions_live.html.heex:42
 #, elixir-autogen
 msgid "filter_date"
@@ -131,6 +141,16 @@ msgstr "Include voided"
 msgid "filter_source"
 msgstr "Source"
 
+#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#, elixir-autogen
+msgid "filter_search_text"
+msgstr "Search text"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:109
+#, elixir-autogen
+msgid "filter_search_text_placeholder"
+msgstr "Search description or tags"
+
 #: lib/aurum_finance_web/live/transactions_live.ex:328
 #, elixir-autogen
 msgid "filter_source_all"
@@ -155,6 +175,41 @@ msgstr "Correlation"
 #, elixir-autogen
 msgid "label_entity"
 msgstr "Entity"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:17
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_entity"
+msgstr "Limits the transaction list and classification actions to a single entity."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:36
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_date"
+msgstr "Restricts the visible transactions and bulk classification range to this preset."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:68
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_account"
+msgstr "Shows only transactions that include the selected ledger account."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:79
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_source"
+msgstr "Filters transactions by how they were created: manual, import, or system."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:91
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_category"
+msgstr "Filters by the current classification category assigned to each transaction."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:102
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_search_text"
+msgstr "Searches matching text in the transaction description or current classification tags."
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:115
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_include_voided"
+msgstr "Includes voided transactions alongside active entries."
 
 #: lib/aurum_finance_web/components/transactions_components.ex:141
 #, elixir-autogen
@@ -197,7 +252,7 @@ msgstr "Applying Rules..."
 #: lib/aurum_finance_web/live/transactions_live.html.heex:78
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply"
-msgstr "Apply to Range"
+msgstr "Apply Classification Rules"
 
 #: lib/aurum_finance_web/live/transactions_live.html.heex:156
 #, elixir-autogen, elixir-format
@@ -213,22 +268,22 @@ msgstr "Applying Rules..."
 #: lib/aurum_finance_web/live/transactions_live.html.heex:166
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_missing_range"
-msgstr "Date range required"
+msgstr "Choose a date preset"
 
 #: lib/aurum_finance_web/live/transactions_live.html.heex:163
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_ready"
-msgstr "Ready to apply"
+msgstr "Classification ready"
 
 #: lib/aurum_finance_web/live/transactions_live.ex:134
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_requires_range"
-msgstr "Select a concrete date range before running bulk apply."
+msgstr "Choose This week, This month, or This year before running bulk classification."
 
 #: lib/aurum_finance_web/live/transactions_live.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_scope"
-msgstr "Current Apply Scope"
+msgstr "Classification Scope"
 
 #: lib/aurum_finance_web/live/transactions_live.html.heex:151
 #, elixir-autogen, elixir-format
@@ -238,7 +293,12 @@ msgstr "%{entity} from %{date_from} to %{date_to}"
 #: lib/aurum_finance_web/live/transactions_live.html.heex:140
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_title"
-msgstr "Bulk Apply Rules"
+msgstr "Classify Date Range"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "classification_bulk_apply_subtitle"
+msgstr "Run classification rules across the selected entity and current date preset."
 
 #: lib/aurum_finance_web/components/transactions_components.ex:702
 #, elixir-autogen, elixir-format
@@ -480,9 +540,19 @@ msgstr "Rule Classified"
 #: lib/aurum_finance_web/live/transactions_live.html.heex:257
 #, elixir-autogen, elixir-format, fuzzy
 msgid "col_category"
-msgstr "Date"
+msgstr "Category"
 
 #: lib/aurum_finance_web/live/transactions_live.html.heex:258
 #, elixir-autogen, elixir-format
 msgid "col_tags"
-msgstr ""
+msgstr "Tags"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:137
+#, elixir-autogen, elixir-format
+msgid "clear_filters"
+msgstr "Clear filters"
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:70
+#, elixir-autogen, elixir-format
+msgid "label_total_results"
+msgstr "Total results"

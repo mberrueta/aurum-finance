@@ -18,8 +18,7 @@ defmodule AurumFinanceWeb.RulesComponents do
   Renders one visible rule group row in the sidebar/list pane.
 
   The group map is expected to include display-ready metadata such as:
-  `name`, `description`, `scope_label`, `scope_target_label`, `priority`,
-  `rule_count`, and `is_active`.
+  `name`, `description`, `scope_label`, `rule_count`, and `is_active`.
   """
   attr :group, :map, required: true
   attr :selected, :boolean, default: false
@@ -37,20 +36,15 @@ defmodule AurumFinanceWeb.RulesComponents do
         group_value(group, :scope_label, scope_label(group_value(group, :scope_type, :global)))
       )
       |> assign(
-        :group_scope_target_label,
-        group_value(group, :scope_target_label, scope_target_label())
-      )
-      |> assign(:group_priority, group_value(group, :priority, 1))
-      |> assign(
         :group_rule_count,
         group_value(group, :rule_count, length(Map.get(group, :rules, [])))
       )
 
     ~H"""
     <article class={[
-      "au-item w-full border transition duration-150",
+      "w-full rounded-[24px] border p-4 transition duration-150",
       @selected &&
-        "border-cyan-300/45 bg-cyan-400/[0.08] shadow-[inset_0_0_0_1px_rgba(125,211,252,0.22)]",
+        "border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.09] via-sky-400/[0.06] to-slate-950/55 shadow-[0_20px_48px_rgba(8,28,54,0.32)]",
       !@selected && "border-transparent hover:border-white/12 hover:bg-white/[0.03]",
       !@group_active? && "opacity-65"
     ]}>
@@ -74,11 +68,6 @@ defmodule AurumFinanceWeb.RulesComponents do
           <p :if={present?(@group.description)} class="mt-2 text-[12px] leading-relaxed text-white/68">
             {@group.description}
           </p>
-
-          <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/52">
-            <span>{dgettext("rules", "label_scope_target")}: {@group_scope_target_label}</span>
-            <span>{dgettext("rules", "label_priority")}: {@group_priority}</span>
-          </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
@@ -94,32 +83,6 @@ defmodule AurumFinanceWeb.RulesComponents do
         </div>
       </button>
 
-      <div
-        :if={@group_id}
-        class="mt-4 flex flex-wrap items-center justify-end gap-2 border-t border-white/8 pt-4"
-      >
-        <button
-          id={"edit-rule-group-#{@group_id}"}
-          type="button"
-          class="au-btn"
-          phx-click="edit_group"
-          phx-value-id={@group_id}
-        >
-          {dgettext("rules", "btn_edit")}
-        </button>
-
-        <button
-          id={"delete-rule-group-#{@group_id}"}
-          type="button"
-          class="au-btn"
-          phx-click="delete_group"
-          phx-value-id={@group_id}
-          data-confirm={dgettext("rules", "confirm_delete_rule_group")}
-        >
-          {dgettext("rules", "btn_delete")}
-        </button>
-      </div>
-
       <div :if={!@group_id} class="flex items-start justify-between gap-3">
         <div class="min-w-0 flex-1">
           <div class="flex flex-wrap items-center gap-2">
@@ -133,11 +96,6 @@ defmodule AurumFinanceWeb.RulesComponents do
           <p :if={present?(@group.description)} class="mt-2 text-[12px] leading-relaxed text-white/68">
             {@group.description}
           </p>
-
-          <div class="mt-3 flex flex-wrap items-center gap-2 text-[11px] text-white/52">
-            <span>{dgettext("rules", "label_scope_target")}: {@group_scope_target_label}</span>
-            <span>{dgettext("rules", "label_priority")}: {@group_priority}</span>
-          </div>
         </div>
 
         <div class="flex shrink-0 items-center gap-2">
@@ -202,6 +160,29 @@ defmodule AurumFinanceWeb.RulesComponents do
             {@rule_description}
           </p>
         </div>
+
+        <div :if={@rule_id} class="flex shrink-0 flex-wrap items-center gap-2">
+          <button
+            id={"edit-rule-#{@rule_id}"}
+            type="button"
+            class="au-btn"
+            phx-click="edit_rule"
+            phx-value-id={@rule_id}
+          >
+            {dgettext("rules", "btn_edit")}
+          </button>
+
+          <button
+            id={"delete-rule-#{@rule_id}"}
+            type="button"
+            class="au-btn au-btn-danger"
+            phx-click="delete_rule"
+            phx-value-id={@rule_id}
+            data-confirm={dgettext("rules", "confirm_delete_rule")}
+          >
+            {dgettext("rules", "btn_delete")}
+          </button>
+        </div>
       </div>
 
       <div class="mt-4 grid gap-3 lg:grid-cols-2">
@@ -218,29 +199,6 @@ defmodule AurumFinanceWeb.RulesComponents do
           </p>
           <p class="mt-2 text-[12px] leading-relaxed text-white/82 au-mono">{@rule_action_summary}</p>
         </div>
-      </div>
-
-      <div :if={@rule_id} class="mt-4 flex flex-wrap items-center justify-end gap-2">
-        <button
-          id={"edit-rule-#{@rule_id}"}
-          type="button"
-          class="au-btn"
-          phx-click="edit_rule"
-          phx-value-id={@rule_id}
-        >
-          {dgettext("rules", "btn_edit")}
-        </button>
-
-        <button
-          id={"delete-rule-#{@rule_id}"}
-          type="button"
-          class="au-btn"
-          phx-click="delete_rule"
-          phx-value-id={@rule_id}
-          data-confirm={dgettext("rules", "confirm_delete_rule")}
-        >
-          {dgettext("rules", "btn_delete")}
-        </button>
       </div>
     </article>
     """
@@ -470,8 +428,6 @@ defmodule AurumFinanceWeb.RulesComponents do
   defp scope_label(:account), do: dgettext("rules", "scope_account")
   defp scope_label(:entity), do: dgettext("rules", "scope_entity")
   defp scope_label(:global), do: dgettext("rules", "scope_global")
-
-  defp scope_target_label, do: dgettext("rules", "scope_target_global")
 
   defp group_value(map, key, default) do
     Map.get(map, key, default)

@@ -102,6 +102,7 @@
       title={dgettext("rules", "section_rule_groups")}
       badge={Integer.to_string(@rule_group_count)}
       badge_variant={:purple}
+      class="xl:flex xl:max-h-[calc(100vh-14rem)] xl:flex-col"
     >
       <:actions>
         <button type="button" class="au-btn au-btn-primary" phx-click="new_group">
@@ -109,7 +110,11 @@
         </button>
       </:actions>
 
-      <div id="rule-groups" phx-update="stream" class="space-y-3">
+      <div
+        id="rule-groups"
+        phx-update="stream"
+        class="space-y-3 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-2"
+      >
         <div
           id="rule-group-empty-state"
           class="hidden rounded-[24px] border border-dashed border-white/12 bg-white/[0.02] p-6 only:block"
@@ -138,9 +143,10 @@
     </.section_panel>
 
     <.section_panel
-      title={selected_group_title(@selected_group_card)}
-      badge={selected_group_badge(@selected_group_card, @rule_count)}
+      title={dgettext("rules", "label_rules_in_group")}
+      badge={if(@selected_group_card, do: Integer.to_string(@rule_count), else: nil)}
       badge_variant={:purple}
+      class="xl:flex xl:max-h-[calc(100vh-14rem)] xl:flex-col"
     >
       <:actions>
         <button
@@ -154,15 +160,22 @@
         </button>
       </:actions>
 
-      <div id="rule-group-detail" class="space-y-5">
+      <div id="rule-group-detail" class="space-y-5 xl:flex xl:min-h-0 xl:flex-col">
         <div
           :if={@selected_group_card}
-          class="rounded-[24px] border border-white/10 bg-white/[0.03] p-5"
+          class="rounded-[24px] border border-cyan-300/20 bg-gradient-to-br from-cyan-400/[0.09] via-sky-400/[0.06] to-slate-950/55 p-5 shadow-[0_20px_48px_rgba(8,28,54,0.32)]"
         >
+          <div class="mb-4 flex flex-wrap items-center gap-2 border-b border-white/10 pb-4">
+            <span class="text-[10px] font-semibold uppercase tracking-[0.22em] text-cyan-100/72">
+              {dgettext("rules", "section_group_detail")}
+            </span>
+            <.badge variant={:purple}>{@rule_count}</.badge>
+          </div>
+
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div class="min-w-0 flex-1">
               <div class="flex flex-wrap items-center gap-2">
-                <h3 class="text-lg font-semibold text-white/92">{@selected_group_card.name}</h3>
+                <h3 class="text-lg font-semibold text-white">{@selected_group_card.name}</h3>
                 <.badge variant={selected_scope_badge_variant(@selected_group_card.scope_type)}>
                   {@selected_group_card.scope_label}
                 </.badge>
@@ -173,7 +186,7 @@
 
               <p
                 :if={present_text?(@selected_group_card.description)}
-                class="mt-3 text-[13px] leading-relaxed text-white/68"
+                class="mt-3 text-[13px] leading-relaxed text-white/72"
               >
                 {@selected_group_card.description}
               </p>
@@ -233,11 +246,23 @@
                 <.icon name="hero-pencil-square-mini" class="size-4" />
                 {dgettext("rules", "btn_edit_group")}
               </button>
+
+              <button
+                id={"delete-selected-rule-group-#{@selected_group_card.id}"}
+                type="button"
+                class="au-btn au-btn-danger inline-flex items-center gap-2"
+                phx-click="delete_group"
+                phx-value-id={@selected_group_card.id}
+                data-confirm={dgettext("rules", "confirm_delete_rule_group")}
+              >
+                <.icon name="hero-trash-mini" class="size-4" />
+                {dgettext("rules", "btn_delete")}
+              </button>
             </div>
           </div>
 
           <div class="mt-4 grid gap-3 md:grid-cols-3">
-            <div class="rounded-2xl border border-white/8 bg-slate-950/35 p-3">
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
               <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
                 {dgettext("rules", "label_scope_target")}
               </p>
@@ -246,14 +271,14 @@
               </p>
             </div>
 
-            <div class="rounded-2xl border border-white/8 bg-slate-950/35 p-3">
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
               <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
                 {dgettext("rules", "label_priority")}
               </p>
               <p class="mt-2 text-[12px] text-white/82">{@selected_group_card.priority}</p>
             </div>
 
-            <div class="rounded-2xl border border-white/8 bg-slate-950/35 p-3">
+            <div class="rounded-2xl border border-white/12 bg-slate-950/35 p-3">
               <p class="text-[10px] uppercase tracking-[0.18em] text-white/38">
                 {dgettext("rules", "label_target_fields")}
               </p>
@@ -281,7 +306,11 @@
           </.empty_state>
         </div>
 
-        <div id="group-rules" phx-update="stream" class="space-y-3">
+        <div
+          id="group-rules"
+          phx-update="stream"
+          class="space-y-3 xl:min-h-0 xl:flex-1 xl:overflow-y-auto xl:pr-2"
+        >
           <div
             :if={@selected_group}
             id="rules-empty-state"
@@ -455,6 +484,7 @@
               <li>{dgettext("rules", "callout_tips_item_1")}</li>
               <li>{dgettext("rules", "callout_tips_item_2")}</li>
               <li>{dgettext("rules", "callout_tips_item_3")}</li>
+              <li>{dgettext("rules", "callout_tips_item_4")}</li>
             </ul>
           </.info_callout>
         </div>

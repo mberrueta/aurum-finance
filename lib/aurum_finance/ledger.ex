@@ -6,6 +6,7 @@ defmodule AurumFinance.Ledger do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Audit
+  alias AurumFinance.Classification.ClassificationRecord
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
   alias AurumFinance.Ledger.Transaction
@@ -36,6 +37,8 @@ defmodule AurumFinance.Ledger do
              | :other_liability}
           | {:source_type, :manual | :import | :system}
           | {:account_id, Ecto.UUID.t()}
+          | {:category_account_id, Ecto.UUID.t()}
+          | {:search_text, String.t()}
           | {:date_from, Date.t()}
           | {:date_to, Date.t()}
 
@@ -758,6 +761,29 @@ defmodule AurumFinance.Ledger do
     |> filter_query(rest)
   end
 
+  defp filter_query(query, [{:category_account_id, category_account_id} | rest]) do
+    query
+    |> ensure_classification_record_join()
+    |> where(
+      [classification_record: classification_record],
+      classification_record.category_account_id == ^category_account_id
+    )
+    |> filter_query(rest)
+  end
+
+  defp filter_query(query, [{:search_text, search_text} | rest]) when is_binary(search_text) do
+    search_pattern = "%#{String.trim(search_text)}%"
+
+    query
+    |> ensure_classification_record_join()
+    |> where(
+      [transaction, classification_record: classification_record],
+      ilike(transaction.description, ^search_pattern) or
+        fragment("coalesce(?::text, '[]') ILIKE ?", classification_record.tags, ^search_pattern)
+    )
+    |> filter_query(rest)
+  end
+
   defp filter_query(query, [{:date_from, %Date{} = date_from} | rest]) do
     query
     |> where([transaction], transaction.date >= ^date_from)
@@ -772,6 +798,17 @@ defmodule AurumFinance.Ledger do
 
   defp filter_query(query, [_unknown_filter | rest]) do
     filter_query(query, rest)
+  end
+
+  defp ensure_classification_record_join(query) do
+    if has_named_binding?(query, :classification_record) do
+      query
+    else
+      join(query, :left, [transaction], classification_record in ClassificationRecord,
+        on: classification_record.transaction_id == transaction.id,
+        as: :classification_record
+      )
+    end
   end
 
   defp posting_attrs(attrs) when is_map(attrs) do

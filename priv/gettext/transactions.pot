@@ -92,6 +92,16 @@ msgstr ""
 msgid "filter_account_all"
 msgstr ""
 
+#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#, elixir-autogen
+msgid "filter_category"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.ex:329
+#, elixir-autogen
+msgid "filter_category_all"
+msgstr ""
+
 #: lib/aurum_finance_web/live/transactions_live.html.heex:42
 #, elixir-autogen
 msgid "filter_date"
@@ -130,6 +140,16 @@ msgstr ""
 msgid "filter_source"
 msgstr ""
 
+#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#, elixir-autogen
+msgid "filter_search_text"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:109
+#, elixir-autogen
+msgid "filter_search_text_placeholder"
+msgstr ""
+
 #: lib/aurum_finance_web/live/transactions_live.ex:328
 #, elixir-autogen
 msgid "filter_source_all"
@@ -153,6 +173,41 @@ msgstr ""
 #: lib/aurum_finance_web/live/transactions_live.html.heex:22
 #, elixir-autogen
 msgid "label_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:17
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:36
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_date"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:68
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_account"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:79
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_source"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:91
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_category"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:102
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_search_text"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:115
+#, elixir-autogen, elixir-format
+msgid "tooltip_filter_include_voided"
 msgstr ""
 
 #: lib/aurum_finance_web/components/transactions_components.ex:141
@@ -237,6 +292,11 @@ msgstr ""
 #: lib/aurum_finance_web/live/transactions_live.html.heex:140
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "classification_bulk_apply_subtitle"
 msgstr ""
 
 #: lib/aurum_finance_web/components/transactions_components.ex:702
@@ -484,4 +544,14 @@ msgstr ""
 #: lib/aurum_finance_web/live/transactions_live.html.heex:258
 #, elixir-autogen, elixir-format
 msgid "col_tags"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:137
+#, elixir-autogen, elixir-format
+msgid "clear_filters"
+msgstr ""
+
+#: lib/aurum_finance_web/live/transactions_live.html.heex:70
+#, elixir-autogen, elixir-format
+msgid "label_total_results"
 msgstr ""

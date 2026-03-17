@@ -319,12 +319,24 @@
 .au-btn:hover {
   background: rgba(255, 255, 255, 0.08);
 }
+.au-btn:disabled {
+  cursor: not-allowed;
+  opacity: 0.65;
+}
 .au-btn-primary {
   border-color: rgba(124, 108, 255, 0.35);
   background: rgba(124, 108, 255, 0.18);
 }
 .au-btn-primary:hover {
   background: rgba(124, 108, 255, 0.24);
+}
+.au-btn-danger {
+  border-color: rgba(239, 68, 68, 0.28);
+  background: rgba(239, 68, 68, 0.12);
+  color: rgba(255, 220, 220, 0.92);
+}
+.au-btn-danger:hover {
+  background: rgba(239, 68, 68, 0.18);
 }
 
 /* Two-column split (wider left, narrower right) */

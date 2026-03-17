@@ -86,19 +86,24 @@ defmodule AurumFinanceWeb.CoreComponents do
 
       <.button>Send!</.button>
       <.button phx-click="go" variant="primary">Send!</.button>
+      <.button phx-click="delete" variant="danger">Delete</.button>
       <.button navigate={~p"/"}>Home</.button>
   """
   attr :rest, :global, include: ~w(href navigate patch method download name value disabled)
   attr :class, :any
-  attr :variant, :string, values: ~w(primary)
+  attr :variant, :string, values: ~w(primary danger)
   slot :inner_block, required: true
 
   def button(%{rest: rest} = assigns) do
-    variants = %{"primary" => "btn-primary", nil => "btn-primary btn-soft"}
+    variants = %{
+      "primary" => "au-btn-primary",
+      "danger" => "au-btn-danger",
+      nil => nil
+    }
 
     assigns =
       assign_new(assigns, :class, fn ->
-        ["btn", Map.fetch!(variants, assigns[:variant])]
+        ["au-btn", Map.fetch!(variants, assigns[:variant])]
       end)
 
     if rest[:href] || rest[:navigate] || rest[:patch] do
@@ -239,7 +244,13 @@ defmodule AurumFinanceWeb.CoreComponents do
         <select
           id={@id}
           name={@name}
-          class={[@class || "w-full select", @errors != [] && (@error_class || "select-error")]}
+          class={[
+            @class ||
+              "mt-2 w-full rounded-xl border border-white/10 bg-[#0b1020] px-3 py-2 text-sm text-white/90 outline-none transition focus:border-white/30",
+            @errors != [] &&
+              (@error_class ||
+                 "border-rose-300/45 bg-rose-300/10 text-rose-50 focus:border-rose-200/70")
+          ]}
           multiple={@multiple}
           {@rest}
         >

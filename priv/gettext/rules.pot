@@ -734,6 +734,11 @@ msgstr ""
 msgid "callout_tips_item_3"
 msgstr ""
 
+#: lib/aurum_finance_web/live/rules_live.html.heex:458
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_4"
+msgstr ""
+
 #: lib/aurum_finance_web/live/rules_live.html.heex:453
 #, elixir-autogen, elixir-format
 msgid "callout_tips_title"

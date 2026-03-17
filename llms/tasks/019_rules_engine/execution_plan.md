@@ -4,7 +4,7 @@
 - **Spec**: `llms/tasks/019_rules_engine/plan.md`
 - **Created**: 2026-03-12
 - **Status**: IN_PROGRESS
-- **Current Task**: 11 - Bulk Apply + Classification Display UI
+- **Current Task**: 12 - LiveView Integration Tests
 
 ## Overview
 Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, and #21. The feature introduces a `Classification` context with unified scoped rule groups (`global`, `entity`, `account`), rules (expression-based conditions + JSONB actions), a pure-function evaluation engine with preview/dry-run, and a classification records layer with per-field manual override protection and audit trail integration.
@@ -64,8 +64,8 @@ Implements a three-commit rules engine feature spanning GitHub Issues #19, #20, 
 | 08 | Preview UI | COMPLETED | [x] | Task 06, Task 04 |
 | 09 | ClassificationRecord + Apply APIs | COMPLETED | [x] | Task 05 |
 | 10 | Classification Record Tests | COMPLETED | [x] | Task 09 |
-| 11 | Bulk Apply + Classification Display UI | IN_PROGRESS | [ ] | Task 09, Task 04 |
-| 12 | LiveView Integration Tests | BLOCKED | [ ] | Task 04, Task 08, Task 11 |
+| 11 | Bulk Apply + Classification Display UI | COMPLETED | [x] | Task 09, Task 04 |
+| 12 | LiveView Integration Tests | COMPLETED | [ ] | Task 04, Task 08, Task 11 |
 | 13 | PR Audit | BLOCKED | [ ] | Task 12 |
 
 **Status Legend:**
@@ -110,3 +110,5 @@ No blocking open questions at planning time.
 | 2026-03-16 | Task 09 | Implemented `classification_records`, apply/manual override APIs, preview integration with persisted state, and backend coverage; advanced current task to ClassificationRecord review | Reflect backend completion before QA/UI follow-up tasks |
 | 2026-03-16 | Task 10 | Added Task 10 QA coverage for classification record validations, apply flows, manual overrides, audit metadata, bulk failure reporting, and deleted-rule provenance resilience; advanced current task to Task 10 review | Reflect focused backend test completion pending human sign-off |
 | 2026-03-16 | Task 11 | Implemented transactions-page bulk apply controls, inline per-field classification display, provenance badges, and manual override controls; advanced current task to Task 11 review | Reflect frontend integration of classification apply/display before LiveView test expansion |
+| 2026-03-17 | Task 11 | Marked Task 11 as completed/approved in the execution tracker and advanced current task to Task 12 | Align tracker state with the implemented transactions classification UI and human sign-off recorded in Task 11 |
+| 2026-03-17 | Task 12 | Added LiveView integration coverage for RulesLive and TransactionsLive, validated the targeted suite, and passed `mix precommit` | Reflect Task 12 implementation completion pending human sign-off before the final PR audit |

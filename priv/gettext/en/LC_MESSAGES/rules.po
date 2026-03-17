@@ -725,6 +725,11 @@ msgstr "Keep high-confidence vendor matches at the top and leave broader text ma
 msgid "callout_tips_item_3"
 msgstr "Prefer tags or notes for exploratory enrichment before hard-coding categories everywhere."
 
+#: lib/aurum_finance_web/live/rules_live.html.heex:458
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_4"
+msgstr "In advanced mode, use matches_regex with patterns like A|B|C to cover similar merchants in one rule instead of creating several contains rules."
+
 #: lib/aurum_finance_web/live/rules_live.html.heex:453
 #, elixir-autogen, elixir-format
 msgid "callout_tips_title"

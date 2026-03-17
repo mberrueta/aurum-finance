@@ -21,7 +21,6 @@ defmodule AurumFinanceWeb.TransactionsLive do
        page_title: dgettext("transactions", "page_title"),
        entities: entities,
        current_entity: nil,
-       filters_expanded: false,
        accounts: [],
        category_accounts: [],
        classification_records: %{},
@@ -47,7 +46,6 @@ defmodule AurumFinanceWeb.TransactionsLive do
      socket
      |> assign(
        current_entity: current_entity,
-       filters_expanded: filters_expanded?(filters),
        expanded_transaction_id: expanded_transaction_id,
        editing_classification_transaction_id: nil,
        bulk_apply_summary: nil,
@@ -69,10 +67,6 @@ defmodule AurumFinanceWeb.TransactionsLive do
      push_patch(socket,
        to: transactions_path(socket.assigns.current_entity, parse_filters(params))
      )}
-  end
-
-  def handle_event("toggle_filters", _params, socket) do
-    {:noreply, update(socket, :filters_expanded, &(!&1))}
   end
 
   def handle_event("set_date_preset", %{"preset" => preset}, socket) do
@@ -264,6 +258,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
   defp default_filters do
     %{
       account_id: "",
+      category_account_id: "",
+      search_text: "",
       date_preset: "all",
       date_from: "",
       date_to: "",
@@ -275,6 +271,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
   defp parse_filters(params) do
     %{
       account_id: Helpers.blank_to_nil(params["account_id"]),
+      category_account_id: Helpers.blank_to_nil(params["category_account_id"]),
+      search_text: normalize_search_text(params["search_text"]),
       date_preset: params["date_preset"] || "all",
       source_type: params["source_type"] || "",
       include_voided: truthy_param?(params["include_voided"])
@@ -302,6 +300,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
     filters =
       %{
         account_id: clauses["account"] |> Helpers.blank_to_nil(),
+        category_account_id: clauses["category"] |> Helpers.blank_to_nil(),
+        search_text: normalize_search_text(clauses["search"]),
         date_preset: clauses["date"] || "all",
         source_type: clauses["source"] || "",
         include_voided: truthy_param?(clauses["voided"])
@@ -314,6 +314,8 @@ defmodule AurumFinanceWeb.TransactionsLive do
   defp filter_opts(entity_id, filters) do
     [entity_id: entity_id, include_voided: filters.include_voided]
     |> maybe_put_opt(:account_id, filters.account_id)
+    |> maybe_put_opt(:category_account_id, filters.category_account_id)
+    |> maybe_put_opt(:search_text, filters.search_text)
     |> maybe_put_opt(:source_type, parse_source_type(filters.source_type))
     |> maybe_put_opt(:date_from, parse_date(filters.date_from))
     |> maybe_put_opt(:date_to, parse_date(filters.date_to))
@@ -321,6 +323,13 @@ defmodule AurumFinanceWeb.TransactionsLive do
 
   defp account_filter_options(accounts) do
     [{dgettext("transactions", "filter_account_all"), ""} | Enum.map(accounts, &{&1.name, &1.id})]
+  end
+
+  defp category_filter_options(accounts) do
+    [
+      {dgettext("transactions", "filter_category_all"), ""}
+      | Enum.map(accounts, &{&1.name, &1.id})
+    ]
   end
 
   defp source_type_filter_options do
@@ -426,6 +435,14 @@ defmodule AurumFinanceWeb.TransactionsLive do
     Map.new(filters, fn {key, value} -> {Atom.to_string(key), value} end)
   end
 
+  defp normalize_search_text(nil), do: ""
+
+  defp normalize_search_text(value) do
+    value
+    |> to_string()
+    |> String.trim()
+  end
+
   defp date_preset_button_class(true) do
     "rounded-xl border border-emerald-400/40 bg-emerald-400/15 px-3 py-2 text-sm font-medium text-emerald-100 transition"
   end
@@ -434,17 +451,22 @@ defmodule AurumFinanceWeb.TransactionsLive do
     "rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/72 transition hover:border-white/20 hover:bg-white/[0.06]"
   end
 
-  defp filters_toggle_label(true), do: dgettext("transactions", "filters_hide")
-  defp filters_toggle_label(false), do: dgettext("transactions", "filters_show")
+  defp bulk_apply_available?(current_entity, filters) do
+    not is_nil(current_entity) and filters.date_from != "" and filters.date_to != ""
+  end
 
-  defp filters_expanded?(filters) do
-    not is_nil(filters.account_id) or filters.source_type != "" or filters.include_voided
+  defp filters_active?(filters) do
+    not is_nil(filters.account_id) or not is_nil(filters.category_account_id) or
+      filters.search_text != "" or filters.source_type != "" or filters.include_voided or
+      filters.date_preset != "all"
   end
 
   defp transactions_path(current_entity, filters) do
     FilterQuery.build_path("/transactions",
       entity: current_entity && current_entity.id,
       account: filters.account_id,
+      category: filters.category_account_id,
+      search: FilterQuery.skip_default(filters.search_text, ""),
       date: FilterQuery.skip_default(filters.date_preset, "all"),
       source: FilterQuery.skip_default(filters.source_type, ""),
       voided: filters.include_voided && "true"

@@ -863,6 +863,7 @@ defmodule AurumFinanceWeb.RulesLive do
                 </p>
                 <ul class="mt-2 list-disc space-y-1 pl-5 font-mono text-[11px] text-white/68">
                   <li>description contains "Uber"</li>
+                  <li>description matches_regex "(?i)(netflix|prime|hbo|spotify)"</li>
                   <li>amount &lt; -10</li>
                   <li>(description contains "Uber") AND (amount &lt; -10)</li>
                 </ul>
@@ -1996,12 +1997,6 @@ defmodule AurumFinanceWeb.RulesLive do
   defp operator_label(:less_than_or_equal), do: dgettext("rules", "operator_less_than_or_equal")
   defp operator_label(:is_empty), do: dgettext("rules", "operator_is_empty")
   defp operator_label(:is_not_empty), do: dgettext("rules", "operator_is_not_empty")
-
-  defp selected_group_title(nil), do: dgettext("rules", "section_group_detail_empty")
-  defp selected_group_title(_group), do: dgettext("rules", "section_group_detail")
-
-  defp selected_group_badge(nil, _rule_count), do: nil
-  defp selected_group_badge(_group, rule_count), do: Integer.to_string(rule_count)
 
   defp selected_scope_badge_variant(:account), do: :good
   defp selected_scope_badge_variant(:entity), do: :purple

@@ -15,12 +15,11 @@
               phx-change="select_entity"
               class="min-w-0 lg:w-72"
             >
-              <label
+              <.info_label
                 for="transactions-entity-id"
-                class="text-[11px] uppercase tracking-[0.18em] text-white/45"
-              >
-                {dgettext("transactions", "label_entity")}
-              </label>
+                text={dgettext("transactions", "label_entity")}
+                tooltip={dgettext("transactions", "tooltip_filter_entity")}
+              />
               <select
                 id="transactions-entity-id"
                 name="entity_id"
@@ -38,9 +37,11 @@
             </.form>
 
             <div class="min-w-0 flex-1">
-              <div class="text-[11px] uppercase tracking-[0.18em] text-white/45">
-                {dgettext("transactions", "filter_date")}
-              </div>
+              <.info_label
+                for="transactions-date-preset-this_week"
+                text={dgettext("transactions", "filter_date")}
+                tooltip={dgettext("transactions", "tooltip_filter_date")}
+              />
               <div class="mt-2 flex flex-wrap gap-2">
                 <button
                   :for={{label, value} <- date_preset_options()}
@@ -57,51 +58,35 @@
           </div>
 
           <div class="flex items-center gap-2 self-start xl:self-center">
+            <.link
+              :if={filters_active?(@filters)}
+              id="transactions-clear-filters"
+              patch={transactions_path(@current_entity, default_filters())}
+              class="au-btn"
+            >
+              {dgettext("transactions", "clear_filters")}
+            </.link>
+            <span class="text-sm text-white/68">
+              {dgettext("transactions", "label_total_results", count: length(@transactions))}
+            </span>
             <.badge variant={:purple}>{length(@transactions)}</.badge>
-            <button
-              id="transactions-bulk-apply"
-              type="button"
-              phx-click="bulk_apply"
-              phx-disable-with={dgettext("transactions", "classification_bulk_apply_loading")}
-              disabled={@bulk_apply_running?}
-              class={[
-                "rounded-xl border px-3 py-2 text-sm font-medium transition",
-                if(@bulk_apply_running?,
-                  do: "cursor-wait border-emerald-300/25 bg-emerald-300/10 text-emerald-100/70",
-                  else:
-                    "border-emerald-300/35 bg-emerald-300/12 text-emerald-100 hover:border-emerald-200/60 hover:bg-emerald-300/18"
-                )
-              ]}
-            >
-              {if(@bulk_apply_running?,
-                do: dgettext("transactions", "classification_bulk_apply_loading"),
-                else: dgettext("transactions", "classification_bulk_apply")
-              )}
-            </button>
-            <button
-              id="transactions-toggle-filters"
-              type="button"
-              phx-click="toggle_filters"
-              class="rounded-xl border border-white/10 bg-white/[0.03] px-3 py-2 text-sm font-medium text-white/80 transition hover:border-white/20 hover:bg-white/[0.06]"
-            >
-              {filters_toggle_label(@filters_expanded)}
-            </button>
           </div>
         </div>
 
         <.form
-          :if={@filters_expanded}
           for={@filters_form}
           id="transactions-filter-form"
           phx-change="filter"
-          class="grid gap-4 rounded-2xl border border-white/8 bg-white/[0.025] p-4 lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_auto]"
+          class="grid gap-4 rounded-2xl border border-white/8 bg-white/[0.025] p-4 lg:grid-cols-2 xl:grid-cols-[minmax(0,1fr)_minmax(0,1fr)_minmax(0,1fr)_minmax(0,1.2fr)_auto]"
         >
           <input type="hidden" name="filters[date_preset]" value={@filters.date_preset} />
 
           <div>
-            <label for="filters_account_id" class="block text-sm font-medium text-white/88">
-              {dgettext("transactions", "filter_account")}
-            </label>
+            <.info_label
+              for="filters_account_id"
+              text={dgettext("transactions", "filter_account")}
+              tooltip={dgettext("transactions", "tooltip_filter_account")}
+            />
             <.input
               field={@filters_form[:account_id]}
               type="select"
@@ -110,9 +95,11 @@
           </div>
 
           <div>
-            <label for="filters_source_type" class="block text-sm font-medium text-white/88">
-              {dgettext("transactions", "filter_source")}
-            </label>
+            <.info_label
+              for="filters_source_type"
+              text={dgettext("transactions", "filter_source")}
+              tooltip={dgettext("transactions", "tooltip_filter_source")}
+            />
             <.input
               field={@filters_form[:source_type]}
               type="select"
@@ -120,24 +107,80 @@
             />
           </div>
 
-          <label class="flex items-center gap-3 pt-7 text-sm text-white/80">
-            <input
-              id="filters-include-voided"
-              type="checkbox"
-              name="filters[include_voided]"
-              value="true"
-              checked={@filters.include_voided}
-              class="size-4 rounded border border-white/15 bg-[#0b1020]"
+          <div>
+            <.info_label
+              for="filters_category_account_id"
+              text={dgettext("transactions", "filter_category")}
+              tooltip={dgettext("transactions", "tooltip_filter_category")}
             />
-            <span>{dgettext("transactions", "filter_include_voided")}</span>
-          </label>
+            <.input
+              field={@filters_form[:category_account_id]}
+              type="select"
+              options={category_filter_options(@category_accounts)}
+            />
+          </div>
+
+          <div>
+            <.info_label
+              for="filters_search_text"
+              text={dgettext("transactions", "filter_search_text")}
+              tooltip={dgettext("transactions", "tooltip_filter_search_text")}
+            />
+            <.input
+              field={@filters_form[:search_text]}
+              type="text"
+              placeholder={dgettext("transactions", "filter_search_text_placeholder")}
+              phx-debounce="900"
+            />
+          </div>
+
+          <div class="pt-1">
+            <.info_label
+              for="filters-include-voided"
+              text={dgettext("transactions", "filter_include_voided")}
+              tooltip={dgettext("transactions", "tooltip_filter_include_voided")}
+            />
+            <label class="flex items-center gap-3 pt-2 text-sm text-white/80">
+              <input
+                id="filters-include-voided"
+                type="checkbox"
+                name="filters[include_voided]"
+                value="true"
+                checked={@filters.include_voided}
+                class="size-4 rounded border border-white/15 bg-[#0b1020]"
+              />
+              <span>{dgettext("transactions", "filter_include_voided")}</span>
+            </label>
+          </div>
         </.form>
       </div>
     </.au_card>
 
     <.au_card>
       <:header>
-        <span>{dgettext("transactions", "classification_bulk_apply_title")}</span>
+        <div>
+          <span>{dgettext("transactions", "classification_bulk_apply_title")}</span>
+          <p class="mt-1 text-[12px] font-normal text-white/45">
+            {dgettext("transactions", "classification_bulk_apply_subtitle")}
+          </p>
+        </div>
+        <.button
+          id="transactions-bulk-apply"
+          type="button"
+          variant="primary"
+          phx-click="bulk_apply"
+          phx-disable-with={dgettext("transactions", "classification_bulk_apply_loading")}
+          disabled={!bulk_apply_available?(@current_entity, @filters) or @bulk_apply_running?}
+        >
+          <.icon
+            name={if(@bulk_apply_running?, do: "hero-arrow-path-mini", else: "hero-bolt-mini")}
+            class={["size-4", @bulk_apply_running? && "animate-spin"]}
+          />
+          {if(@bulk_apply_running?,
+            do: dgettext("transactions", "classification_bulk_apply_loading"),
+            else: dgettext("transactions", "classification_bulk_apply")
+          )}
+        </.button>
       </:header>
 
       <div class="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
@@ -167,6 +210,13 @@
           </.badge>
         </div>
       </div>
+
+      <p
+        :if={!bulk_apply_available?(@current_entity, @filters)}
+        class="mt-3 text-sm text-white/58"
+      >
+        {dgettext("transactions", "classification_bulk_apply_requires_range")}
+      </p>
 
       <div
         :if={@bulk_apply_summary}
@@ -265,6 +315,8 @@
             :for={transaction <- @transactions}
             id={"transaction-#{transaction.id}"}
             transaction={transaction}
+            current_entity={@current_entity}
+            filters={@filters}
             expanded_transaction_id={@expanded_transaction_id}
             classification_record={Map.get(@classification_records, transaction.id)}
             classification_forms={Map.get(@classification_forms, transaction.id, %{})}

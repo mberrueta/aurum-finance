@@ -105,6 +105,75 @@ defmodule AurumFinanceWeb.RulesLiveTest do
     refute has_element?(view, "#rule-group-form")
   end
 
+  test "handles scope specific form inputs and edits group scope", %{conn: conn} do
+    entity = insert_entity(name: "Scope Form Entity")
+    account = insert_account(entity, %{name: "Scope Checking"})
+
+    {:ok, view, _html} = conn |> log_in_root() |> live(~p"/rules?#{%{"entity_id" => entity.id}}")
+
+    view
+    |> element("#new-rule-group-button")
+    |> render_click()
+
+    assert has_element?(view, "#rule-group-form")
+    assert has_element?(view, "#rule-group-scope-type")
+    assert has_element?(view, "#rule-group-entity-id")
+    refute has_element?(view, "#rule-group-account-id")
+
+    view
+    |> form("#rule-group-form", rule_group: %{"scope_type" => "account"})
+    |> render_change()
+
+    assert has_element?(view, "#rule-group-account-id")
+    refute has_element?(view, "#rule-group-entity-id")
+
+    create_params = %{
+      "scope_type" => "account",
+      "account_id" => account.id,
+      "name" => "Account Scoped Group",
+      "priority" => "1",
+      "description" => "Account specific scope",
+      "target_fields" => ["tags"],
+      "is_active" => "true"
+    }
+
+    view
+    |> form("#rule-group-form", rule_group: create_params)
+    |> render_submit()
+
+    created_group =
+      Classification.list_visible_rule_groups(entity.id, [account.id])
+      |> Enum.find(&(&1.name == "Account Scoped Group"))
+
+    assert created_group
+    assert created_group.scope_type == :account
+    assert created_group.account_id == account.id
+    assert is_nil(created_group.entity_id)
+
+    view
+    |> element("#edit-rule-group-#{created_group.id}")
+    |> render_click()
+
+    edit_params = %{
+      "scope_type" => "global",
+      "name" => "Global Scope Group",
+      "priority" => "2",
+      "description" => "Promoted to global",
+      "target_fields" => ["tags"],
+      "is_active" => "true"
+    }
+
+    view
+    |> form("#rule-group-form", rule_group: edit_params)
+    |> render_submit()
+
+    updated_group = Classification.get_rule_group!(created_group.id)
+    assert updated_group.name == "Global Scope Group"
+    assert updated_group.scope_type == :global
+    assert is_nil(updated_group.entity_id)
+    assert is_nil(updated_group.account_id)
+  end
+
   test "deletes a visible rule group", %{conn: conn} do
     entity = insert_entity(name: "Delete Group Entity")
     group = insert_rule_group(entity, %{name: "Delete Me"})
@@ -342,5 +411,42 @@ defmodule AurumFinanceWeb.RulesLiveTest do
 
     assert has_element?(view, "#preview-row-0", "No match")
     refute has_element?(view, "#preview-change-0-tags")
+  end
+
+  test "preview marks protected fields when manual overrides already exist", %{conn: conn} do
+    entity = insert_entity(name: "Preview Protected Entity")
+    checking = insert_account(entity, %{name: "Preview Checking"})
+    group = insert_rule_group(entity, %{name: "Protected Tags Group", priority: 1})
+
+    insert_rule(group, %{
+      name: "Set Ride Tag",
+      expression: ~s|description contains "uber"|,
+      actions: [%{field: :tags, operation: :add, value: "ride"}]
+    })
+
+    transaction = create_preview_transaction(entity, checking, description: "Uber station")
+
+    insert_classification_record(transaction, %{
+      tags: ["manual-tag"],
+      tags_manually_overridden: true,
+      tags_classified_by: %{
+        "source" => "user",
+        "classified_at" => "2026-03-15T12:00:00Z"
+      }
+    })
+
+    {:ok, view, _html} = conn |> log_in_root() |> live(~p"/rules?#{%{"entity_id" => entity.id}}")
+
+    assert has_element?(view, "#run-preview-button[phx-disable-with]")
+
+    view
+    |> form("#preview-form",
+      preview: %{"date_from" => "2026-03-01", "date_to" => "2026-03-31"}
+    )
+    |> render_submit()
+
+    assert has_element?(view, "#preview-results")
+    assert has_element?(view, "#preview-change-0-tags .au-badge-warn")
+    assert has_element?(view, "#preview-change-0-tags", "Protected")
   end
 end

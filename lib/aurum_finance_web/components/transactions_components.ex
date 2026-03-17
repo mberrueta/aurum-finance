@@ -9,9 +9,12 @@ defmodule AurumFinanceWeb.TransactionsComponents do
   import AurumFinanceWeb.BadgeComponent, only: [account_type_label: 1]
   import AurumFinanceWeb.CoreComponents, only: [icon: 1, input: 1]
   import AurumFinanceWeb.UiComponents
+  alias AurumFinanceWeb.FilterQuery
 
   attr :id, :string, required: true
   attr :transaction, :map, required: true
+  attr :current_entity, :map, default: nil
+  attr :filters, :map, default: %{}
   attr :expanded_transaction_id, :any, default: nil
   attr :classification_record, :map, default: nil
   attr :classification_forms, :map, default: %{}
@@ -40,10 +43,24 @@ defmodule AurumFinanceWeb.TransactionsComponents do
           </div>
         </td>
         <td class="px-4 py-3 text-white/78">
-          <span :if={@classification_record && @classification_record.category_account} class="truncate">
-            {@classification_record.category_account.name}
-          </span>
-          <span :if={is_nil(@classification_record) || is_nil(@classification_record.category_account)} class="text-white/38">
+          <.link
+            :if={@classification_record && @classification_record.category_account}
+            id={"#{@id}-filter-category"}
+            patch={
+              filter_patch_path(@current_entity, @filters, %{
+                category_account_id: @classification_record.category_account.id
+              })
+            }
+            onclick="event.stopPropagation()"
+            class="inline-flex max-w-full items-center gap-2 rounded-xl border border-indigo-300/24 bg-indigo-300/12 px-2.5 py-1.5 text-[12px] font-semibold text-indigo-50 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)]"
+          >
+            <.icon name="hero-folder-mini" class="size-4 shrink-0 text-indigo-100/86" />
+            <span class="truncate">{@classification_record.category_account.name}</span>
+          </.link>
+          <span
+            :if={is_nil(@classification_record) || is_nil(@classification_record.category_account)}
+            class="text-white/38"
+          >
             {dgettext("transactions", "classification_unclassified")}
           </span>
         </td>
@@ -52,12 +69,15 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             :if={@classification_record && present_tags?(@classification_record.tags)}
             class="flex max-w-56 flex-wrap gap-1"
           >
-            <span
-              :for={tag <- @classification_record.tags}
-              class="rounded-full border border-sky-300/25 bg-sky-300/10 px-2 py-1 text-[11px] font-medium text-sky-100"
+            <.link
+              :for={{tag, index} <- Enum.with_index(@classification_record.tags)}
+              id={"#{@id}-filter-tag-#{index}"}
+              patch={filter_patch_path(@current_entity, @filters, %{search_text: tag})}
+              onclick="event.stopPropagation()"
+              class="rounded-full border border-white/12 bg-white/[0.04] px-2 py-1 text-[11px] font-medium text-white/72"
             >
               {tag}
-            </span>
+            </.link>
           </div>
           <span
             :if={is_nil(@classification_record) || not present_tags?(@classification_record.tags)}
@@ -67,9 +87,19 @@ defmodule AurumFinanceWeb.TransactionsComponents do
           </span>
         </td>
         <td class="px-4 py-3">
-          <.badge variant={source_badge_variant(@transaction.source_type)}>
-            {source_badge_label(@transaction.source_type)}
-          </.badge>
+          <.link
+            id={"#{@id}-filter-source"}
+            patch={
+              filter_patch_path(@current_entity, @filters, %{
+                source_type: source_filter_value(@transaction.source_type)
+              })
+            }
+            onclick="event.stopPropagation()"
+          >
+            <.badge variant={source_badge_variant(@transaction.source_type)}>
+              {source_badge_label(@transaction.source_type)}
+            </.badge>
+          </.link>
         </td>
         <td class="px-4 py-3 au-mono text-white/72">
           {length(@transaction.postings)}
@@ -181,7 +211,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
       <div
         id={"transaction-#{@transaction.id}-classification"}
         class="rounded-2xl border border-white/10 bg-[#0c152b] p-4 shadow-[0_14px_40px_rgba(4,11,25,0.24)]"
-      > 
+      >
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div>
             <h4 class="text-sm font-semibold text-white/92">
@@ -711,4 +741,23 @@ defmodule AurumFinanceWeb.TransactionsComponents do
   defp source_badge_label(:manual), do: dgettext("transactions", "badge_manual")
   defp source_badge_label(:import), do: dgettext("transactions", "badge_import")
   defp source_badge_label(:system), do: dgettext("transactions", "badge_system")
+
+  defp source_filter_value(:manual), do: "manual"
+  defp source_filter_value(:import), do: "import"
+  defp source_filter_value(:system), do: "system"
+  defp source_filter_value(_value), do: ""
+
+  defp filter_patch_path(current_entity, filters, changes) do
+    filters = Map.merge(filters, changes)
+
+    FilterQuery.build_path("/transactions",
+      entity: current_entity && current_entity.id,
+      account: Map.get(filters, :account_id),
+      category: Map.get(filters, :category_account_id),
+      search: FilterQuery.skip_default(Map.get(filters, :search_text, ""), ""),
+      date: FilterQuery.skip_default(Map.get(filters, :date_preset, "all"), "all"),
+      source: FilterQuery.skip_default(Map.get(filters, :source_type, ""), ""),
+      voided: Map.get(filters, :include_voided) && "true"
+    )
+  end
 end
