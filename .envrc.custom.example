@@ -1,7 +1,7 @@
-# Copy this file to `.envrc.custom` (or `.envrc_custom`) for machine-local overrides.
-
-# export DIR="/absolute/path/to/aurum-finance"
+# Machine-local overrides and secrets for AurumFinance.
+# Copy this file to `.envrc.custom` and adjust values for your machine.
+# NEVER commit or upload `.envrc.custom`.
+#
 # export SECRET_KEY_BASE="replace_me"
 # export DATABASE_URL="ecto://postgres:postgres@localhost:5432/aurum_finance_dev"
-
 # export AURUM_ROOT_PASSWORD_HASH="Generate one with: mix aurum.gen_password_hash <password>"

@@ -1,6 +1,6 @@
 import Config
 
-mix_port = String.to_integer(System.get_env("MIX_PORT") || "4000")
+port = System.get_env("PORT") || System.get_env("MIX_PORT") || "4000"
 
 # Configure your database
 config :aurum_finance, AurumFinance.Repo,
@@ -21,8 +21,8 @@ config :aurum_finance, AurumFinance.Repo,
 config :aurum_finance, AurumFinanceWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
-  url: [host: "localhost", port: mix_port],
-  http: [ip: {127, 0, 0, 1}, port: mix_port],
+  url: [host: "localhost", port: String.to_integer(port)],
+  http: [ip: {127, 0, 0, 1}, port: String.to_integer(port)],
   check_origin: false,
   code_reloader: true,
   debug_errors: true,

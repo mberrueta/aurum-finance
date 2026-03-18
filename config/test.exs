@@ -1,5 +1,7 @@
 import Config
 
+test_port = System.get_env("TEST_PORT") || System.get_env("LIVE_DEBUGGER_PORT") || "4002"
+
 # Keep runtime auth env check satisfied in test runs.
 System.put_env(
   "AURUM_ROOT_PASSWORD_HASH",
@@ -22,7 +24,7 @@ config :aurum_finance, AurumFinance.Repo,
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :aurum_finance, AurumFinanceWeb.Endpoint,
-  http: [ip: {127, 0, 0, 1}, port: 4002],
+  http: [ip: {127, 0, 0, 1}, port: String.to_integer(test_port)],
   secret_key_base: "aOsWc5zBn0/jQVnXpb7SvADdPxqj/wdw4FSmOvgxiq6z5mj3x5c4ikOJOdjyWIoE",
   server: false
 

@@ -37,6 +37,7 @@ npm-debug.log
 .env
 .env.*
 /.envrc.custom
+/.envrc_custom
 /.claude/
 /.codex/
 

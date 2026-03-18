@@ -227,25 +227,44 @@ mix ecto.setup
 mix phx.server
 ```
 
-Open: [http://localhost:4000](http://localhost:4000)
+Open: [http://localhost:4000](http://localhost:4000) by default, or the port from `PORT` / `MIX_PORT`.
 
-### Environment setup (`direnv`)
+### Development
+
+#### Environment setup (`direnv`)
 
 ```bash
-direnv allow
 cp .envrc.custom.example .envrc.custom
+direnv allow
 ```
 
-Use `.envrc.custom` for machine-local overrides.
+`.envrc` ships with open-source defaults and `.envrc.custom` is for machine-local overrides.
 
-`tmux_proj.sh` uses `DIR` from your environment when set. If `DIR` is not set, it falls back to the script directory automatically.
+#### tmux helper
 
-Default open-source ports in `.envrc`:
+`tmux_proj.sh` always resolves the repo from the script path, so running `/path/to/repo/tmux_proj.sh` while standing in `~/tmp` still opens tmux in this repo.
+
+Default ports in `.envrc`:
 - `MIX_PORT=4000`
 - `TIDEWAVE_PORT=4001`
 - `LIVE_DEBUGGER_PORT=4002`
+- `TEST_PORT=4002`
 
-Your local `.envrc_custom` can override them with machine-specific values.
+Your local `.envrc.custom` can override them. This repo also supports reading `PORT`, `MIX_PORT`, and `TEST_PORT` from the environment, with those defaults as fallback.
+
+`tmux_proj.sh` reads ports from the current shell environment, keeps `MAIN` empty for ad hoc work, starts Phoenix and Tidewave side by side in `SERVER`, opens `iex -S mix` in `IEX`, and leaves `LLM` as an extra shell window.
+
+Example `~/.zshrc` alias:
+
+```bash
+alias open_aurum="/path/to/aurum-finance/tmux_proj.sh"
+```
+
+Open the tmux helper from anywhere with:
+
+```bash
+open_aurum
+```
 
 ### Docker
 
@@ -253,7 +272,7 @@ Your local `.envrc_custom` can override them with machine-specific values.
 docker compose up --build
 ```
 
-Open: [http://localhost:4000](http://localhost:4000)
+Open: [http://localhost:4000](http://localhost:4000) by default, or the port from `PORT` / `MIX_PORT`.
 
 ---
 
