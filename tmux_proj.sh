@@ -1,14 +1,20 @@
 #!/usr/bin/env zsh
 set -u
 
-SESSION="aurum_finance"
+SESSION="${TMUX_SESSION_NAME:-aurum_finance}"
+# Resolve the repository root from the script location so tmux panes open here
+# even when the script is launched from another directory.
+# Example: running
+# `/path/to/repo/tmux_proj.sh` while your shell is currently in `~/tmp`.
 SCRIPT_DIR="$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)"
-DIR="${DIR:-$SCRIPT_DIR}"
 MIX_PORT="${MIX_PORT:-4000}"
 TIDEWAVE_PORT="${TIDEWAVE_PORT:-4001}"
+LIVE_DEBUGGER_PORT="${LIVE_DEBUGGER_PORT:-4002}"
+TEST_PORT="${TEST_PORT:-4002}"
+PORT="${PORT:-$MIX_PORT}"
 
-cd "$DIR" || {
-  echo "ERROR: failed to cd to $DIR"
+cd "$SCRIPT_DIR" || {
+  echo "ERROR: failed to cd to $SCRIPT_DIR"
   exit 1
 }
 
@@ -17,31 +23,28 @@ LINES=$(tput lines 2>/dev/null || echo 45)
 
 inside_tmux() { [[ -n "${TMUX-}" ]]; }
 
+has_mix_task() {
+  MIX_NO_SYNC=1 mix help "$1" >/dev/null 2>&1
+}
+
 if ! tmux has-session -t "$SESSION" 2>/dev/null; then
-  tmux new-session -d -s "$SESSION" -n main -c "$DIR" -x "$COLS" -y "$LINES"
+  tmux new-session -d -s "$SESSION" -n MAIN -c "$SCRIPT_DIR" -x "$COLS" -y "$LINES"
 
-  # Top 20% split into two panes, bottom 80% for server
-  tmux split-window -v -p 80 -t "$SESSION:main"
-  tmux select-window -t "$SESSION:main"
-  tmux select-pane -U
-  tmux split-window -h -p 50
+  tmux new-window -t "$SESSION" -n SERVER -c "$SCRIPT_DIR"
+  if has_mix_task tidewave; then
+    tmux split-window -v -p 75 -t "$SESSION:SERVER"
+    tmux select-window -t "$SESSION:SERVER"
+    tmux select-pane -U
+    tmux send-keys "mix tidewave" C-m
+    tmux select-pane -D
+  fi
+  tmux send-keys -t "$SESSION:SERVER" "mix phx.server" C-m
 
-  # Bottom pane: Phoenix server
-  tmux select-window -t "$SESSION:main"
-  tmux select-pane -D
-  tmux send-keys "mix phx.server" C-m
+  tmux new-window -t "$SESSION" -n IEX -c "$SCRIPT_DIR"
+  tmux send-keys -t "$SESSION:IEX" "iex -S mix" C-m
 
-  # Top-left pane: shell for mix tasks
-  tmux select-pane -U
-  tmux select-pane -L
-  tmux send-keys "TIDEWAVE_PORT=${TIDEWAVE_PORT} mix tidewave" C-m
-
-  # Top-right pane: interactive iex
-  tmux select-pane -R
-  tmux send-keys "iex -S mix" C-m
-
-  tmux new-window -t "$SESSION" -n dev -c "$DIR"
-  tmux new-window -t "$SESSION" -n llm -c "$DIR"
+  tmux new-window -t "$SESSION" -n LLM -c "$SCRIPT_DIR"
+  tmux select-window -t "$SESSION:MAIN"
 fi
 
 if inside_tmux; then
