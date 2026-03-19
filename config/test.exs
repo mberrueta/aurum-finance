@@ -50,3 +50,5 @@ config :aurum_finance, Oban,
   testing: :manual,
   plugins: false,
   queues: false
+
+config :aurum_finance, :start_reporting_ledger_event_bridge, false

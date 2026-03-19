@@ -255,6 +255,13 @@ defmodule AurumFinanceWeb.AccountsComponents do
           />
         </div>
 
+        <.input
+          field={@form[:timezone]}
+          type="text"
+          label={dgettext("accounts", "label_timezone")}
+          placeholder="America/New_York"
+        />
+
         <div :if={@selected_management_group == :institution}>
           <.info_label
             for={@form[:operational_subtype].id}

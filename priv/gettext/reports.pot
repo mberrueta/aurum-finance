@@ -11,8 +11,211 @@
 msgid ""
 msgstr ""
 
-#: lib/aurum_finance_web/live/reports_live.ex:11
-#: lib/aurum_finance_web/live/reports_live.ex:20
+#: lib/aurum_finance_web/live/reports_live.ex:23
+#: lib/aurum_finance_web/live/reports_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:21
+#, elixir-autogen, elixir-format
+msgid "btn_drilldown"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:143
+#, elixir-autogen, elixir-format
+msgid "btn_open_transactions"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "cashflow_category_rollup"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:139
+#, elixir-autogen, elixir-format
+msgid "drilldown_caption"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:61
+#: lib/aurum_finance_web/live/reports_live.html.heex:64
+#, elixir-autogen, elixir-format
+msgid "holding_change_7d"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:54
+#, elixir-autogen, elixir-format
+msgid "holding_qty_price"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "mock_export_pdf"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "net_worth_footer"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:47
+#, elixir-autogen, elixir-format
+msgid "portfolio_holdings_caption"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:75
+#, elixir-autogen, elixir-format
+msgid "rebuild_error"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:103
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_label"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:80
+#, elixir-autogen, elixir-format
+msgid "rebuild_panel_help"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:73
+#, elixir-autogen, elixir-format
+msgid "rebuild_panel_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "rebuild_submit_hint"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:125
+#, elixir-autogen, elixir-format
+msgid "rebuild_submit_label"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "rebuild_success"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "rebuild_validation_error"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "section_cashflow_month"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:134
+#, elixir-autogen, elixir-format
+msgid "section_drilldown_mock"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "section_net_worth_history"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "section_portfolio_allocation"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "badge_internal"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:14
+#: lib/aurum_finance_web/live/reports_live.html.heex:27
+#: lib/aurum_finance_web/live/reports_live.html.heex:44
+#, elixir-autogen, elixir-format
+msgid "badge_mock"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:135
+#, elixir-autogen, elixir-format
+msgid "badge_transactions"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:188
+#, elixir-autogen, elixir-format
+msgid "cashflow_food"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "cashflow_housing"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:186
+#, elixir-autogen, elixir-format
+msgid "cashflow_income"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "cashflow_other"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:189
+#, elixir-autogen, elixir-format
+msgid "cashflow_transport"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "holding_name_bova11"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "holding_name_qqqd"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:208
+#, elixir-autogen, elixir-format
+msgid "holding_name_vt"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:196
+#, elixir-autogen, elixir-format
+msgid "mock_entity_name"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:94
+#, elixir-autogen, elixir-format
+msgid "rebuild_account_label"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:136
+#, elixir-autogen, elixir-format
+msgid "rebuild_account_prompt"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:145
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_all"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:151
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_current_year"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_last_month"
+msgstr ""
+
+#: lib/aurum_finance_web/live/reports_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_one_year_ago"
 msgstr ""

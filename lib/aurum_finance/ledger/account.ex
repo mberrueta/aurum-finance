@@ -17,10 +17,16 @@ defmodule AurumFinance.Ledger.Account do
   - `operational_subtype` refines workflow meaning for asset/liability accounts
   - `management_group` controls how the account is grouped for management surfaces
   - `currency_code` defines the account's native currency
+  - `timezone` defines the account-local business timezone used by downstream
+    reporting semantics
   - `entity_id` keeps the account inside one ownership boundary
 
   In the UI these families may be shown separately, but they remain the same
   canonical ledger entity underneath.
+
+  `timezone` must always be provided explicitly for new accounts. Any migration-
+  time compatibility handling for legacy rows is not part of the account's
+  business semantics and must not be treated as an authoritative derived value.
   """
 
   use Ecto.Schema
@@ -59,7 +65,7 @@ defmodule AurumFinance.Ledger.Account do
 
   @type t :: %__MODULE__{}
 
-  @required [:entity_id, :name, :account_type, :management_group, :currency_code]
+  @required [:entity_id, :name, :account_type, :management_group, :currency_code, :timezone]
   @optional [
     :operational_subtype,
     :institution_name,
@@ -74,6 +80,7 @@ defmodule AurumFinance.Ledger.Account do
     field :operational_subtype, Ecto.Enum, values: @operational_subtypes
     field :management_group, Ecto.Enum, values: @management_groups
     field :currency_code, :string
+    field :timezone, :string
     field :institution_name, :string
     field :institution_account_ref, :string
     field :notes, :string
@@ -87,6 +94,9 @@ defmodule AurumFinance.Ledger.Account do
   @doc """
   Builds the account changeset with canonical validations and immutability rules.
 
+  New accounts must provide an explicit `timezone`. The changeset does not infer
+  timezone from the parent entity or any migration-era compatibility behavior.
+
   ## Examples
 
       iex> changeset =
@@ -96,12 +106,15 @@ defmodule AurumFinance.Ledger.Account do
       ...>     account_type: :asset,
       ...>     operational_subtype: :brokerage_cash,
       ...>     management_group: :institution,
-      ...>     currency_code: "usd"
+      ...>     currency_code: "usd",
+      ...>     timezone: "America/New_York"
       ...>   })
       iex> changeset.valid?
       true
       iex> Ecto.Changeset.get_field(changeset, :currency_code)
       "USD"
+      iex> Ecto.Changeset.get_field(changeset, :timezone)
+      "America/New_York"
   """
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   def changeset(account, attrs) do

@@ -4,6 +4,7 @@ defmodule AurumFinance.LedgerTest do
   alias AurumFinance.Audit
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
+  alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Reconciliation
   alias AurumFinance.Reconciliation.PostingReconciliationState
@@ -19,6 +20,7 @@ defmodule AurumFinance.LedgerTest do
       assert "This field is required." in errors_on(changeset).account_type
       assert "This field is required." in errors_on(changeset).management_group
       assert "This field is required." in errors_on(changeset).currency_code
+      assert "This field is required." in errors_on(changeset).timezone
     end
 
     test "requires operational_subtype for asset/liability accounts" do
@@ -28,7 +30,8 @@ defmodule AurumFinance.LedgerTest do
           name: "Checking",
           account_type: :asset,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -46,7 +49,8 @@ defmodule AurumFinance.LedgerTest do
           account_type: :income,
           operational_subtype: :bank_checking,
           management_group: :category,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -62,7 +66,8 @@ defmodule AurumFinance.LedgerTest do
           account_type: :liability,
           operational_subtype: :bank_checking,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -79,7 +84,8 @@ defmodule AurumFinance.LedgerTest do
           name: "Opening balances",
           account_type: :equity,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -385,8 +391,11 @@ defmodule AurumFinance.LedgerTest do
                })
 
       assert Enum.count(transaction.postings) == 4
-      assert Ledger.get_account_balance(usd_checking.id) == %{"USD" => Decimal.new("-100.00")}
-      assert Ledger.get_account_balance(eur_savings.id) == %{"EUR" => Decimal.new("92.00")}
+      assert %{"USD" => usd_balance} = Ledger.get_account_balance(usd_checking.id)
+      assert Decimal.eq?(usd_balance, Decimal.new("-100.00"))
+
+      assert %{"EUR" => eur_balance} = Ledger.get_account_balance(eur_savings.id)
+      assert Decimal.eq?(eur_balance, Decimal.new("92.00"))
     end
 
     test "rejects unbalanced postings" do
@@ -650,7 +659,8 @@ defmodule AurumFinance.LedgerTest do
       assert event.after["voided_at"]
       assert Audit.list_audit_events(entity_id: reversal.id) == []
       assert Audit.list_audit_events(entity_type: "posting") == []
-      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("0.00")}
+      assert %{"USD" => balance} = Ledger.get_account_balance(checking.id)
+      assert Decimal.eq?(balance, Decimal.new("0.00"))
     end
 
     test "rejects double void" do
@@ -726,6 +736,184 @@ defmodule AurumFinance.LedgerTest do
     end
   end
 
+  describe "ledger transaction notifications" do
+    test "create_transaction/2 emits one event with the business date and affected accounts" do
+      entity = insert_entity()
+      checking = insert_account(entity, %{name: "Checking notifications"})
+
+      groceries =
+        insert_account(entity, %{
+          name: "Groceries notifications",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      transport =
+        insert_account(entity, %{
+          name: "Transport notifications",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-12],
+                 description: "Split purchase",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-15.0000")},
+                   %{account_id: groceries.id, amount: Decimal.new("10.0000")},
+                   %{account_id: transport.id, amount: Decimal.new("5.0000")}
+                 ]
+               })
+
+      transaction_id = transaction.id
+      entity_id = entity.id
+
+      assert_receive {:transaction_created,
+                      %{
+                        transaction_id: ^transaction_id,
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: account_ids
+                      }}
+
+      assert Enum.sort(account_ids) == Enum.sort([checking.id, groceries.id, transport.id])
+    end
+
+    test "create_transaction/2 does not emit when validation fails" do
+      entity = insert_entity()
+      checking = insert_account(entity, %{name: "Invalid notification checking"})
+
+      groceries =
+        insert_account(entity, %{
+          name: "Invalid notification groceries",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:error, _changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-12],
+                 description: "Unbalanced transaction",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-10.0000")},
+                   %{account_id: groceries.id, amount: Decimal.new("9.0000")}
+                 ]
+               })
+
+      entity_id = entity.id
+      checking_id = checking.id
+      groceries_id = groceries.id
+
+      refute_receive {:transaction_created,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: [^checking_id, ^groceries_id]
+                      }}
+
+      refute_receive {:transaction_created,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: [^groceries_id, ^checking_id]
+                      }},
+                     50
+    end
+
+    test "void_transaction/2 emits one event with the original business date and affected accounts" do
+      %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      transaction =
+        create_balanced_transaction(checking, groceries, %{
+          description: "Void notifications",
+          date: ~D[2026-03-15]
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:ok, %{voided: voided}} = Ledger.void_transaction(transaction)
+
+      voided_id = voided.id
+      entity_id = transaction.entity_id
+
+      assert_receive {:transaction_voided,
+                      %{
+                        transaction_id: ^voided_id,
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-15],
+                        account_ids: account_ids
+                      }}
+
+      assert Enum.sort(account_ids) == Enum.sort([checking.id, groceries.id])
+    end
+
+    test "void_transaction/2 does not emit when reconciled postings block the write" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      transaction =
+        create_balanced_transaction(checking, groceries, %{
+          description: "Blocked void notification"
+        })
+
+      {:ok, session} =
+        Reconciliation.create_reconciliation_session(
+          %{
+            entity_id: entity.id,
+            account_id: checking.id,
+            statement_date: ~D[2026-03-20],
+            statement_balance: Decimal.new("-10.00")
+          },
+          entity_id: entity.id
+        )
+
+      posting_ids =
+        transaction.postings
+        |> Enum.filter(&(&1.account_id == checking.id))
+        |> Enum.map(& &1.id)
+
+      assert {:ok, _states} =
+               Reconciliation.mark_postings_cleared(posting_ids, session.id, entity_id: entity.id)
+
+      assert {:ok, _session} = Reconciliation.complete_reconciliation_session(session)
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:error, :reconciled_postings} = Ledger.void_transaction(transaction)
+
+      entity_id = entity.id
+      checking_id = checking.id
+      groceries_id = groceries.id
+      transaction_date = transaction.date
+
+      refute_receive {:transaction_voided,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ^transaction_date,
+                        account_ids: [^checking_id, ^groceries_id]
+                      }},
+                     50
+
+      refute_receive {:transaction_voided,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ^transaction_date,
+                        account_ids: [^groceries_id, ^checking_id]
+                      }},
+                     50
+    end
+  end
+
   describe "get_account_balance/2" do
     test "derives balances from postings and filters by as_of_date" do
       %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
@@ -742,11 +930,13 @@ defmodule AurumFinance.LedgerTest do
           date: ~D[2026-03-05]
         })
 
-      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("-20.00")}
+      assert %{"USD" => current_balance} = Ledger.get_account_balance(checking.id)
+      assert Decimal.eq?(current_balance, Decimal.new("-20.00"))
 
-      assert Ledger.get_account_balance(checking.id, as_of_date: ~D[2026-03-01]) == %{
-               "USD" => Decimal.new("-10.00")
-             }
+      assert %{"USD" => historical_balance} =
+               Ledger.get_account_balance(checking.id, as_of_date: ~D[2026-03-01])
+
+      assert Decimal.eq?(historical_balance, Decimal.new("-10.00"))
     end
 
     test "returns exactly one currency key for a populated account" do
@@ -774,6 +964,7 @@ defmodule AurumFinance.LedgerTest do
                    operational_subtype: :bank_checking,
                    management_group: :institution,
                    currency_code: "usd",
+                   timezone: "America/New_York",
                    institution_name: "Bank Example",
                    institution_account_ref: "1234"
                  },
@@ -807,12 +998,15 @@ defmodule AurumFinance.LedgerTest do
       assert created.before == nil
       assert created.after["currency_code"] == "USD"
       assert created.after["management_group"] == "institution"
+      assert created.after["timezone"] == "America/New_York"
       assert created.after["institution_account_ref"] == "[REDACTED]"
 
       assert updated.action == "updated"
       assert updated.actor == "scheduler"
       assert updated.channel == :system
       assert updated.before["notes"] == nil
+      assert updated.before["timezone"] == "America/New_York"
+      assert updated.after["timezone"] == "America/New_York"
       assert updated.after["notes"] == "updated"
       assert updated.before["institution_account_ref"] == "[REDACTED]"
       assert updated.after["institution_account_ref"] == "[REDACTED]"

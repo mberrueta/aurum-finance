@@ -133,7 +133,13 @@ flowchart LR
 
 Notes:
 - Authentication is edge-only (not a domain context).
-- Context communication is synchronous via public APIs.
+- Context communication is synchronous via public APIs by default.
+- Narrow internal post-commit domain notifications are allowed only when needed
+  to avoid an upward dependency from a lower-tier write-model context to a
+  higher-tier derived read-model consumer. This exception is for
+  projection/update signaling only; it does not establish a general
+  event-driven architecture or replace synchronous API calls as the default
+  integration model.
 - No context depends on `AurumFinanceWeb`.
 
 ## Primary data flows

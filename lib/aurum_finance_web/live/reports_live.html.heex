@@ -1,0 +1,146 @@
+<div id="reports-page">
+  <.page_header title={dgettext("reports", "page_title")}>
+    <:subtitle>
+      {dgettext("reports", "page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <button class="au-btn au-btn-primary">{dgettext("reports", "mock_export_pdf")}</button>
+    </:actions>
+  </.page_header>
+
+  <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
+    <.section_panel
+      title={dgettext("reports", "section_net_worth_history")}
+      badge={dgettext("reports", "badge_mock")}
+    >
+      <div class="mt-3">
+        <.sparkline series={@net_worth_series} />
+      </div>
+      <div class="mt-2.5 flex items-center justify-between gap-2.5">
+        <span class="text-xs text-white/50">{dgettext("reports", "net_worth_footer")}</span>
+        <button class="au-btn">{dgettext("reports", "btn_drilldown")}</button>
+      </div>
+    </.section_panel>
+
+    <.section_panel
+      title={dgettext("reports", "section_cashflow_month")}
+      badge={dgettext("reports", "badge_mock")}
+    >
+      <div class="au-list">
+        <div :for={item <- @cashflow} class="au-item">
+          <div>
+            <div class="text-sm text-white/92">{item.category}</div>
+            <div class="mt-0.5 text-xs text-white/68">
+              {dgettext("reports", "cashflow_category_rollup")}
+            </div>
+          </div>
+          <div class="au-mono">{format_money(item.value, "USD")}</div>
+        </div>
+      </div>
+    </.section_panel>
+
+    <.section_panel
+      title={dgettext("reports", "section_portfolio_allocation")}
+      badge={dgettext("reports", "badge_mock")}
+    >
+      <p class="mt-2.5 text-xs text-white/50">
+        {dgettext("reports", "portfolio_holdings_caption")}
+      </p>
+      <div class="au-list">
+        <div :for={holding <- @entity.holdings} class="au-item">
+          <div>
+            <div class="text-sm text-white/92">{holding.symbol} - {holding.name}</div>
+            <div class="mt-0.5 text-xs text-white/68">
+              {dgettext("reports", "holding_qty_price",
+                qty: holding.qty,
+                price: format_money(holding.price, holding.currency)
+              )}
+            </div>
+          </div>
+          <.badge :if={holding.change_pct_7d >= 0} variant={:good}>
+            {dgettext("reports", "holding_change_7d", value: pct_label(holding.change_pct_7d))}
+          </.badge>
+          <.badge :if={holding.change_pct_7d < 0} variant={:bad}>
+            {dgettext("reports", "holding_change_7d", value: pct_label(holding.change_pct_7d))}
+          </.badge>
+        </div>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div id="reports-rebuild-panel">
+    <.section_panel
+      title={dgettext("reports", "rebuild_panel_title")}
+      badge={dgettext("reports", "badge_internal")}
+      badge_variant={:warn}
+      class="mt-3.5"
+    >
+      <div class="space-y-4">
+        <p id="reports-rebuild-help" class="text-xs leading-relaxed text-white/55">
+          {dgettext("reports", "rebuild_panel_help")}
+        </p>
+
+        <.form
+          for={@rebuild_form}
+          id="reports-rebuild-form"
+          class="grid gap-4 md:grid-cols-2"
+          phx-change="validate_rebuild"
+          phx-submit="enqueue_rebuild"
+        >
+          <.input
+            field={@rebuild_form[:account_id]}
+            id="reports-rebuild-account-id"
+            type="select"
+            label={dgettext("reports", "rebuild_account_label")}
+            options={@rebuild_account_options}
+          />
+
+          <div class="space-y-2">
+            <.input
+              field={@rebuild_form[:from_date]}
+              id="reports-rebuild-from-date"
+              type="date"
+              label={dgettext("reports", "rebuild_from_date_label")}
+            />
+
+            <div class="flex flex-wrap gap-2">
+              <button
+                :for={{label, preset} <- from_date_preset_options()}
+                id={"reports-rebuild-preset-#{preset}"}
+                type="button"
+                class="au-btn"
+                phx-click="apply_from_date_preset"
+                phx-value-preset={preset}
+              >
+                {label}
+              </button>
+            </div>
+          </div>
+
+          <div class="md:col-span-2 flex items-center justify-between gap-3">
+            <p class="text-xs text-white/45">
+              {dgettext("reports", "rebuild_submit_hint")}
+            </p>
+            <.button id="reports-rebuild-submit" type="submit" variant="primary">
+              {dgettext("reports", "rebuild_submit_label")}
+            </.button>
+          </div>
+        </.form>
+      </div>
+    </.section_panel>
+  </div>
+
+  <.section_panel
+    title={dgettext("reports", "section_drilldown_mock")}
+    badge={dgettext("reports", "badge_transactions")}
+    class="mt-3.5"
+  >
+    <p class="mt-2.5 text-xs text-white/50">
+      {dgettext("reports", "drilldown_caption")}
+    </p>
+    <div class="au-hr"></div>
+    <.link navigate={~p"/transactions"} class="au-btn">
+      {dgettext("reports", "btn_open_transactions")}
+    </.link>
+  </.section_panel>
+</div>

@@ -439,8 +439,10 @@ defmodule AurumFinanceWeb.ReconciliationLiveTest do
 
       assert Reconciliation.get_posting_reconciliation_status(posting.id) == :cleared
 
-      assert Reconciliation.get_cleared_balance(account.id, entity_id: entity.id) ==
+      assert Decimal.eq?(
+               Reconciliation.get_cleared_balance(account.id, entity_id: entity.id),
                Decimal.new("10.00")
+             )
 
       assert render(view) =~ rt("flash_postings_cleared")
       assert render(view) =~ rt("status_cleared")

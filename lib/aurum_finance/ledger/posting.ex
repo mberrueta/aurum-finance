@@ -1,6 +1,9 @@
 defmodule AurumFinance.Ledger.Posting do
   @moduledoc """
   Immutable posting leg targeting a single account.
+
+  Posting amounts are persisted using the ledger precision normalized by the
+  Task 01 migration (`decimal(20, 4)`).
   """
 
   use Ecto.Schema
@@ -30,6 +33,9 @@ defmodule AurumFinance.Ledger.Posting do
   @spec changeset(t(), map()) :: Ecto.Changeset.t()
   @doc """
   Builds the posting changeset.
+
+  The changeset keeps `amount` as a Decimal-backed field so ledger writes stay
+  aligned with the persisted `decimal(20, 4)` precision.
 
   ## Examples
 

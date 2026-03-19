@@ -44,6 +44,7 @@ defmodule AurumFinance.Factory do
       operational_subtype: :bank_checking,
       management_group: :institution,
       currency_code: "USD",
+      timezone: "America/New_York",
       institution_name: Faker.Company.name(),
       institution_account_ref: sequence(:account_ref, fn n -> Integer.to_string(1000 + n) end),
       notes: Faker.Lorem.sentence()
@@ -321,6 +322,7 @@ defmodule AurumFinance.Factory do
         operational_subtype: :bank_checking,
         management_group: :institution,
         currency_code: "USD",
+        timezone: "America/New_York",
         institution_name: "Institution",
         institution_account_ref: sequence(:insert_account_ref, &"REF-#{&1}"),
         notes: "factory account"

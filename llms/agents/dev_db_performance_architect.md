@@ -67,6 +67,8 @@ When the task requires testing strategy, hand off to `qa-test-scenarios`.
 - Prefer **cheap, targeted indexes** based on proven query patterns.
 - Avoid premature denormalization; do it only with clear wins.
 - Treat production migrations as engineering work: plan for locks, backfills, and rollbacks.
+- Do not use Postgres metadata comments such as `COMMENT ON COLUMN` or `COMMENT ON TABLE`.
+- When documentation or caveats are required, put them in the migration file, code comments, task summary, or related repository docs, not in PG metadata.
 
 ---
 
@@ -178,4 +180,3 @@ Constraints: tenant-scoped queries, mobile-first dashboard wants fast pagination
 Provide: index plan, constraints, and a safe migration rollout with lock notes.
 Do not implement the feature.
 ```
-

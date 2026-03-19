@@ -4,9 +4,10 @@ Core domain entities and relationships for AurumFinance.
 
 ## Status
 
-Consolidated Phase 2 domain model baseline (Steps 1-7 complete). All planned
-bounded contexts are defined at conceptual level with entities, relationships,
-and invariants. Reporting/projection internals remain deferred to M4 planning.
+Consolidated Phase 2 domain model baseline. All planned bounded contexts are
+defined at conceptual level with entities, relationships, and invariants. The
+first reporting projection foundation is now implemented via
+`daily_balance_snapshots`; broader report-layer products remain deferred.
 
 ## Modeling principles
 
@@ -92,7 +93,7 @@ graph TD
 | **Classification** | RuleGroup, Rule, Condition, Action, ClassificationRecord, ClassificationAuditLog (deferred) | Multiple groups fire per txn; first match wins per group; manual overrides protected | Mixed (rules global, outcomes entity-scoped) |
 | **Ingestion** | ImportedFile, ImportedRow, ImportMaterialization, ImportRowMaterialization | Account-scoped async ingestion; immutable evidence plus async materialization and durable row outcomes | Account-scoped within an entity |
 | **Reconciliation** | ReconciliationSession, MatchResult, Discrepancy | State machine: unreconciled -> cleared -> reconciled; corrections reset state | Entity-scoped |
-| **Reporting** | RecurringPattern, Projection, AnomalyAlert | Read-only over primary data; projections labeled with evidence base | Entity-scoped (+ cross-entity) |
+| **Reporting** | DailyBalanceSnapshot (implemented), future reporting read models | Read-only over primary data; projections are derived artifacts with versioned rebuild semantics | Entity-scoped (+ cross-entity) |
 
 ### Dependency Rules
 
@@ -100,7 +101,8 @@ graph TD
 2. A Tier N context may depend on any Tier 0..N-1 context.
 3. No context depends on a context in the same tier (exception: Ingestion depends on Classification, both Tier 2 — this is permitted because Ingestion orchestrates Classification as a downstream step, not a bidirectional dependency).
 4. The web layer (`AurumFinanceWeb`) depends on all contexts but no context depends on the web layer.
-5. Cross-context communication uses synchronous function calls through public APIs.
+5. Cross-context communication uses synchronous function calls through public APIs by default.
+6. Narrow internal post-commit domain notifications are allowed only for projection/update signaling when they avoid an upward dependency from a lower-tier write-model context to a higher-tier derived read-model consumer. This is a bounded exception, not a general event-driven integration rule.
 
 ### Milestone Alignment
 
@@ -174,7 +176,7 @@ financial positions. See ADR-0008 for the full design rationale.
 
 | Entity | Description | Key Fields |
 |--------|-------------|------------|
-| **Account** | Canonical internal ledger account abstraction. Covers institution-backed accounts, category accounts, and system-managed accounts within one entity boundary. | `entity_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `operational_subtype`, `management_group`, `name`, `currency_code`, `institution_name`, `institution_account_ref`, `notes`, `archived_at` |
+| **Account** | Canonical internal ledger account abstraction. Covers institution-backed accounts, category accounts, and system-managed accounts within one entity boundary. | `entity_id`, `account_type` (Asset/Liability/Equity/Income/Expense), `operational_subtype`, `management_group`, `name`, `currency_code`, `timezone`, `institution_name`, `institution_account_ref`, `notes`, `archived_at` |
 | **Transaction** | A single real-world financial event grouping one or more postings. Immutable after creation except for the set-once void marker. | `id`, `entity_id`, `date`, `description`, `source_type` (`manual` / `import` / `system`), `correlation_id`, `voided_at`, `inserted_at` |
 | **Posting** | A single debit or credit line within a transaction, targeting one account. Fully immutable after creation. | `id`, `transaction_id`, `account_id`, `amount` (signed decimal; positive = debit, negative = credit), `inserted_at` |
 | **BalanceSnapshot** | Deferred optimization for cached non-authoritative balances. Not implemented. | `account_id`, `as_of_date`, `currency_code`, `balance`, `posting_count`, `computed_at` |
@@ -204,6 +206,31 @@ The following Ledger concepts remain deferred:
 - `BalanceSnapshot`
 - automatic trading-account workflows for FX abstractions
 - write UI for manual transaction entry/voiding
+
+`timezone` is now a required account attribute. It is modeled on the account
+itself and is not derived from `Entity`.
+
+### Reporting
+
+The reporting context now includes a first implemented read model:
+
+| Entity | Description | Key Fields |
+|--------|-------------|------------|
+| **DailyBalanceSnapshot** | Reporting-side daily closing balance projection for one account in its native currency. Derived from persisted ledger facts, versioned, and rebuilt asynchronously. | `account_id`, `entity_id`, `snapshot_date`, `closing_balance`, `daily_delta`, `computed_at`, `projection_version` |
+
+Current implemented reporting scope includes:
+
+- native-currency `daily_balance_snapshots`
+- forward-cumulative rebuilds from the oldest affected business date
+- async refresh orchestration via Oban
+- ledger-to-reporting trigger bridge using internal post-commit notifications
+
+Still deferred in reporting:
+
+- final net worth dashboards
+- snapshot-backed report rendering in the UI
+- FX-rendered reporting outputs
+- portfolio valuation and anomaly projections
 
 Accounts use the standard five accounting types:
 

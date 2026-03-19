@@ -10,6 +10,7 @@ alias AurumFinance.Classification.RuleGroup
 import Ecto.Query
 
 now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+default_seed_timezone = "America/New_York"
 
 default_entities = [
   %{
@@ -272,6 +273,7 @@ end
 ensure_account = fn entity, attrs ->
   attrs =
     attrs
+    |> Map.put_new(:timezone, default_seed_timezone)
     |> Map.put_new(:currency_code, Currency.default_code_for_country(entity.country_code))
     |> Map.put(:entity_id, entity.id)
     |> Map.put(:inserted_at, now)

@@ -64,6 +64,15 @@ projection update mechanism. Synchronous-on-write projection updates are out of
 scope for core reporting paths. Batch rebuild jobs remain supported for
 backfills, recovery, and projection-version migrations.
 
+When a lower-tier write-model context needs to signal a reporting projection
+update without taking on an upward dependency, it may emit a neutral internal
+post-commit domain notification and let `AurumFinance.Reporting` own the
+subscriber/bridge that translates that signal into projection refresh work.
+This is a bounded projection-signaling exception to the default synchronous
+cross-context API rule, not a general event-driven architecture commitment.
+Internal PubSub is an acceptable transport for this narrow case; durable
+delivery and broader eventing strategy remain separate concerns.
+
 ### 3. Query Strategy
 
 Reporting queries read from projection tables/views first. Drilldown paths
@@ -160,3 +169,7 @@ This design explicitly avoids:
 - Keep projection update logic idempotent and replay-safe.
 - Preserve source identifiers in read models for drilldown.
 - Distinguish forecast datasets from historical actuals at schema/API level.
+- The first implemented projection foundation is `daily_balance_snapshots`, a
+  native-currency daily closing balance series keyed by `account_id` and
+  `snapshot_date`, refreshed asynchronously from ledger-triggered reporting
+  jobs.
