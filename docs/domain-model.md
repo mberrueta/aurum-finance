@@ -100,7 +100,8 @@ graph TD
 2. A Tier N context may depend on any Tier 0..N-1 context.
 3. No context depends on a context in the same tier (exception: Ingestion depends on Classification, both Tier 2 — this is permitted because Ingestion orchestrates Classification as a downstream step, not a bidirectional dependency).
 4. The web layer (`AurumFinanceWeb`) depends on all contexts but no context depends on the web layer.
-5. Cross-context communication uses synchronous function calls through public APIs.
+5. Cross-context communication uses synchronous function calls through public APIs by default.
+6. Narrow internal post-commit domain notifications are allowed only for projection/update signaling when they avoid an upward dependency from a lower-tier write-model context to a higher-tier derived read-model consumer. This is a bounded exception, not a general event-driven integration rule.
 
 ### Milestone Alignment
 

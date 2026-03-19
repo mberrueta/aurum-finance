@@ -569,8 +569,16 @@ core domain contexts.
   Internal schemas and helpers are private to the context namespace.
 - The web layer (`AurumFinanceWeb`) calls only context-level public APIs, never
   internal schemas or Repo directly (per constitution).
-- Cross-context communication uses function calls through the public API — no
-  PubSub or message passing is needed at this scale.
+- Cross-context communication uses function calls through the public API by
+  default.
+- Narrow internal post-commit domain notifications are allowed when needed to
+  avoid an upward dependency from a lower-tier write-model context to a
+  higher-tier derived read-model consumer. This exception is for
+  projection/update signaling only; it does not introduce a general
+  event-driven architecture or weaken the default public-API integration rule.
+- Internal PubSub/message passing is therefore acceptable only as the transport
+  for that bounded projection-signaling exception, not as the default
+  cross-context communication pattern.
 - `AurumFinance.Audit` is implemented as a cross-cutting foundation helper used
   by multiple contexts. It is not treated as a standalone bounded context with
   its own product surface.

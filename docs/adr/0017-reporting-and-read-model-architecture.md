@@ -64,6 +64,15 @@ projection update mechanism. Synchronous-on-write projection updates are out of
 scope for core reporting paths. Batch rebuild jobs remain supported for
 backfills, recovery, and projection-version migrations.
 
+When a lower-tier write-model context needs to signal a reporting projection
+update without taking on an upward dependency, it may emit a neutral internal
+post-commit domain notification and let `AurumFinance.Reporting` own the
+subscriber/bridge that translates that signal into projection refresh work.
+This is a bounded projection-signaling exception to the default synchronous
+cross-context API rule, not a general event-driven architecture commitment.
+Internal PubSub is an acceptable transport for this narrow case; durable
+delivery and broader eventing strategy remain separate concerns.
+
 ### 3. Query Strategy
 
 Reporting queries read from projection tables/views first. Drilldown paths
