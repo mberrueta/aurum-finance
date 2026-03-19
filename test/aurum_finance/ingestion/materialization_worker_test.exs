@@ -251,6 +251,7 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
             account_type: :equity,
             management_group: :system_managed,
             currency_code: "USD",
+            timezone: "America/New_York",
             notes: "System-managed opening balance account"
           },
           actor: "reviewer@example.com",

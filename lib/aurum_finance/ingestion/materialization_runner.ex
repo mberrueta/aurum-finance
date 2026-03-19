@@ -397,6 +397,7 @@ defmodule AurumFinance.Ingestion.MaterializationRunner do
         account_type: :equity,
         management_group: :system_managed,
         currency_code: account.currency_code,
+        timezone: account.timezone,
         notes: @import_clearing_notes
       },
       actor: materialization.requested_by,

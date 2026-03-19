@@ -11,7 +11,7 @@ msgstr ""
 "Language: en\n"
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-#: lib/aurum_finance_web/components/core_components.ex:368
+#: lib/aurum_finance_web/components/core_components.ex:379
 #, elixir-autogen, elixir-format
 msgid "Actions"
 msgstr ""

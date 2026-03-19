@@ -207,8 +207,8 @@ msgstr "This operation is not valid for the selected classification field."
 msgid "error_rule_actions_required"
 msgstr "A rule must define at least one action."
 
-#: lib/aurum_finance_web/live/rules_live.ex:1612
-#: lib/aurum_finance_web/live/rules_live.ex:1615
+#: lib/aurum_finance_web/live/rules_live.ex:1613
+#: lib/aurum_finance_web/live/rules_live.ex:1616
 #, elixir-autogen
 msgid "error_rule_expression_required"
 msgstr "A rule expression is required."
@@ -240,12 +240,12 @@ msgstr "Category account not found. The UUID must reference a category account b
 msgid "error_rule_action_category_global_not_allowed"
 msgstr "Category actions are not allowed on global rules. Category accounts are entity-scoped — use an entity-scoped or account-scoped group instead."
 
-#: lib/aurum_finance_web/live/rules_live.ex:1621
+#: lib/aurum_finance_web/live/rules_live.ex:1622
 #, elixir-autogen
 msgid "error_rule_expression_invalid"
 msgstr "Rule expression is invalid."
 
-#: lib/aurum_finance_web/live/rules_live.ex:1618
+#: lib/aurum_finance_web/live/rules_live.ex:1619
 #, elixir-autogen
 msgid "error_rule_expression_invalid_regex"
 msgstr "Rule expression contains an invalid regular expression."

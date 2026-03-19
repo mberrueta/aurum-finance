@@ -1,103 +1,103 @@
 msgid ""
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:712
-#: lib/aurum_finance_web/live/transactions_live.ex:330
+#: lib/aurum_finance_web/components/transactions_components.ex:865
+#: lib/aurum_finance_web/live/transactions_live.ex:343
 #, elixir-autogen
 msgid "badge_import"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:711
-#: lib/aurum_finance_web/live/transactions_live.ex:329
+#: lib/aurum_finance_web/components/transactions_components.ex:864
+#: lib/aurum_finance_web/live/transactions_live.ex:342
 #, elixir-autogen
 msgid "badge_manual"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:713
-#: lib/aurum_finance_web/live/transactions_live.ex:331
+#: lib/aurum_finance_web/components/transactions_components.ex:866
+#: lib/aurum_finance_web/live/transactions_live.ex:344
 #, elixir-autogen
 msgid "badge_system"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:79
-#: lib/aurum_finance_web/components/transactions_components.ex:122
+#: lib/aurum_finance_web/components/transactions_components.ex:110
+#: lib/aurum_finance_web/components/transactions_components.ex:155
 #, elixir-autogen
 msgid "badge_voided"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:161
+#: lib/aurum_finance_web/components/transactions_components.ex:194
 #, elixir-autogen
 msgid "col_account"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:162
+#: lib/aurum_finance_web/components/transactions_components.ex:195
 #, elixir-autogen
 msgid "col_account_type"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:163
+#: lib/aurum_finance_web/components/transactions_components.ex:196
 #, elixir-autogen
 msgid "col_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:164
+#: lib/aurum_finance_web/components/transactions_components.ex:197
 #, elixir-autogen
 msgid "col_currency"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:129
-#: lib/aurum_finance_web/live/transactions_live.html.heex:255
+#: lib/aurum_finance_web/components/transactions_components.ex:162
+#: lib/aurum_finance_web/live/transactions_live.html.heex:305
 #, elixir-autogen
 msgid "col_date"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:135
-#: lib/aurum_finance_web/live/transactions_live.html.heex:256
+#: lib/aurum_finance_web/components/transactions_components.ex:168
+#: lib/aurum_finance_web/live/transactions_live.html.heex:306
 #, elixir-autogen
 msgid "col_description"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:260
+#: lib/aurum_finance_web/live/transactions_live.html.heex:310
 #, elixir-autogen
 msgid "col_postings"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:259
+#: lib/aurum_finance_web/live/transactions_live.html.heex:309
 #, elixir-autogen
 msgid "col_source"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:261
+#: lib/aurum_finance_web/live/transactions_live.html.heex:311
 #, elixir-autogen
 msgid "col_status"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:244
+#: lib/aurum_finance_web/live/transactions_live.html.heex:294
 #, elixir-autogen
 msgid "empty_select_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:248
+#: lib/aurum_finance_web/live/transactions_live.html.heex:298
 #, elixir-autogen
 msgid "empty_transactions"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#: lib/aurum_finance_web/live/transactions_live.html.heex:87
 #, elixir-autogen
 msgid "filter_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:323
+#: lib/aurum_finance_web/live/transactions_live.ex:329
 #, elixir-autogen
 msgid "filter_account_all"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#: lib/aurum_finance_web/live/transactions_live.html.heex:113
 #, elixir-autogen
 msgid "filter_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:329
+#: lib/aurum_finance_web/live/transactions_live.ex:334
 #, elixir-autogen
 msgid "filter_category_all"
 msgstr ""
@@ -107,22 +107,22 @@ msgstr ""
 msgid "filter_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:340
+#: lib/aurum_finance_web/live/transactions_live.ex:353
 #, elixir-autogen
 msgid "filter_date_all"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:338
+#: lib/aurum_finance_web/live/transactions_live.ex:351
 #, elixir-autogen
 msgid "filter_date_this_month"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:337
+#: lib/aurum_finance_web/live/transactions_live.ex:350
 #, elixir-autogen
 msgid "filter_date_this_week"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:339
+#: lib/aurum_finance_web/live/transactions_live.ex:352
 #, elixir-autogen
 msgid "filter_date_this_year"
 msgstr ""
@@ -130,92 +130,83 @@ msgstr ""
 msgid "filter_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:132
+#: lib/aurum_finance_web/live/transactions_live.html.heex:140
+#: lib/aurum_finance_web/live/transactions_live.html.heex:152
 #, elixir-autogen
 msgid "filter_include_voided"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:114
+#: lib/aurum_finance_web/live/transactions_live.html.heex:100
 #, elixir-autogen
 msgid "filter_source"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:103
+#: lib/aurum_finance_web/live/transactions_live.html.heex:126
 #, elixir-autogen
 msgid "filter_search_text"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:109
+#: lib/aurum_finance_web/live/transactions_live.html.heex:132
 #, elixir-autogen
 msgid "filter_search_text_placeholder"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:328
+#: lib/aurum_finance_web/live/transactions_live.ex:341
 #, elixir-autogen
 msgid "filter_source_all"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:437
-#, elixir-autogen
-msgid "filters_hide"
-msgstr ""
-
-#: lib/aurum_finance_web/live/transactions_live.ex:438
-#, elixir-autogen
-msgid "filters_show"
-msgstr ""
-
-#: lib/aurum_finance_web/components/transactions_components.ex:39
+#: lib/aurum_finance_web/components/transactions_components.ex:43
 #, elixir-autogen
 msgid "label_correlation_id"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:22
+#: lib/aurum_finance_web/live/transactions_live.html.heex:20
 #, elixir-autogen
 msgid "label_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:17
+#: lib/aurum_finance_web/live/transactions_live.html.heex:21
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:36
+#: lib/aurum_finance_web/live/transactions_live.html.heex:43
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:68
+#: lib/aurum_finance_web/live/transactions_live.html.heex:88
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:79
+#: lib/aurum_finance_web/live/transactions_live.html.heex:101
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_source"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:91
+#: lib/aurum_finance_web/live/transactions_live.html.heex:114
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:102
+#: lib/aurum_finance_web/live/transactions_live.html.heex:127
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_search_text"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:115
+#: lib/aurum_finance_web/live/transactions_live.html.heex:141
 #, elixir-autogen, elixir-format
 msgid "tooltip_filter_include_voided"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:141
+#: lib/aurum_finance_web/components/transactions_components.ex:174
 #, elixir-autogen
 msgid "label_voided_at"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:29
+#: lib/aurum_finance_web/live/transactions_live.html.heex:28
 #, elixir-autogen
 msgid "option_select_entity"
 msgstr ""
@@ -227,326 +218,327 @@ msgstr ""
 
 #: lib/aurum_finance_web/live/transactions_live.ex:21
 #: lib/aurum_finance_web/live/transactions_live.html.heex:2
-#: lib/aurum_finance_web/live/transactions_live.html.heex:240
+#: lib/aurum_finance_web/live/transactions_live.html.heex:290
 #, elixir-autogen
 msgid "page_title"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:116
+#: lib/aurum_finance_web/components/transactions_components.ex:149
 #, elixir-autogen
 msgid "posting_detail_title"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:241
+#: lib/aurum_finance_web/components/transactions_components.ex:280
 #, elixir-autogen, elixir-format
 msgid "classification_apply_rules"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:225
-#: lib/aurum_finance_web/components/transactions_components.ex:240
+#: lib/aurum_finance_web/components/transactions_components.ex:264
+#: lib/aurum_finance_web/components/transactions_components.ex:279
 #, elixir-autogen, elixir-format
 msgid "classification_apply_rules_loading"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:78
+#: lib/aurum_finance_web/live/transactions_live.html.heex:181
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:156
+#: lib/aurum_finance_web/live/transactions_live.html.heex:199
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_empty_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:65
-#: lib/aurum_finance_web/live/transactions_live.html.heex:77
+#: lib/aurum_finance_web/live/transactions_live.html.heex:172
+#: lib/aurum_finance_web/live/transactions_live.html.heex:180
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_loading"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:166
+#: lib/aurum_finance_web/live/transactions_live.html.heex:209
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_missing_range"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:163
+#: lib/aurum_finance_web/live/transactions_live.html.heex:206
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_ready"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:134
+#: lib/aurum_finance_web/live/transactions_live.ex:130
+#: lib/aurum_finance_web/live/transactions_live.html.heex:218
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_requires_range"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:146
+#: lib/aurum_finance_web/live/transactions_live.html.heex:189
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_scope"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:151
+#: lib/aurum_finance_web/live/transactions_live.html.heex:194
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_scope_value"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:140
+#: lib/aurum_finance_web/live/transactions_live.html.heex:162
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:122
+#: lib/aurum_finance_web/live/transactions_live.html.heex:164
 #, elixir-autogen, elixir-format
 msgid "classification_bulk_apply_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:702
+#: lib/aurum_finance_web/components/transactions_components.ex:855
 #, elixir-autogen, elixir-format
 msgid "classification_category_prompt"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:427
+#: lib/aurum_finance_web/components/transactions_components.ex:466
 #, elixir-autogen, elixir-format
 msgid "classification_clear_override"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:591
+#: lib/aurum_finance_web/components/transactions_components.ex:744
 #, elixir-autogen, elixir-format
 msgid "classification_deleted_group"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:594
+#: lib/aurum_finance_web/components/transactions_components.ex:747
 #, elixir-autogen, elixir-format
 msgid "classification_deleted_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:564
-#: lib/aurum_finance_web/live/transactions_live.ex:569
-#: lib/aurum_finance_web/live/transactions_live.ex:574
+#: lib/aurum_finance_web/live/transactions_live.ex:612
+#: lib/aurum_finance_web/live/transactions_live.ex:617
+#: lib/aurum_finance_web/live/transactions_live.ex:622
 #, elixir-autogen, elixir-format
 msgid "classification_error_generic"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:554
+#: lib/aurum_finance_web/live/transactions_live.ex:602
 #, elixir-autogen, elixir-format
 msgid "classification_error_invalid_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:558
-#: lib/aurum_finance_web/live/transactions_live.ex:572
+#: lib/aurum_finance_web/live/transactions_live.ex:606
+#: lib/aurum_finance_web/live/transactions_live.ex:620
 #, elixir-autogen, elixir-format
 msgid "classification_error_not_found"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:675
+#: lib/aurum_finance_web/components/transactions_components.ex:828
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_applied"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:685
+#: lib/aurum_finance_web/components/transactions_components.ex:838
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_applied_message"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:682
+#: lib/aurum_finance_web/components/transactions_components.ex:835
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_no_change"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:697
+#: lib/aurum_finance_web/components/transactions_components.ex:850
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_no_change_message"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:676
+#: lib/aurum_finance_web/components/transactions_components.ex:829
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_no_match"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:693
+#: lib/aurum_finance_web/components/transactions_components.ex:846
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_no_match_message"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:679
+#: lib/aurum_finance_web/components/transactions_components.ex:832
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_protected"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:689
+#: lib/aurum_finance_web/components/transactions_components.ex:842
 #, elixir-autogen, elixir-format
 msgid "classification_feedback_protected_message"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:633
+#: lib/aurum_finance_web/components/transactions_components.ex:786
 #, elixir-autogen, elixir-format
 msgid "classification_field_category"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:637
+#: lib/aurum_finance_web/components/transactions_components.ex:790
 #, elixir-autogen, elixir-format
 msgid "classification_field_investment_type"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:640
+#: lib/aurum_finance_web/components/transactions_components.ex:793
 #, elixir-autogen, elixir-format
 msgid "classification_field_notes"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:634
+#: lib/aurum_finance_web/components/transactions_components.ex:787
 #, elixir-autogen, elixir-format
 msgid "classification_field_tags"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:355
+#: lib/aurum_finance_web/components/transactions_components.ex:394
 #, elixir-autogen, elixir-format
 msgid "classification_locked"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:165
+#: lib/aurum_finance_web/live/transactions_live.ex:161
 #, elixir-autogen, elixir-format
 msgid "classification_manual_saved"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:476
-#: lib/aurum_finance_web/components/transactions_components.ex:488
-#: lib/aurum_finance_web/components/transactions_components.ex:500
+#: lib/aurum_finance_web/components/transactions_components.ex:515
+#: lib/aurum_finance_web/components/transactions_components.ex:527
+#: lib/aurum_finance_web/components/transactions_components.ex:539
 #, elixir-autogen, elixir-format
 msgid "classification_manual_value"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.ex:189
+#: lib/aurum_finance_web/live/transactions_live.ex:185
 #, elixir-autogen, elixir-format
 msgid "classification_override_cleared"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:303
+#: lib/aurum_finance_web/components/transactions_components.ex:342
 #, elixir-autogen, elixir-format
 msgid "classification_panel_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:300
+#: lib/aurum_finance_web/components/transactions_components.ex:339
 #, elixir-autogen, elixir-format
 msgid "classification_panel_title"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:663
+#: lib/aurum_finance_web/components/transactions_components.ex:816
 #, elixir-autogen, elixir-format
 msgid "classification_provenance_manual"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:662
+#: lib/aurum_finance_web/components/transactions_components.ex:815
 #, elixir-autogen, elixir-format
 msgid "classification_provenance_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:667
+#: lib/aurum_finance_web/components/transactions_components.ex:820
 #, elixir-autogen, elixir-format
 msgid "classification_scope_account"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:666
+#: lib/aurum_finance_web/components/transactions_components.ex:819
 #, elixir-autogen, elixir-format
 msgid "classification_scope_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:665
+#: lib/aurum_finance_web/components/transactions_components.ex:818
 #, elixir-autogen, elixir-format
 msgid "classification_scope_global"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:457
+#: lib/aurum_finance_web/components/transactions_components.ex:496
 #, elixir-autogen, elixir-format
 msgid "classification_set_manual"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:650
+#: lib/aurum_finance_web/components/transactions_components.ex:803
 #, elixir-autogen, elixir-format
 msgid "classification_state_manual"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:647
+#: lib/aurum_finance_web/components/transactions_components.ex:800
 #, elixir-autogen, elixir-format
 msgid "classification_state_rule"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:653
+#: lib/aurum_finance_web/components/transactions_components.ex:806
 #, elixir-autogen, elixir-format
 msgid "classification_state_unclassified"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:178
+#: lib/aurum_finance_web/live/transactions_live.html.heex:228
 #, elixir-autogen, elixir-format
 msgid "classification_summary_classified"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:210
+#: lib/aurum_finance_web/live/transactions_live.html.heex:260
 #, elixir-autogen, elixir-format
 msgid "classification_summary_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:224
+#: lib/aurum_finance_web/live/transactions_live.html.heex:274
 #, elixir-autogen, elixir-format
 msgid "classification_summary_failures_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:186
+#: lib/aurum_finance_web/live/transactions_live.html.heex:236
 #, elixir-autogen, elixir-format
 msgid "classification_summary_fields_applied"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:194
+#: lib/aurum_finance_web/live/transactions_live.html.heex:244
 #, elixir-autogen, elixir-format
 msgid "classification_summary_fields_skipped_manual"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:202
+#: lib/aurum_finance_web/live/transactions_live.html.heex:252
 #, elixir-autogen, elixir-format
 msgid "classification_summary_no_match"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:47
-#: lib/aurum_finance_web/components/transactions_components.ex:66
-#: lib/aurum_finance_web/components/transactions_components.ex:606
+#: lib/aurum_finance_web/components/transactions_components.ex:65
+#: lib/aurum_finance_web/components/transactions_components.ex:87
+#: lib/aurum_finance_web/components/transactions_components.ex:759
 #, elixir-autogen, elixir-format
 msgid "classification_unclassified"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:214
+#: lib/aurum_finance_web/components/transactions_components.ex:253
 #, elixir-autogen, elixir-format
 msgid "classification_close_editor"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:215
+#: lib/aurum_finance_web/components/transactions_components.ex:254
 #, elixir-autogen, elixir-format
 msgid "classification_edit"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:249
+#: lib/aurum_finance_web/components/transactions_components.ex:288
 #, elixir-autogen, elixir-format
 msgid "classification_editor_closed"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:191
+#: lib/aurum_finance_web/components/transactions_components.ex:230
 #, elixir-autogen, elixir-format
 msgid "classification_editor_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/transactions_components.ex:188
+#: lib/aurum_finance_web/components/transactions_components.ex:227
 #, elixir-autogen, elixir-format
 msgid "classification_editor_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:257
+#: lib/aurum_finance_web/live/transactions_live.html.heex:307
 #, elixir-autogen, elixir-format
 msgid "col_category"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:258
+#: lib/aurum_finance_web/live/transactions_live.html.heex:308
 #, elixir-autogen, elixir-format
 msgid "col_tags"
 msgstr ""
 
-#: lib/aurum_finance_web/live/transactions_live.html.heex:137
+#: lib/aurum_finance_web/live/transactions_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "clear_filters"
 msgstr ""
@@ -556,20 +548,35 @@ msgstr ""
 msgid "label_total_results"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:554
+#, elixir-autogen
 msgid "classification_history_title"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:558
+#, elixir-autogen
 msgid "classification_history_empty"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:619
+#: lib/aurum_finance_web/components/transactions_components.ex:623
+#: lib/aurum_finance_web/components/transactions_components.ex:630
+#: lib/aurum_finance_web/components/transactions_components.ex:640
+#, elixir-autogen
 msgid "classification_history_empty_value"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:597
+#, elixir-autogen
 msgid "classification_history_action_rule_applied"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:600
+#, elixir-autogen
 msgid "classification_history_action_manual_override"
 msgstr ""
 
+#: lib/aurum_finance_web/components/transactions_components.ex:603
+#, elixir-autogen
 msgid "classification_history_action_override_cleared"
 msgstr ""

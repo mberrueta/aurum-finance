@@ -19,6 +19,7 @@ defmodule AurumFinance.LedgerTest do
       assert "This field is required." in errors_on(changeset).account_type
       assert "This field is required." in errors_on(changeset).management_group
       assert "This field is required." in errors_on(changeset).currency_code
+      assert "This field is required." in errors_on(changeset).timezone
     end
 
     test "requires operational_subtype for asset/liability accounts" do
@@ -28,7 +29,8 @@ defmodule AurumFinance.LedgerTest do
           name: "Checking",
           account_type: :asset,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -46,7 +48,8 @@ defmodule AurumFinance.LedgerTest do
           account_type: :income,
           operational_subtype: :bank_checking,
           management_group: :category,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -62,7 +65,8 @@ defmodule AurumFinance.LedgerTest do
           account_type: :liability,
           operational_subtype: :bank_checking,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -79,7 +83,8 @@ defmodule AurumFinance.LedgerTest do
           name: "Opening balances",
           account_type: :equity,
           management_group: :institution,
-          currency_code: "USD"
+          currency_code: "USD",
+          timezone: "America/New_York"
         })
 
       refute changeset.valid?
@@ -385,8 +390,11 @@ defmodule AurumFinance.LedgerTest do
                })
 
       assert Enum.count(transaction.postings) == 4
-      assert Ledger.get_account_balance(usd_checking.id) == %{"USD" => Decimal.new("-100.00")}
-      assert Ledger.get_account_balance(eur_savings.id) == %{"EUR" => Decimal.new("92.00")}
+      assert %{"USD" => usd_balance} = Ledger.get_account_balance(usd_checking.id)
+      assert Decimal.eq?(usd_balance, Decimal.new("-100.00"))
+
+      assert %{"EUR" => eur_balance} = Ledger.get_account_balance(eur_savings.id)
+      assert Decimal.eq?(eur_balance, Decimal.new("92.00"))
     end
 
     test "rejects unbalanced postings" do
@@ -650,7 +658,8 @@ defmodule AurumFinance.LedgerTest do
       assert event.after["voided_at"]
       assert Audit.list_audit_events(entity_id: reversal.id) == []
       assert Audit.list_audit_events(entity_type: "posting") == []
-      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("0.00")}
+      assert %{"USD" => balance} = Ledger.get_account_balance(checking.id)
+      assert Decimal.eq?(balance, Decimal.new("0.00"))
     end
 
     test "rejects double void" do
@@ -742,11 +751,13 @@ defmodule AurumFinance.LedgerTest do
           date: ~D[2026-03-05]
         })
 
-      assert Ledger.get_account_balance(checking.id) == %{"USD" => Decimal.new("-20.00")}
+      assert %{"USD" => current_balance} = Ledger.get_account_balance(checking.id)
+      assert Decimal.eq?(current_balance, Decimal.new("-20.00"))
 
-      assert Ledger.get_account_balance(checking.id, as_of_date: ~D[2026-03-01]) == %{
-               "USD" => Decimal.new("-10.00")
-             }
+      assert %{"USD" => historical_balance} =
+               Ledger.get_account_balance(checking.id, as_of_date: ~D[2026-03-01])
+
+      assert Decimal.eq?(historical_balance, Decimal.new("-10.00"))
     end
 
     test "returns exactly one currency key for a populated account" do
@@ -774,6 +785,7 @@ defmodule AurumFinance.LedgerTest do
                    operational_subtype: :bank_checking,
                    management_group: :institution,
                    currency_code: "usd",
+                   timezone: "America/New_York",
                    institution_name: "Bank Example",
                    institution_account_ref: "1234"
                  },

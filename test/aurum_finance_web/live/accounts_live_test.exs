@@ -101,6 +101,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
       "management_group" => "institution",
       "operational_subtype" => "bank_checking",
       "currency_code" => "USD",
+      "timezone" => "America/New_York",
       "institution_name" => "Mercury",
       "institution_account_ref" => "1234",
       "notes" => "daily use"
@@ -159,6 +160,7 @@ defmodule AurumFinanceWeb.AccountsLiveTest do
       "management_group" => "category",
       "account_type" => "income",
       "currency_code" => "USD",
+      "timezone" => "America/New_York",
       "institution_name" => "",
       "institution_account_ref" => "",
       "notes" => "auto imported later"

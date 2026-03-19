@@ -248,6 +248,7 @@ defmodule AurumFinanceWeb.AccountsLive do
       management_group: account.management_group,
       account_type: account.account_type,
       currency_code: account.currency_code,
+      timezone: account.timezone,
       operational_subtype: account.operational_subtype,
       institution_name: account.institution_name,
       institution_account_ref: account.institution_account_ref,
