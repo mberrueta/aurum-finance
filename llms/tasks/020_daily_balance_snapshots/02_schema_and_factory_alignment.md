@@ -99,6 +99,7 @@ test/support/factory.ex
 
 ### Blockers Encountered
 - None after Task 01 approval; implementation completed and validated
+- Task 01's original wording mentions compatibility backfill language for `accounts.timezone`, but the approved implementation intentionally fails fast instead of backfilling. Review Task 01 against the implemented migration, not the earlier placeholder wording.
 
 ### Questions for Human
 1. None

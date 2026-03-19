@@ -290,16 +290,13 @@ Suggested public API:
 - `enqueue_daily_balance_snapshot_refresh(account_id, from_date, opts \\ [])`
   - enqueues/merges async rebuild request
 
-- `refresh_daily_balance_snapshots(account_id, from_date, opts \\ [])`
+- `refresh_daily_balance_snapshots(account, from_date, opts \\ [])`
   - synchronous internal execution path used by the worker and manual rebuild flow
 
-- `rebuild_daily_balance_snapshots(account_id, opts \\ [])`
-  - manual/internal entry point with optional `from_date`
-
-- `earliest_snapshot_date_for_account(account_id)`
+- `earliest_snapshot_date_for_account(account)`
   - useful for debugging and rebuild decisions
 
-- `latest_snapshot_date_for_account(account_id)`
+- `latest_snapshot_date_for_account(account)`
 
 Internal helpers should include:
 

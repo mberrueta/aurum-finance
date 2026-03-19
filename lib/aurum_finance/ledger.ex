@@ -240,7 +240,8 @@ defmodule AurumFinance.Ledger do
       account_type: :asset,
       operational_subtype: :bank_checking,
       management_group: :institution,
-      currency_code: "USD"
+      currency_code: "USD",
+      timezone: "America/New_York"
     })
   ```
   """

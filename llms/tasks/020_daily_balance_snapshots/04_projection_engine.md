@@ -1,9 +1,9 @@
 # Task 04: Projection Engine
 
 ## Status
-- **Status**: BLOCKED
+- **Status**: COMPLETE
 - **Approved**: [ ] Human sign-off
-- **Blocked by**: Task 03
+- **Blocked by**: None
 - **Blocks**: Task 05
 
 ## Assigned Agent
@@ -85,34 +85,42 @@ lib/aurum_finance/ledger/posting.ex
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
 
 ### Work Performed
-- [To be filled]
+- Implemented the V1 rebuild engine directly in `AurumFinance.Reporting.Projections.DailyBalanceSnapshots.V1`
+- Added effective date-range discovery from persisted ledger postings joined to `transaction.date`
+- Added grouped daily movement aggregation that sums all persisted postings without filtering out voided originals, so reversal pairs net naturally to zero
+- Added forward-cumulative series generation with gap-day carry-forward and `daily_delta = 0` on no-movement days
+- Added transactional full forward-range replacement using `delete >= effective_from_date` plus bulk `insert_all`
+- Added focused ExUnit coverage for bootstrap semantics, older/later `from_date` handling, gap days, stale cleanup, and void behavior
 
 ### Outputs Created
-- [To be filled]
+- `lib/aurum_finance/reporting/projections/daily_balance_snapshots/v1.ex`
+- `test/aurum_finance/reporting/daily_balance_snapshot_test.exs`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [To be filled] | [To be filled] |
+| The rebuild engine may compute prior balance directly from ledger facts instead of relying on existing snapshots | This keeps partial forward rebuilds correct even when no prior snapshot rows exist yet |
+| Accounts with no persisted postings should clear stale snapshot rows and finish successfully | The approved refresh algorithm explicitly calls for deleting stale snapshots when an account no longer has effective transactions |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [To be filled] | [To be filled] | [To be filled] |
+| Bootstrap later rebuilds from a ledger-derived prior closing balance | Depend on the previous persisted snapshot row before `effective_from_date` | Ledger-derived bootstrap avoids hidden coupling to snapshot completeness and keeps rebuild correctness explicit |
+| Keep range discovery and movement aggregation as private helpers inside `V1` | Move them to the future reporting context in Task 05 | Task 04 explicitly scopes the engine behavior to `V1`, and the context can wrap these semantics later without duplicating logic |
+| Return explicit status maps from `rebuild/2` (`:rebuilt`, `:noop`, `:deleted_stale`) | Return only `:ok` | The richer result keeps manual debugging and later context/worker integration auditable without adding separate query APIs yet |
 
 ### Blockers Encountered
-- [To be filled]
+- None
 
 ### Questions for Human
-1. [To be filled]
+1. None
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
