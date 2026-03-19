@@ -548,6 +548,7 @@ defmodule AurumFinance.Ledger do
       "operational_subtype" => account.operational_subtype,
       "management_group" => account.management_group,
       "currency_code" => account.currency_code,
+      "timezone" => account.timezone,
       "institution_name" => account.institution_name,
       "institution_account_ref" => account.institution_account_ref,
       "notes" => account.notes,

@@ -998,12 +998,15 @@ defmodule AurumFinance.LedgerTest do
       assert created.before == nil
       assert created.after["currency_code"] == "USD"
       assert created.after["management_group"] == "institution"
+      assert created.after["timezone"] == "America/New_York"
       assert created.after["institution_account_ref"] == "[REDACTED]"
 
       assert updated.action == "updated"
       assert updated.actor == "scheduler"
       assert updated.channel == :system
       assert updated.before["notes"] == nil
+      assert updated.before["timezone"] == "America/New_York"
+      assert updated.after["timezone"] == "America/New_York"
       assert updated.after["notes"] == "updated"
       assert updated.before["institution_account_ref"] == "[REDACTED]"
       assert updated.after["institution_account_ref"] == "[REDACTED]"
