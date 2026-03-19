@@ -13,7 +13,9 @@ defmodule AurumFinance.Reporting do
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
   alias AurumFinance.Reporting.DailyBalanceSnapshot
+  alias AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker
   alias AurumFinance.Reporting.Projections.DailyBalanceSnapshots.V1
+  alias Oban.Job
 
   @type list_opt ::
           {:account_id, Ecto.UUID.t()}
@@ -66,6 +68,33 @@ defmodule AurumFinance.Reporting do
           {:ok, map()} | {:error, term()}
   def refresh_daily_balance_snapshots(%Account{} = account, from_date, _opts \\ []) do
     V1.rebuild(account, from_date)
+  end
+
+  @doc """
+  Enqueues an asynchronous daily balance snapshot refresh for one account.
+
+  The enqueue path keeps one pending refresh job per account and preserves the
+  oldest requested `from_date`. `nil` is normalized before enqueueing to the
+  semantic rebuild-from-first-effective-date sentinel.
+
+  ## Examples
+
+      iex> {:ok, %Oban.Job{worker: worker}} =
+      ...>   AurumFinance.Reporting.enqueue_daily_balance_snapshot_refresh(
+      ...>     Ecto.UUID.generate(),
+      ...>     nil
+      ...>   )
+      iex> worker
+      "Elixir.AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker"
+  """
+  @spec enqueue_daily_balance_snapshot_refresh(Ecto.UUID.t(), Date.t() | nil, [term()]) ::
+          {:ok, Job.t()} | {:error, term()}
+  def enqueue_daily_balance_snapshot_refresh(account_id, from_date, _opts \\ [])
+      when is_binary(account_id) do
+    account_id
+    |> DailyBalanceSnapshotRefreshWorker.new_job(from_date)
+    |> Oban.insert()
+    |> enqueue_refresh_job(from_date)
   end
 
   @doc """
@@ -136,4 +165,53 @@ defmodule AurumFinance.Reporting do
   defp filter_query(query, [_unknown_filter | rest]) do
     filter_query(query, rest)
   end
+
+  defp enqueue_refresh_job({:ok, %Job{conflict?: false} = job}, _from_date), do: {:ok, job}
+  defp enqueue_refresh_job({:error, reason}, _from_date), do: {:error, reason}
+
+  defp enqueue_refresh_job({:ok, %Job{} = existing_job}, from_date) do
+    existing_job
+    |> merge_refresh_job_from_date(from_date)
+    |> update_refresh_job()
+  end
+
+  defp merge_refresh_job_from_date(%Job{} = existing_job, from_date) do
+    merged_from_date =
+      existing_job.args["from_date"]
+      |> DailyBalanceSnapshotRefreshWorker.load_from_date()
+      |> merge_loaded_from_date(from_date)
+      |> DailyBalanceSnapshotRefreshWorker.dump_from_date()
+
+    %{existing_job | args: Map.put(existing_job.args, "from_date", merged_from_date)}
+  end
+
+  defp merge_loaded_from_date({:error, _reason}, incoming_from_date), do: incoming_from_date
+
+  defp merge_loaded_from_date({:ok, existing_from_date}, incoming_from_date) do
+    oldest_from_date(existing_from_date, incoming_from_date)
+  end
+
+  defp update_refresh_job(%Job{} = refresh_job) do
+    {updated_count, _rows} =
+      Job
+      |> where([job], job.id == ^refresh_job.id)
+      |> Repo.update_all(set: [args: refresh_job.args])
+
+    update_refresh_job_result(updated_count, refresh_job.id)
+  end
+
+  defp oldest_from_date(nil, _other_from_date), do: nil
+  defp oldest_from_date(_from_date, nil), do: nil
+
+  defp oldest_from_date(%Date{} = left, %Date{} = right) do
+    case Date.compare(left, right) do
+      :gt -> right
+      _ -> left
+    end
+  end
+
+  defp update_refresh_job_result(1, job_id), do: {:ok, Repo.get!(Job, job_id)}
+
+  defp update_refresh_job_result(_updated_count, _job_id),
+    do: {:error, :refresh_job_update_failed}
 end
