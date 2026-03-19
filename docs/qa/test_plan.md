@@ -127,3 +127,29 @@
 - Task 10 intentionally stays at the context/schema layer. LiveView coverage for apply and per-field display remains in Task 12.
 - Intra-scope conflict ordering (`priority ASC`, `name ASC`) is already covered by Task 07 engine tests and is not duplicated here.
 - No changes were required in `test/support/factory.ex` or `test/aurum_finance/classification_test.exs`; the existing factory surface was sufficient for deterministic Task 10 scenarios.
+
+## Daily Balance Snapshots Scenario Mapping (Task 08)
+
+| Scenario | Layer | File |
+|---|---|---|
+| S01: `DailyBalanceSnapshot` changeset requires persisted fields and enforces unique `account_id + snapshot_date` | DataCase / schema integration | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S02: V1 changeset derives `entity_id` and `projection_version` from the resolved account | DataCase / schema integration | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S03: rebuild bootstraps from first effective movement date and fills gap days with carry-forward `closing_balance` and `daily_delta = 0` | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S04: rebuild semantics apply to non-asset accounts as well, including liability accounts | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S05: mid-range rebuild uses prior closing balance bootstrap and replaces the full forward range | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S06: `from_date > last_effective_date` is a no-op that preserves existing rows | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs`, `test/aurum_finance/reporting_test.exs` |
+| S07: voided originals plus system reversals net to zero under snapshot rebuilds | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S08: accounts with no effective transactions delete stale snapshots | DataCase / projection engine | `test/aurum_finance/reporting/daily_balance_snapshot_test.exs` |
+| S09: reporting read-path filters by `account_id`, `entity_id`, and date range outside the base projection rebuild logic | DataCase / context | `test/aurum_finance/reporting_test.exs` |
+| S10: worker args normalize nil `from_date`, uniqueness is account-based, and enqueue preserves the oldest requested `from_date` | DataCase / Oban | `test/aurum_finance/reporting/daily_balance_snapshot_refresh_worker_test.exs` |
+| S11: worker execution refreshes persisted snapshots and discards invalid/stale jobs safely | DataCase / Oban | `test/aurum_finance/reporting/daily_balance_snapshot_refresh_worker_test.exs` |
+| S12: ledger PubSub contract broadcasts transaction create/void notifications with business date and deduplicated affected accounts | Unit | `test/aurum_finance/ledger/pubsub_test.exs` |
+| S13: `Ledger.create_transaction/2` and `Ledger.void_transaction/2` emit on success and do not emit on failed writes | DataCase / integration | `test/aurum_finance/ledger_test.exs` |
+| S14: reporting bridge enqueues one refresh per affected account from emitted ledger events | DataCase / integration | `test/aurum_finance/reporting/ledger_event_bridge_test.exs` |
+| S15: import materialization inherits the same refresh triggering path through `Ledger.create_transaction/1` | DataCase / integration | `test/aurum_finance/ingestion/materialization_worker_test.exs` |
+
+## Daily Balance Snapshots Notes
+
+- Task 08 stays backend-only. No `ReportsLive` rebuild UI coverage is included here because Task 09 remains optional scope.
+- Bridge-driven tests that start supervised processes stay `async: false` and shut the bridge down explicitly to keep SQL sandbox ownership clean and avoid noisy Postgrex disconnect logs.
+- Oban assertions filter by `worker`, `queue`, `account_id`, and `from_date` instead of counting global queue rows, so the tests remain stable under the full suite.

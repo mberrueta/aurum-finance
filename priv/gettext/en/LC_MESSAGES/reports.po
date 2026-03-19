@@ -2,8 +2,211 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/aurum_finance_web/live/reports_live.ex:11
-#: lib/aurum_finance_web/live/reports_live.ex:20
+#: lib/aurum_finance_web/live/reports_live.ex:23
+#: lib/aurum_finance_web/live/reports_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr "Reports"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:21
+#, elixir-autogen, elixir-format
+msgid "btn_drilldown"
+msgstr "Drilldown"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:143
+#, elixir-autogen, elixir-format
+msgid "btn_open_transactions"
+msgstr "Open transactions"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "cashflow_category_rollup"
+msgstr "category rollup"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:139
+#, elixir-autogen, elixir-format
+msgid "drilldown_caption"
+msgstr "Each report line links back to exact transactions and evidence."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:61
+#: lib/aurum_finance_web/live/reports_live.html.heex:64
+#, elixir-autogen, elixir-format
+msgid "holding_change_7d"
+msgstr "7d %{value}"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:54
+#, elixir-autogen, elixir-format
+msgid "holding_qty_price"
+msgstr "qty %{qty} • price %{price}"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:7
+#, elixir-autogen, elixir-format
+msgid "mock_export_pdf"
+msgstr "Export PDF (mock)"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "net_worth_footer"
+msgstr "Recomputed from facts + overlays"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:47
+#, elixir-autogen, elixir-format
+msgid "portfolio_holdings_caption"
+msgstr "Holdings for selected entity"
+
+#: lib/aurum_finance_web/live/reports_live.ex:75
+#, elixir-autogen, elixir-format
+msgid "rebuild_error"
+msgstr "Could not enqueue the snapshot rebuild."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:103
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_label"
+msgstr "From date"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:80
+#, elixir-autogen, elixir-format
+msgid "rebuild_panel_help"
+msgstr "Internal maintenance control. Select an entity/account and an optional business date to enqueue a snapshot refresh."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:73
+#, elixir-autogen, elixir-format
+msgid "rebuild_panel_title"
+msgstr "Snapshot rebuild"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "rebuild_submit_hint"
+msgstr "Leaves report rendering out of scope and only enqueues the backend refresh."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:125
+#, elixir-autogen, elixir-format
+msgid "rebuild_submit_label"
+msgstr "Enqueue rebuild"
+
+#: lib/aurum_finance_web/live/reports_live.ex:69
+#, elixir-autogen, elixir-format
+msgid "rebuild_success"
+msgstr "Snapshot rebuild enqueued."
+
+#: lib/aurum_finance_web/live/reports_live.ex:57
+#, elixir-autogen, elixir-format
+msgid "rebuild_validation_error"
+msgstr "Select an account and optional ISO date."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "section_cashflow_month"
+msgstr "Cashflow (month)"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:134
+#, elixir-autogen, elixir-format
+msgid "section_drilldown_mock"
+msgstr "Drilldown (mock)"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:13
+#, elixir-autogen, elixir-format
+msgid "section_net_worth_history"
+msgstr "Net worth history"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:43
+#, elixir-autogen, elixir-format
+msgid "section_portfolio_allocation"
+msgstr "Portfolio allocation"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "badge_internal"
+msgstr "internal"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:14
+#: lib/aurum_finance_web/live/reports_live.html.heex:27
+#: lib/aurum_finance_web/live/reports_live.html.heex:44
+#, elixir-autogen, elixir-format
+msgid "badge_mock"
+msgstr "mock"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:135
+#, elixir-autogen, elixir-format
+msgid "badge_transactions"
+msgstr "transactions"
+
+#: lib/aurum_finance_web/live/reports_live.ex:188
+#, elixir-autogen, elixir-format
+msgid "cashflow_food"
+msgstr "Food"
+
+#: lib/aurum_finance_web/live/reports_live.ex:187
+#, elixir-autogen, elixir-format
+msgid "cashflow_housing"
+msgstr "Housing"
+
+#: lib/aurum_finance_web/live/reports_live.ex:186
+#, elixir-autogen, elixir-format
+msgid "cashflow_income"
+msgstr "Income"
+
+#: lib/aurum_finance_web/live/reports_live.ex:190
+#, elixir-autogen, elixir-format
+msgid "cashflow_other"
+msgstr "Other"
+
+#: lib/aurum_finance_web/live/reports_live.ex:189
+#, elixir-autogen, elixir-format
+msgid "cashflow_transport"
+msgstr "Transport"
+
+#: lib/aurum_finance_web/live/reports_live.ex:216
+#, elixir-autogen, elixir-format
+msgid "holding_name_bova11"
+msgstr "iShares Ibovespa"
+
+#: lib/aurum_finance_web/live/reports_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "holding_name_qqqd"
+msgstr "Nasdaq ETF"
+
+#: lib/aurum_finance_web/live/reports_live.ex:208
+#, elixir-autogen, elixir-format
+msgid "holding_name_vt"
+msgstr "Vanguard Total World"
+
+#: lib/aurum_finance_web/live/reports_live.ex:196
+#, elixir-autogen, elixir-format
+msgid "mock_entity_name"
+msgstr "Personal (BR)"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr "Derived read models for explainable reporting. UI-only charts and drilldowns."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:94
+#, elixir-autogen, elixir-format
+msgid "rebuild_account_label"
+msgstr "Entity / account"
+
+#: lib/aurum_finance_web/live/reports_live.ex:136
+#, elixir-autogen, elixir-format
+msgid "rebuild_account_prompt"
+msgstr "Select an entity / account"
+
+#: lib/aurum_finance_web/live/reports_live.ex:145
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_all"
+msgstr "All"
+
+#: lib/aurum_finance_web/live/reports_live.ex:151
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_current_year"
+msgstr "Current year"
+
+#: lib/aurum_finance_web/live/reports_live.ex:148
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_last_month"
+msgstr "Last month"
+
+#: lib/aurum_finance_web/live/reports_live.ex:154
+#, elixir-autogen, elixir-format
+msgid "rebuild_from_date_preset_one_year_ago"
+msgstr "1y ago"

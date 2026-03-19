@@ -19,6 +19,32 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotTest do
       assert "This field is required." in errors_on(changeset).computed_at
       assert "This field is required." in errors_on(changeset).projection_version
     end
+
+    test "enforces the unique account/date persisted row constraint" do
+      account = insert(:account)
+
+      attrs = %{
+        account_id: account.id,
+        entity_id: account.entity_id,
+        snapshot_date: ~D[2026-03-10],
+        closing_balance: Decimal.new("100.0000"),
+        daily_delta: Decimal.new("5.0000"),
+        computed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond),
+        projection_version: 1
+      }
+
+      assert {:ok, _snapshot} =
+               %DailyBalanceSnapshot{}
+               |> DailyBalanceSnapshot.changeset(attrs)
+               |> Repo.insert()
+
+      assert {:error, changeset} =
+               %DailyBalanceSnapshot{}
+               |> DailyBalanceSnapshot.changeset(attrs)
+               |> Repo.insert()
+
+      assert "has already been taken" in errors_on(changeset).account_id
+    end
   end
 
   describe "V1.changeset/3" do
@@ -128,6 +154,42 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotTest do
       assert snapshot.entity_id == income.entity_id
       assert_decimal(snapshot.daily_delta, Decimal.new("-20.0000"))
       assert_decimal(snapshot.closing_balance, Decimal.new("-20.0000"))
+    end
+
+    test "rebuilds liability accounts with the same base projection semantics" do
+      entity = insert(:entity)
+
+      credit_card =
+        insert_account(entity,
+          account_type: :liability,
+          operational_subtype: :credit_card,
+          management_group: :institution,
+          institution_name: "Card issuer",
+          institution_account_ref: "9999"
+        )
+
+      dining =
+        insert_account(entity,
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      create_transaction!(entity, ~D[2026-03-08], [
+        %{account_id: credit_card.id, amount: Decimal.new("-12.3400")},
+        %{account_id: dining.id, amount: Decimal.new("12.3400")}
+      ])
+
+      assert {:ok, result} = V1.rebuild(credit_card)
+      assert result.status == :rebuilt
+      assert result.effective_from_date == ~D[2026-03-08]
+
+      [snapshot] = snapshots_for_account(credit_card.id)
+      assert snapshot.entity_id == credit_card.entity_id
+      assert_decimal(snapshot.daily_delta, Decimal.new("-12.3400"))
+      assert_decimal(snapshot.closing_balance, Decimal.new("-12.3400"))
     end
 
     test "uses prior ledger balance when rebuilding from a later date and replaces the full forward range" do

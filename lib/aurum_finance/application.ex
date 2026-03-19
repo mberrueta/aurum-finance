@@ -34,7 +34,7 @@ defmodule AurumFinance.Application do
     do: maybe_add_reporting_ledger_event_bridge(children, bridge_enabled?())
 
   defp maybe_add_reporting_ledger_event_bridge(children, true),
-    do: [AurumFinance.Reporting.LedgerEventBridge | children]
+    do: children ++ [AurumFinance.Reporting.LedgerEventBridge]
 
   defp maybe_add_reporting_ledger_event_bridge(children, false), do: children
 

@@ -85,34 +85,40 @@ lib/aurum_finance/ledger.ex
 ---
 
 ## Execution Summary
-*[Filled by executing agent after completion]*
-
 ### Work Performed
-- [To be filled]
+- Added direct unit coverage for the ledger PubSub event contract, including deduplicated `account_ids` and the emitted business-date `from_date`
+- Extended reporting schema/projection tests to cover the persisted unique `account_id + snapshot_date` constraint and explicit rebuild behavior for a liability account
+- Reviewed the existing reporting/worker/bridge/materialization tests against the Task 08 acceptance criteria and kept the already-complete coverage in place rather than duplicating it
+- Updated `docs/qa/test_plan.md` with a scenario-to-test mapping for the daily balance snapshot backend scope
 
 ### Outputs Created
-- [To be filled]
+- `test/aurum_finance/ledger/pubsub_test.exs`
+- Updates in `test/aurum_finance/reporting/daily_balance_snapshot_test.exs`
+- Updates in `docs/qa/test_plan.md`
 
 ### Assumptions Made
 | Assumption | Rationale |
 |------------|-----------|
-| [To be filled] | [To be filled] |
+| Existing coverage in reporting/worker/bridge tests was already sufficient for most Task 08 semantics | Tasks 03-07 had already introduced deterministic tests for rebuild semantics, Oban enqueue behavior, and ledger trigger integration |
+| A liability-account rebuild test is the highest-signal way to make “all accounts regardless of account type” explicit | The suite already covered asset, expense, and income behavior indirectly, so a liability case closes the most meaningful remaining gap |
 
 ### Decisions Made
 | Decision | Alternatives Considered | Rationale |
 |----------|------------------------|-----------|
-| [To be filled] | [To be filled] | [To be filled] |
+| Add a small direct `Ledger.PubSub` unit test module | Rely only on the integration tests in `ledger_test.exs` and `ledger_event_bridge_test.exs` | A direct contract test makes the event payload shape easier to audit and isolates deduplication semantics from broader integration behavior |
+| Extend the existing snapshot test module instead of creating a second reporting engine test file | Split new cases into another test file | The current `daily_balance_snapshot_test.exs` already owns the projection/schema contract and is the clearest home for these additional cases |
+| Document Task 08 coverage in `docs/qa/test_plan.md` | Keep coverage undocumented outside the task markdown | The QA agent instructions explicitly ask for a scenario-to-file mapping, and the existing repo already uses that document for prior test planning |
 
 ### Blockers Encountered
-- [To be filled]
+- None
 
 ### Questions for Human
-1. [To be filled]
+1. None
 
 ### Ready for Next Task
-- [ ] All outputs complete
-- [ ] Summary documented
-- [ ] Questions listed (if any)
+- [x] All outputs complete
+- [x] Summary documented
+- [x] Questions listed (if any)
 
 ---
 
