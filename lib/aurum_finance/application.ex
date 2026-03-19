@@ -7,20 +7,17 @@ defmodule AurumFinance.Application do
 
   @impl true
   def start(_type, _args) do
-    children = [
-      AurumFinanceWeb.Telemetry,
-      AurumFinance.Repo,
-      {DNSCluster, query: Application.get_env(:aurum_finance, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: AurumFinance.PubSub},
-      {Oban, Application.fetch_env!(:aurum_finance, Oban)},
-      # Start a worker by calling: AurumFinance.Worker.start_link(arg)
-      # {AurumFinance.Worker, arg},
-      # Start to serve requests, typically the last entry
-      AurumFinanceWeb.Endpoint
-    ]
+    children =
+      [
+        AurumFinanceWeb.Telemetry,
+        AurumFinance.Repo,
+        {DNSCluster, query: Application.get_env(:aurum_finance, :dns_cluster_query) || :ignore},
+        {Phoenix.PubSub, name: AurumFinance.PubSub},
+        {Oban, Application.fetch_env!(:aurum_finance, Oban)},
+        AurumFinanceWeb.Endpoint
+      ]
+      |> maybe_add_reporting_ledger_event_bridge()
 
-    # See https://hexdocs.pm/elixir/Supervisor.html
-    # for other strategies and supported options
     opts = [strategy: :one_for_one, name: AurumFinance.Supervisor]
     Supervisor.start_link(children, opts)
   end
@@ -31,5 +28,17 @@ defmodule AurumFinance.Application do
   def config_change(changed, _new, removed) do
     AurumFinanceWeb.Endpoint.config_change(changed, removed)
     :ok
+  end
+
+  defp maybe_add_reporting_ledger_event_bridge(children),
+    do: maybe_add_reporting_ledger_event_bridge(children, bridge_enabled?())
+
+  defp maybe_add_reporting_ledger_event_bridge(children, true),
+    do: [AurumFinance.Reporting.LedgerEventBridge | children]
+
+  defp maybe_add_reporting_ledger_event_bridge(children, false), do: children
+
+  defp bridge_enabled? do
+    Application.get_env(:aurum_finance, :start_reporting_ledger_event_bridge, true)
   end
 end

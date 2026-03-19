@@ -1,5 +1,5 @@
 defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
-  use AurumFinance.DataCase, async: true
+  use AurumFinance.DataCase, async: false
   use Oban.Testing, repo: AurumFinance.Repo
 
   alias AurumFinance.Ingestion
@@ -10,9 +10,13 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Repo
+  alias AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker
+  alias AurumFinance.Reporting.LedgerEventBridge
 
   describe "perform/1" do
     test "commits ready rows and records skipped and failed outcomes durably" do
+      bridge_pid = start_bridge()
+
       %{account: account, entity: entity, imported_file: imported_file} =
         build_materialization_context()
 
@@ -90,6 +94,7 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
       }
 
       assert :ok = MaterializationWorker.perform(%Oban.Job{args: args})
+      _ = :sys.get_state(bridge_pid)
 
       assert_receive {:materialization_processing,
                       %{
@@ -177,6 +182,20 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
                Enum.any?(transaction.postings, &(&1.account_id == ready_row_one.account_id)) and
                  Enum.any?(transaction.postings, &(&1.account_id == clearing_account.id))
              end)
+
+      assert_enqueued(
+        worker: DailyBalanceSnapshotRefreshWorker,
+        queue: :reporting,
+        args: %{"account_id" => account.id, "from_date" => "2026-03-10"}
+      )
+
+      assert_enqueued(
+        worker: DailyBalanceSnapshotRefreshWorker,
+        queue: :reporting,
+        args: %{"account_id" => clearing_account.id, "from_date" => "2026-03-10"}
+      )
+
+      assert matching_refresh_jobs([account.id, clearing_account.id], "2026-03-10") == 2
 
       assert Repo.aggregate(
                from(transaction in Transaction, where: transaction.entity_id == ^entity.id),
@@ -370,5 +389,35 @@ defmodule AurumFinance.Ingestion.MaterializationWorkerTest do
       |> Repo.insert()
 
     row_materialization
+  end
+
+  defp matching_refresh_jobs(account_ids, from_date) do
+    account_ids = MapSet.new(account_ids)
+
+    all_enqueued(worker: DailyBalanceSnapshotRefreshWorker, queue: :reporting)
+    |> Enum.count(fn job ->
+      job.args["from_date"] == from_date and MapSet.member?(account_ids, job.args["account_id"])
+    end)
+  end
+
+  defp start_bridge do
+    bridge_pid = start_supervised!({LedgerEventBridge, []})
+    Ecto.Adapters.SQL.Sandbox.allow(Repo, self(), bridge_pid)
+    on_exit(fn -> stop_bridge(bridge_pid) end)
+    _ = :sys.get_state(bridge_pid)
+    bridge_pid
+  end
+
+  defp stop_bridge(bridge_pid) do
+    ref = Process.monitor(bridge_pid)
+
+    try do
+      GenServer.stop(bridge_pid, :normal, 5_000)
+    catch
+      :exit, _reason ->
+        :ok
+    end
+
+    assert_receive {:DOWN, ^ref, :process, ^bridge_pid, _reason}, 1_000
   end
 end

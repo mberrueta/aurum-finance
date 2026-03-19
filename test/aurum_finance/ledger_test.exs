@@ -4,6 +4,7 @@ defmodule AurumFinance.LedgerTest do
   alias AurumFinance.Audit
   alias AurumFinance.Ledger
   alias AurumFinance.Ledger.Account
+  alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Reconciliation
   alias AurumFinance.Reconciliation.PostingReconciliationState
@@ -732,6 +733,184 @@ defmodule AurumFinance.LedgerTest do
 
       assert {:ok, %{voided: _voided, reversal: _reversal}} = Ledger.void_transaction(transaction)
       assert Repo.aggregate(PostingReconciliationState, :count, :id) == 0
+    end
+  end
+
+  describe "ledger transaction notifications" do
+    test "create_transaction/2 emits one event with the business date and affected accounts" do
+      entity = insert_entity()
+      checking = insert_account(entity, %{name: "Checking notifications"})
+
+      groceries =
+        insert_account(entity, %{
+          name: "Groceries notifications",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      transport =
+        insert_account(entity, %{
+          name: "Transport notifications",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:ok, transaction} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-12],
+                 description: "Split purchase",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-15.0000")},
+                   %{account_id: groceries.id, amount: Decimal.new("10.0000")},
+                   %{account_id: transport.id, amount: Decimal.new("5.0000")}
+                 ]
+               })
+
+      transaction_id = transaction.id
+      entity_id = entity.id
+
+      assert_receive {:transaction_created,
+                      %{
+                        transaction_id: ^transaction_id,
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: account_ids
+                      }}
+
+      assert Enum.sort(account_ids) == Enum.sort([checking.id, groceries.id, transport.id])
+    end
+
+    test "create_transaction/2 does not emit when validation fails" do
+      entity = insert_entity()
+      checking = insert_account(entity, %{name: "Invalid notification checking"})
+
+      groceries =
+        insert_account(entity, %{
+          name: "Invalid notification groceries",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:error, _changeset} =
+               Ledger.create_transaction(%{
+                 entity_id: entity.id,
+                 date: ~D[2026-03-12],
+                 description: "Unbalanced transaction",
+                 source_type: :manual,
+                 postings: [
+                   %{account_id: checking.id, amount: Decimal.new("-10.0000")},
+                   %{account_id: groceries.id, amount: Decimal.new("9.0000")}
+                 ]
+               })
+
+      entity_id = entity.id
+      checking_id = checking.id
+      groceries_id = groceries.id
+
+      refute_receive {:transaction_created,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: [^checking_id, ^groceries_id]
+                      }}
+
+      refute_receive {:transaction_created,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-12],
+                        account_ids: [^groceries_id, ^checking_id]
+                      }},
+                     50
+    end
+
+    test "void_transaction/2 emits one event with the original business date and affected accounts" do
+      %{checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      transaction =
+        create_balanced_transaction(checking, groceries, %{
+          description: "Void notifications",
+          date: ~D[2026-03-15]
+        })
+
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:ok, %{voided: voided}} = Ledger.void_transaction(transaction)
+
+      voided_id = voided.id
+      entity_id = transaction.entity_id
+
+      assert_receive {:transaction_voided,
+                      %{
+                        transaction_id: ^voided_id,
+                        entity_id: ^entity_id,
+                        from_date: ~D[2026-03-15],
+                        account_ids: account_ids
+                      }}
+
+      assert Enum.sort(account_ids) == Enum.sort([checking.id, groceries.id])
+    end
+
+    test "void_transaction/2 does not emit when reconciled postings block the write" do
+      %{entity: entity, checking: checking, groceries: groceries} = transaction_accounts_fixture()
+
+      transaction =
+        create_balanced_transaction(checking, groceries, %{
+          description: "Blocked void notification"
+        })
+
+      {:ok, session} =
+        Reconciliation.create_reconciliation_session(
+          %{
+            entity_id: entity.id,
+            account_id: checking.id,
+            statement_date: ~D[2026-03-20],
+            statement_balance: Decimal.new("-10.00")
+          },
+          entity_id: entity.id
+        )
+
+      posting_ids =
+        transaction.postings
+        |> Enum.filter(&(&1.account_id == checking.id))
+        |> Enum.map(& &1.id)
+
+      assert {:ok, _states} =
+               Reconciliation.mark_postings_cleared(posting_ids, session.id, entity_id: entity.id)
+
+      assert {:ok, _session} = Reconciliation.complete_reconciliation_session(session)
+      :ok = PubSub.subscribe_transactions()
+
+      assert {:error, :reconciled_postings} = Ledger.void_transaction(transaction)
+
+      entity_id = entity.id
+      checking_id = checking.id
+      groceries_id = groceries.id
+      transaction_date = transaction.date
+
+      refute_receive {:transaction_voided,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ^transaction_date,
+                        account_ids: [^checking_id, ^groceries_id]
+                      }},
+                     50
+
+      refute_receive {:transaction_voided,
+                      %{
+                        entity_id: ^entity_id,
+                        from_date: ^transaction_date,
+                        account_ids: [^groceries_id, ^checking_id]
+                      }},
+                     50
     end
   end
 

@@ -9,6 +9,7 @@ defmodule AurumFinance.Ledger do
   alias AurumFinance.Classification.ClassificationRecord
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Ledger.Posting
+  alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Ledger.Transaction
   alias AurumFinance.Reconciliation
   alias AurumFinance.Reconciliation.PostingReconciliationState
@@ -379,12 +380,15 @@ defmodule AurumFinance.Ledger do
     transaction_changeset = Transaction.changeset(%Transaction{}, attrs)
     posting_attrs = posting_attrs(attrs)
 
-    case validate_transaction_for_insert(transaction_changeset, posting_attrs) do
-      {:ok, validated_changeset, _accounts_by_id} ->
-        persist_transaction(validated_changeset, posting_attrs)
-
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:error, changeset}
+    with {:ok, validated_changeset, _accounts_by_id} <-
+           validate_transaction_for_insert(transaction_changeset, posting_attrs),
+         {:ok, %Transaction{} = transaction} <-
+           persist_transaction(validated_changeset, posting_attrs) do
+      :ok = PubSub.broadcast_transaction_created(transaction)
+      {:ok, transaction}
+    else
+      {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
+      {:error, reason} -> {:error, reason}
     end
   end
 
@@ -470,7 +474,11 @@ defmodule AurumFinance.Ledger do
         {:error, :reconciled_postings}
 
       true ->
-        persist_void_transaction(transaction, audit_metadata, posting_ids)
+        with {:ok, %{voided: voided} = result} <-
+               persist_void_transaction(transaction, audit_metadata, posting_ids) do
+          :ok = PubSub.broadcast_transaction_voided(voided)
+          {:ok, result}
+        end
     end
   end
 
