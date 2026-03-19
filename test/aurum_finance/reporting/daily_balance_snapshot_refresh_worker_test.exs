@@ -117,6 +117,46 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorkerTest do
       assert Reporting.earliest_snapshot_date_for_account(checking) == ~D[2026-03-10]
       assert Reporting.latest_snapshot_date_for_account(checking) == ~D[2026-03-10]
     end
+
+    test "ignores pending sibling jobs from other accounts when merging runtime from_date" do
+      entity = insert(:entity)
+      checking = insert_account(entity)
+      other_account = insert_account(entity, name: "Other checking")
+
+      expense =
+        insert_account(entity,
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      create_transaction!(entity, ~D[2026-03-10], [
+        %{account_id: checking.id, amount: Decimal.new("-10.0000")},
+        %{account_id: expense.id, amount: Decimal.new("10.0000")}
+      ])
+
+      create_transaction!(entity, ~D[2026-03-12], [
+        %{account_id: checking.id, amount: Decimal.new("-5.0000")},
+        %{account_id: expense.id, amount: Decimal.new("5.0000")}
+      ])
+
+      assert {:ok, %Oban.Job{id: checking_job_id}} =
+               Reporting.enqueue_daily_balance_snapshot_refresh(checking.id, ~D[2026-03-12])
+
+      assert {:ok, %Oban.Job{}} =
+               Reporting.enqueue_daily_balance_snapshot_refresh(other_account.id, nil)
+
+      [checking_job] =
+        all_enqueued(worker: DailyBalanceSnapshotRefreshWorker, queue: :reporting)
+        |> Enum.filter(&(&1.id == checking_job_id))
+
+      assert :ok = DailyBalanceSnapshotRefreshWorker.perform(checking_job)
+
+      assert Reporting.earliest_snapshot_date_for_account(checking) == ~D[2026-03-12]
+      assert Reporting.latest_snapshot_date_for_account(checking) == ~D[2026-03-12]
+    end
   end
 
   defp create_transaction!(entity, date, postings) do

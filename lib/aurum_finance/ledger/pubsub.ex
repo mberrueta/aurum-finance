@@ -16,6 +16,10 @@ defmodule AurumFinance.Ledger.PubSub do
   The module only broadcasts after successful final ledger writes. Validation
   errors, preview flows, and other non-persisted paths must not use these
   helpers.
+
+  Delivery is best-effort. These helpers are used for internal projection
+  signaling after commit and must not be treated as a durable delivery
+  guarantee.
   """
 
   alias AurumFinance.Ledger.Transaction
@@ -48,7 +52,8 @@ defmodule AurumFinance.Ledger.PubSub do
   Broadcasts that a transaction was created successfully.
 
   The payload always reflects persisted ledger state and uses the transaction
-  business date as the downstream rebuild `from_date`.
+  business date as the downstream rebuild `from_date`. This is a best-effort
+  post-commit signal and does not affect the success result of the ledger write.
 
   ## Examples
 
@@ -74,7 +79,9 @@ defmodule AurumFinance.Ledger.PubSub do
 
   The event is emitted from the original voided transaction rather than the
   reversal transaction because downstream projections only need the original
-  business date and affected accounts to rebuild correctly.
+  business date and affected accounts to rebuild correctly. This is a
+  best-effort post-commit signal and does not affect the success result of the
+  ledger write.
 
   ## Examples
 

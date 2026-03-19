@@ -298,8 +298,6 @@ defmodule AurumFinance.Reporting.Projections.DailyBalanceSnapshots.V1 do
   end
 
   defp snapshot_entry(account, snapshot_date, closing_balance, daily_delta, computed_at) do
-    now = computed_at
-
     %{
       account_id: account.id,
       entity_id: account.entity_id,
@@ -308,8 +306,8 @@ defmodule AurumFinance.Reporting.Projections.DailyBalanceSnapshots.V1 do
       daily_delta: daily_delta,
       computed_at: computed_at,
       projection_version: projection_version(),
-      inserted_at: now,
-      updated_at: now
+      inserted_at: computed_at,
+      updated_at: computed_at
     }
   end
 

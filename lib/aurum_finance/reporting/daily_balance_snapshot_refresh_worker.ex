@@ -89,7 +89,7 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker do
   defp merge_runtime_from_date({:ok, requested_from_date}, job_id, account_id) do
     job_id
     |> oldest_sibling_from_date(account_id)
-    |> oldest_from_date(requested_from_date)
+    |> merge_requested_from_date(requested_from_date)
     |> then(&{:ok, &1})
   end
 
@@ -99,23 +99,24 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker do
     |> where([job], job.queue == "reporting")
     |> where([job], job.state in ["available", "scheduled", "retryable"])
     |> where([job], job.id != ^job_id)
+    |> where([job], fragment("?->>'account_id' = ?", job.args, ^account_id))
+    |> select([job], job.args["from_date"])
     |> Repo.all()
-    |> Enum.filter(&(&1.args["account_id"] == account_id))
-    |> Enum.map(& &1.args["from_date"])
     |> Enum.reduce(:unset, fn dumped_from_date, acc ->
       dumped_from_date
       |> load_from_date()
       |> merge_loaded_from_date(acc)
     end)
-    |> normalize_oldest_sibling_from_date()
   end
 
   defp merge_loaded_from_date({:ok, from_date}, :unset), do: from_date
   defp merge_loaded_from_date({:ok, from_date}, acc), do: oldest_from_date(acc, from_date)
   defp merge_loaded_from_date({:error, _reason}, acc), do: acc
 
-  defp normalize_oldest_sibling_from_date(:unset), do: nil
-  defp normalize_oldest_sibling_from_date(from_date), do: from_date
+  defp merge_requested_from_date(:unset, requested_from_date), do: requested_from_date
+
+  defp merge_requested_from_date(oldest_sibling_from_date, requested_from_date),
+    do: oldest_from_date(oldest_sibling_from_date, requested_from_date)
 
   defp oldest_from_date(nil, _other_from_date), do: nil
   defp oldest_from_date(_from_date, nil), do: nil

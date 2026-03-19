@@ -356,6 +356,10 @@ defmodule AurumFinance.Ledger do
   @doc """
   Creates a balanced transaction with nested postings atomically.
 
+  The internal transaction-created PubSub notification is emitted only after
+  the database commit succeeds. That notification is a best-effort projection
+  signal and does not change the success result of the persisted ledger write.
+
   ## Examples
 
   ```elixir
@@ -384,7 +388,7 @@ defmodule AurumFinance.Ledger do
            validate_transaction_for_insert(transaction_changeset, posting_attrs),
          {:ok, %Transaction{} = transaction} <-
            persist_transaction(validated_changeset, posting_attrs) do
-      :ok = PubSub.broadcast_transaction_created(transaction)
+      _ = PubSub.broadcast_transaction_created(transaction)
       {:ok, transaction}
     else
       {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
@@ -443,6 +447,10 @@ defmodule AurumFinance.Ledger do
   @doc """
   Voids a transaction by marking the original voided and inserting a reversal.
 
+  The internal transaction-voided PubSub notification is emitted only after the
+  database commit succeeds. That notification is a best-effort projection
+  signal and does not change the success result of the persisted ledger write.
+
   ## Examples
 
   ```elixir
@@ -476,7 +484,7 @@ defmodule AurumFinance.Ledger do
       true ->
         with {:ok, %{voided: voided} = result} <-
                persist_void_transaction(transaction, audit_metadata, posting_ids) do
-          :ok = PubSub.broadcast_transaction_voided(voided)
+          _ = PubSub.broadcast_transaction_voided(voided)
           {:ok, result}
         end
     end
@@ -1040,6 +1048,8 @@ defmodule AurumFinance.Ledger do
 
     case validate_transaction_for_insert(transaction_changeset, posting_attrs) do
       {:ok, validated_changeset, _accounts_by_id} ->
+        # This helper is invoked from `Multi.run/3`, so these inserts still run
+        # inside the outer void transaction.
         insert_transaction(validated_changeset, posting_attrs)
 
       {:error, changeset} ->
