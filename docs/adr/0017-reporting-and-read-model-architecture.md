@@ -169,3 +169,7 @@ This design explicitly avoids:
 - Keep projection update logic idempotent and replay-safe.
 - Preserve source identifiers in read models for drilldown.
 - Distinguish forecast datasets from historical actuals at schema/API level.
+- The first implemented projection foundation is `daily_balance_snapshots`, a
+  native-currency daily closing balance series keyed by `account_id` and
+  `snapshot_date`, refreshed asynchronously from ledger-triggered reporting
+  jobs.
