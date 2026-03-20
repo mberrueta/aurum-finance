@@ -9,14 +9,16 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
   - `Reporting` subscribes and translates those notifications into refresh jobs
 
   This module intentionally does not recalculate snapshots inline. It only
-  enqueues one refresh per affected account and lets the reporting worker apply
-  the approved debounce and `from_date` merge rules.
+  enqueues one refresh per affected account, emits a coarse reporting freshness
+  invalidation signal, and lets the reporting worker apply the approved debounce
+  and `from_date` merge rules.
   """
 
   use GenServer
 
   alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Reporting
+  alias AurumFinance.Reporting.PubSub, as: ReportingPubSub
 
   @doc """
   Starts the bridge process and subscribes it to ledger transaction events.
@@ -53,10 +55,26 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
 
   def handle_info(_message, state), do: {:noreply, state}
 
-  defp enqueue_snapshot_refreshes(%{account_ids: account_ids, from_date: from_date}) do
+  defp enqueue_snapshot_refreshes(
+         %{
+           entity_id: entity_id,
+           account_ids: account_ids,
+           from_date: from_date
+         } = _notification
+       ) do
+    account_ids = Enum.uniq(account_ids)
+
     account_ids
-    |> Enum.uniq()
     |> Enum.each(&enqueue_snapshot_refresh(&1, from_date))
+
+    ReportingPubSub.broadcast_hub_freshness_invalidated(%{
+      entity_id: entity_id,
+      account_ids: account_ids,
+      from_date: from_date,
+      occurred_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+    })
+
+    :ok
   end
 
   defp enqueue_snapshot_refresh(account_id, from_date) do

@@ -1,6 +1,10 @@
 defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker do
   @moduledoc """
   Oban worker responsible for asynchronous daily balance snapshot refreshes.
+
+  Successful refresh completions emit a narrow reporting freshness signal via
+  `AurumFinance.Reporting.PubSub`. Consumers should re-read hub/report state
+  after receiving that signal instead of deriving row-level detail from it.
   """
 
   use Oban.Worker,
@@ -18,6 +22,7 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker do
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
   alias AurumFinance.Reporting
+  alias AurumFinance.Reporting.PubSub, as: ReportingPubSub
 
   @rebuild_from_first_effective_date "__first_effective_date__"
 
@@ -133,9 +138,21 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker do
   defp perform_refresh({:ok, from_date}, %Account{} = account) do
     account
     |> Reporting.refresh_daily_balance_snapshots(from_date)
-    |> perform_result()
+    |> perform_result(account, from_date)
   end
 
-  defp perform_result({:ok, _result}), do: :ok
-  defp perform_result({:error, reason}), do: {:error, reason}
+  defp perform_result({:ok, result}, %Account{} = account, requested_from_date) do
+    ReportingPubSub.broadcast_hub_freshness_refreshed(%{
+      entity_id: account.entity_id,
+      account_id: account.id,
+      refresh_status: result.status,
+      requested_from_date: requested_from_date,
+      effective_from_date: Map.get(result, :effective_from_date),
+      refreshed_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+    })
+
+    :ok
+  end
+
+  defp perform_result({:error, reason}, %Account{}, _requested_from_date), do: {:error, reason}
 end

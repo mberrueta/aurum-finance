@@ -4,6 +4,7 @@ defmodule AurumFinance.Reporting.LedgerEventBridgeTest do
 
   alias AurumFinance.Ledger
   alias AurumFinance.Repo
+  alias AurumFinance.Reporting
   alias AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker
   alias AurumFinance.Reporting.LedgerEventBridge
 
@@ -52,6 +53,18 @@ defmodule AurumFinance.Reporting.LedgerEventBridgeTest do
       )
 
       assert matching_refresh_jobs([checking.id, groceries.id], "2026-03-12") == 2
+
+      assert_receive {:reporting_hub_freshness_invalidated,
+                      %{
+                        entity_id: entity_id,
+                        account_ids: account_ids,
+                        from_date: ~D[2026-03-12],
+                        occurred_at: occurred_at
+                      }}
+
+      assert entity_id == entity.id
+      assert Enum.sort(account_ids) == Enum.sort([checking.id, groceries.id])
+      assert %DateTime{} = occurred_at
     end
 
     test "enqueues one refresh per affected account from voided transactions" do
@@ -106,6 +119,7 @@ defmodule AurumFinance.Reporting.LedgerEventBridgeTest do
   defp start_bridge do
     bridge_pid = start_supervised!({LedgerEventBridge, []})
     Ecto.Adapters.SQL.Sandbox.allow(Repo, self(), bridge_pid)
+    assert :ok = Reporting.subscribe_hub_freshness()
     on_exit(fn -> stop_bridge(bridge_pid) end)
     _ = :sys.get_state(bridge_pid)
     bridge_pid

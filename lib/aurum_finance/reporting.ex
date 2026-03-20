@@ -1,20 +1,27 @@
 defmodule AurumFinance.Reporting do
   @moduledoc """
-  Reporting projection access and rebuild entrypoints.
+  Reporting projection access, rebuild entrypoints, and report-specific read
+  models.
 
   This context exposes the persisted `daily_balance_snapshots` projection as a
   composable query plus explicit account-scoped rebuild APIs. It intentionally
   does not embed report rendering semantics, FX transforms, or worker/job
-  orchestration details.
+  orchestration details. Report-specific read models such as Net Worth live in
+  focused modules and are surfaced here as stable context entrypoints. The
+  context also exposes an enqueue-only global refresh entrypoint for the
+  `/reports` hub.
   """
 
   import Ecto.Query, warn: false
 
+  alias AurumFinance.Entities
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
   alias AurumFinance.Reporting.DailyBalanceSnapshot
   alias AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker
+  alias AurumFinance.Reporting.NetWorth
   alias AurumFinance.Reporting.Projections.DailyBalanceSnapshots.V1
+  alias AurumFinance.Reporting.PubSub
   alias Oban.Job
 
   @type list_opt ::
@@ -22,6 +29,14 @@ defmodule AurumFinance.Reporting do
           | {:entity_id, Ecto.UUID.t()}
           | {:date_from, Date.t()}
           | {:date_to, Date.t()}
+
+  @type net_worth_opt :: {:as_of_date, Date.t()}
+  @type refresh_result :: %{
+          status: :queued,
+          entity_count: non_neg_integer(),
+          included_account_count: non_neg_integer(),
+          requested_account_ids: [Ecto.UUID.t()]
+        }
 
   @doc """
   Lists persisted daily balance snapshots.
@@ -131,6 +146,73 @@ defmodule AurumFinance.Reporting do
     |> Repo.one()
   end
 
+  @doc """
+  Returns the Net Worth V1 reporting read model for the provided entity scope.
+
+  The report is built strictly from the persisted
+  `daily_balance_snapshots` projection plus current ledger/account facts. Reads
+  never trigger recomputation.
+
+  `as_of_date` defaults to `Date.utc_today/0` in V1.
+
+  ## Examples
+
+      iex> {:ok, report} =
+      ...>   AurumFinance.Reporting.net_worth_report([], as_of_date: ~D[2026-03-20])
+      iex> report.as_of_date
+      ~D[2026-03-20]
+      iex> report.account_rows
+      []
+  """
+  @spec net_worth_report([Ecto.UUID.t()], [net_worth_opt()]) ::
+          {:ok, map()} | {:error, term()}
+  def net_worth_report(entity_ids, opts \\ []) when is_list(entity_ids) do
+    NetWorth.get_report(entity_ids, opts)
+  end
+
+  @doc """
+  Enqueues a global reporting refresh for the current reporting scope.
+
+  This API is intended for the `/reports` hub. It only enqueues refresh work
+  for the current Net Worth V1 projection family and never recomputes inline.
+
+  ## Examples
+
+      iex> {:ok, result} = AurumFinance.Reporting.enqueue_hub_refresh()
+      iex> result.status
+      :queued
+  """
+  @spec enqueue_hub_refresh() :: {:ok, refresh_result()} | {:error, term()}
+  def enqueue_hub_refresh do
+    Entities.list_entities()
+    |> Enum.map(& &1.id)
+    |> enqueue_hub_refresh()
+  end
+
+  @doc false
+  @spec enqueue_hub_refresh([Ecto.UUID.t()]) :: {:ok, refresh_result()} | {:error, term()}
+  def enqueue_hub_refresh(entity_ids) when is_list(entity_ids) do
+    entity_ids
+    |> included_refresh_accounts()
+    |> enqueue_hub_refresh_accounts()
+  end
+
+  @doc """
+  Subscribes the caller to coarse reporting hub freshness updates.
+
+  Subscribers should treat messages as re-read triggers for the hub, not as a
+  source of detailed report state.
+
+  ## Examples
+
+      iex> AurumFinance.Reporting.subscribe_hub_freshness()
+      :ok
+  """
+  @spec subscribe_hub_freshness() :: :ok | {:error, term()}
+  def subscribe_hub_freshness do
+    PubSub.subscribe_hub_freshness()
+  end
+
   defp list_daily_balance_snapshots_query(opts) do
     DailyBalanceSnapshot
     |> filter_query(opts)
@@ -207,6 +289,46 @@ defmodule AurumFinance.Reporting do
     case Date.compare(left, right) do
       :gt -> right
       _ -> left
+    end
+  end
+
+  defp included_refresh_accounts([]), do: []
+
+  defp included_refresh_accounts(entity_ids) do
+    Account
+    |> where([account], account.entity_id in ^entity_ids)
+    |> where([account], is_nil(account.archived_at))
+    |> where([account], account.management_group == :institution)
+    |> where([account], account.account_type in [:asset, :liability])
+    |> order_by([account], asc: account.entity_id, asc: account.name, asc: account.id)
+    |> Repo.all()
+  end
+
+  defp enqueue_hub_refresh_accounts(accounts) do
+    with {:ok, requested_account_ids} <- enqueue_hub_refresh_requests(accounts) do
+      {:ok,
+       %{
+         status: :queued,
+         entity_count: accounts |> Enum.map(& &1.entity_id) |> Enum.uniq() |> length(),
+         included_account_count: length(accounts),
+         requested_account_ids: requested_account_ids
+       }}
+    end
+  end
+
+  defp enqueue_hub_refresh_requests(accounts) do
+    Enum.reduce_while(accounts, {:ok, []}, fn account, {:ok, requested_account_ids} ->
+      case enqueue_daily_balance_snapshot_refresh(account.id, nil) do
+        {:ok, _job} ->
+          {:cont, {:ok, [account.id | requested_account_ids]}}
+
+        {:error, reason} ->
+          {:halt, {:error, reason}}
+      end
+    end)
+    |> case do
+      {:ok, requested_account_ids} -> {:ok, Enum.reverse(requested_account_ids)}
+      {:error, reason} -> {:error, reason}
     end
   end
 
