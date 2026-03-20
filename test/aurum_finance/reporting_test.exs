@@ -1,9 +1,11 @@
 defmodule AurumFinance.ReportingTest do
   use AurumFinance.DataCase, async: true
+  use Oban.Testing, repo: AurumFinance.Repo
 
   alias AurumFinance.Ledger
   alias AurumFinance.Reporting
   alias AurumFinance.Reporting.DailyBalanceSnapshot
+  alias AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorker
   alias AurumFinance.Repo
 
   describe "list_daily_balance_snapshots/1" do
@@ -117,6 +119,72 @@ defmodule AurumFinance.ReportingTest do
              |> List.first()
              |> Map.fetch!(:computed_at) ==
                computed_at_before_noop
+    end
+  end
+
+  describe "enqueue_hub_refresh/1" do
+    test "enqueues one reporting refresh per included net worth account in scope" do
+      entity = insert(:entity)
+      other_entity = insert(:entity)
+
+      asset = insert_account(entity, name: "Checking")
+
+      liability =
+        insert_account(entity,
+          name: "Credit Card",
+          account_type: :liability,
+          operational_subtype: :credit_card
+        )
+
+      _archived =
+        insert_account(entity,
+          name: "Archived",
+          archived_at: ~U[2026-03-10 00:00:00Z]
+        )
+
+      _category =
+        insert_account(entity,
+          name: "Groceries",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      _other_entity_asset = insert_account(other_entity, name: "Other")
+
+      assert {:ok, result} = Reporting.enqueue_hub_refresh([entity.id])
+
+      assert result == %{
+               status: :queued,
+               entity_count: 1,
+               included_account_count: 2,
+               requested_account_ids: [asset.id, liability.id]
+             }
+
+      assert_enqueued(
+        worker: DailyBalanceSnapshotRefreshWorker,
+        queue: :reporting,
+        args: %{"account_id" => asset.id, "from_date" => "__first_effective_date__"}
+      )
+
+      assert_enqueued(
+        worker: DailyBalanceSnapshotRefreshWorker,
+        queue: :reporting,
+        args: %{"account_id" => liability.id, "from_date" => "__first_effective_date__"}
+      )
+    end
+
+    test "returns a queued zero-result for empty scopes" do
+      assert {:ok, result} = Reporting.enqueue_hub_refresh([])
+
+      assert result == %{
+               status: :queued,
+               entity_count: 0,
+               included_account_count: 0,
+               requested_account_ids: []
+             }
     end
   end
 

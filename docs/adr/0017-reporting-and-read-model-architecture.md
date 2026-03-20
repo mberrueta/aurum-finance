@@ -173,3 +173,12 @@ This design explicitly avoids:
   native-currency daily closing balance series keyed by `account_id` and
   `snapshot_date`, refreshed asynchronously from ledger-triggered reporting
   jobs.
+- The first shipped production read-path consumer is Net Worth V1, exposed via
+  the `/reports` hub and `/reports/net-worth` page.
+- Net Worth V1 reads the latest available snapshot `<= as_of_date` per included
+  account, keeps `no_history` rows visible, and computes native-currency totals
+  only.
+- Net Worth freshness remains report-specific in V1. It combines coverage on
+  the requested business date with later-inserted relevant ledger facts and
+  surfaces `exact`, `carried_forward`, `refreshable_gap`, and `no_history`
+  semantics to callers.

@@ -1,146 +1,115 @@
-<div id="reports-page">
+<div id="reports-page" class="space-y-4">
   <.page_header title={dgettext("reports", "page_title")}>
     <:subtitle>
-      {dgettext("reports", "page_subtitle")}
+      {dgettext("reports", "hub_subtitle")}
     </:subtitle>
     <:actions>
-      <button class="au-btn au-btn-primary">{dgettext("reports", "mock_export_pdf")}</button>
+      <span id="reports-freshness-badge">
+        <.badge variant={@freshness_badge_variant}>
+          {@freshness_badge_label}
+        </.badge>
+      </span>
+      <span :if={@refresh_requested?} id="reports-refresh-pending">
+        <.badge variant={:warn}>
+          {dgettext("reports", "hub_refresh_pending")}
+        </.badge>
+      </span>
+      <.button
+        id="reports-refresh-submit"
+        type="button"
+        variant="primary"
+        phx-click="refresh_reporting"
+      >
+        {dgettext("reports", "hub_refresh_action")}
+      </.button>
     </:actions>
   </.page_header>
 
-  <div class="grid grid-cols-1 gap-4 xl:grid-cols-3">
-    <.section_panel
-      title={dgettext("reports", "section_net_worth_history")}
-      badge={dgettext("reports", "badge_mock")}
-    >
-      <div class="mt-3">
-        <.sparkline series={@net_worth_series} />
-      </div>
-      <div class="mt-2.5 flex items-center justify-between gap-2.5">
-        <span class="text-xs text-white/50">{dgettext("reports", "net_worth_footer")}</span>
-        <button class="au-btn">{dgettext("reports", "btn_drilldown")}</button>
-      </div>
-    </.section_panel>
-
-    <.section_panel
-      title={dgettext("reports", "section_cashflow_month")}
-      badge={dgettext("reports", "badge_mock")}
-    >
-      <div class="au-list">
-        <div :for={item <- @cashflow} class="au-item">
-          <div>
-            <div class="text-sm text-white/92">{item.category}</div>
-            <div class="mt-0.5 text-xs text-white/68">
-              {dgettext("reports", "cashflow_category_rollup")}
-            </div>
-          </div>
-          <div class="au-mono">{format_money(item.value, "USD")}</div>
-        </div>
-      </div>
-    </.section_panel>
-
-    <.section_panel
-      title={dgettext("reports", "section_portfolio_allocation")}
-      badge={dgettext("reports", "badge_mock")}
-    >
-      <p class="mt-2.5 text-xs text-white/50">
-        {dgettext("reports", "portfolio_holdings_caption")}
-      </p>
-      <div class="au-list">
-        <div :for={holding <- @entity.holdings} class="au-item">
-          <div>
-            <div class="text-sm text-white/92">{holding.symbol} - {holding.name}</div>
-            <div class="mt-0.5 text-xs text-white/68">
-              {dgettext("reports", "holding_qty_price",
-                qty: holding.qty,
-                price: format_money(holding.price, holding.currency)
-              )}
-            </div>
-          </div>
-          <.badge :if={holding.change_pct_7d >= 0} variant={:good}>
-            {dgettext("reports", "holding_change_7d", value: pct_label(holding.change_pct_7d))}
-          </.badge>
-          <.badge :if={holding.change_pct_7d < 0} variant={:bad}>
-            {dgettext("reports", "holding_change_7d", value: pct_label(holding.change_pct_7d))}
-          </.badge>
-        </div>
-      </div>
-    </.section_panel>
-  </div>
-
-  <div id="reports-rebuild-panel">
-    <.section_panel
-      title={dgettext("reports", "rebuild_panel_title")}
-      badge={dgettext("reports", "badge_internal")}
-      badge_variant={:warn}
-      class="mt-3.5"
-    >
-      <div class="space-y-4">
-        <p id="reports-rebuild-help" class="text-xs leading-relaxed text-white/55">
-          {dgettext("reports", "rebuild_panel_help")}
-        </p>
-
-        <.form
-          for={@rebuild_form}
-          id="reports-rebuild-form"
-          class="grid gap-4 md:grid-cols-2"
-          phx-change="validate_rebuild"
-          phx-submit="enqueue_rebuild"
-        >
-          <.input
-            field={@rebuild_form[:account_id]}
-            id="reports-rebuild-account-id"
-            type="select"
-            label={dgettext("reports", "rebuild_account_label")}
-            options={@rebuild_account_options}
-          />
-
-          <div class="space-y-2">
-            <.input
-              field={@rebuild_form[:from_date]}
-              id="reports-rebuild-from-date"
-              type="date"
-              label={dgettext("reports", "rebuild_from_date_label")}
-            />
-
-            <div class="flex flex-wrap gap-2">
-              <button
-                :for={{label, preset} <- from_date_preset_options()}
-                id={"reports-rebuild-preset-#{preset}"}
-                type="button"
-                class="au-btn"
-                phx-click="apply_from_date_preset"
-                phx-value-preset={preset}
-              >
-                {label}
-              </button>
-            </div>
-          </div>
-
-          <div class="md:col-span-2 flex items-center justify-between gap-3">
-            <p class="text-xs text-white/45">
-              {dgettext("reports", "rebuild_submit_hint")}
+  <div id="reports-hub-overview">
+    <div id="reports-net-worth-card">
+      <.section_panel
+        title={dgettext("reports", "hub_net_worth_title")}
+        badge={@net_worth_status}
+        badge_variant={@net_worth_badge_variant}
+        class="overflow-hidden"
+      >
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+          <div class="max-w-2xl space-y-3">
+            <p class="text-sm leading-relaxed text-white/68">
+              {dgettext("reports", "hub_net_worth_description")}
             </p>
-            <.button id="reports-rebuild-submit" type="submit" variant="primary">
-              {dgettext("reports", "rebuild_submit_label")}
-            </.button>
-          </div>
-        </.form>
-      </div>
-    </.section_panel>
-  </div>
 
-  <.section_panel
-    title={dgettext("reports", "section_drilldown_mock")}
-    badge={dgettext("reports", "badge_transactions")}
-    class="mt-3.5"
-  >
-    <p class="mt-2.5 text-xs text-white/50">
-      {dgettext("reports", "drilldown_caption")}
-    </p>
-    <div class="au-hr"></div>
-    <.link navigate={~p"/transactions"} class="au-btn">
-      {dgettext("reports", "btn_open_transactions")}
-    </.link>
-  </.section_panel>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-white/50">
+              <span class="rounded-full border border-white/10 px-3 py-1">
+                {dgettext("reports", "hub_net_worth_as_of",
+                  date: Date.to_iso8601(@hub_report.as_of_date)
+                )}
+              </span>
+              <span class="rounded-full border border-white/10 px-3 py-1">
+                {dgettext("reports", "hub_net_worth_accounts",
+                  count: @hub_report.included_account_count
+                )}
+              </span>
+              <span
+                :if={@hub_report.refresh_suggested?}
+                class="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-amber-50/90"
+              >
+                {dgettext("reports", "hub_net_worth_refresh_hint")}
+              </span>
+            </div>
+          </div>
+
+          <.link
+            id="reports-net-worth-open"
+            navigate={~p"/reports/net-worth"}
+            class="au-btn au-btn-primary w-full justify-center lg:w-auto"
+          >
+            {dgettext("reports", "hub_net_worth_open")}
+          </.link>
+        </div>
+
+        <div
+          :if={@hub_report.currency_summaries != []}
+          id="reports-net-worth-summary"
+          class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+        >
+          <div
+            :for={summary <- @compact_currency_summaries}
+            class="rounded-2xl border border-white/10 bg-white/[0.03] px-5 py-5"
+          >
+            <div class="flex items-start justify-between gap-4">
+              <div>
+                <p class="text-[11px] uppercase tracking-[0.28em] text-white/42">
+                  {summary.currency_code}
+                </p>
+                <h4 class="mt-2 text-base font-semibold text-white/90">
+                  {dgettext("reports", "hub_net_worth_title")}
+                </h4>
+              </div>
+              <p class="au-mono text-right text-xl font-semibold text-white/95">
+                {summary.net_worth_compact}
+              </p>
+            </div>
+
+            <dl class="mt-4 space-y-3 text-sm">
+              <div class="flex items-center justify-between gap-4 border-t border-white/8 pt-3">
+                <dt class="text-white/55">{dgettext("reports", "currency_summary_assets")}</dt>
+                <dd class="au-mono text-right text-white/82">{summary.assets_display}</dd>
+              </div>
+              <div class="flex items-center justify-between gap-4">
+                <dt class="text-white/55">
+                  {dgettext("reports", "currency_summary_liabilities")}
+                </dt>
+                <dd class="au-mono text-right text-white/82">{summary.liabilities_display}</dd>
+              </div>
+            </dl>
+          </div>
+        </div>
+
+        <div :if={@hub_report.currency_summaries == []} id="reports-net-worth-empty" class="mt-4">
+          <.empty_state text={dgettext("reports", "hub_net_worth_empty")} />
+        </div>
+      </.section_panel>
+    </div>
+  </div>
 </div>

@@ -658,7 +658,7 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
 
       scope_label =
         Gettext.dgettext(
-          AurumFinanceWeb.Gettext,
+          AurumFinance.Gettext,
           "transactions",
           "classification_scope_account"
         )
@@ -822,10 +822,10 @@ defmodule AurumFinanceWeb.TransactionsLiveTest do
       assert has_element?(view, "#transaction-#{transaction.id}-field-tags-clear-override")
 
       locked_label =
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "transactions", "classification_locked")
+        Gettext.dgettext(AurumFinance.Gettext, "transactions", "classification_locked")
 
       manual_state_label =
-        Gettext.dgettext(AurumFinanceWeb.Gettext, "transactions", "classification_state_manual")
+        Gettext.dgettext(AurumFinance.Gettext, "transactions", "classification_state_manual")
 
       assert has_element?(
                view,

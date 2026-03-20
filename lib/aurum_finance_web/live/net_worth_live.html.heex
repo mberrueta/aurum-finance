@@ -1,0 +1,204 @@
+<div id="net-worth-page" class="space-y-4">
+  <.page_header title={dgettext("reports", "net_worth_page_title")}>
+    <:subtitle>
+      {dgettext("reports", "net_worth_page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <span id="net-worth-freshness-badge">
+        <.badge variant={@freshness_badge_variant}>
+          {@freshness_badge_label}
+        </.badge>
+      </span>
+      <.link navigate={~p"/reports"} class="au-btn">
+        {dgettext("reports", "net_worth_back_to_hub")}
+      </.link>
+    </:actions>
+  </.page_header>
+
+  <.section_panel
+    title={dgettext("reports", "net_worth_filters_title")}
+    class="overflow-hidden"
+  >
+    <:actions>
+      <div class="flex flex-wrap items-center justify-end gap-2 text-xs text-white/50">
+        <span class="rounded-full border border-white/10 px-3 py-1">
+          {dgettext("reports", "net_worth_scope_accounts", count: @report.included_account_count)}
+        </span>
+        <span class="rounded-full border border-white/10 px-3 py-1">
+          {dgettext("reports", "net_worth_scope_entities", count: @report.entity_count)}
+        </span>
+        <span class="rounded-full border border-white/10 px-3 py-1">
+          {dgettext("reports", "hub_net_worth_as_of", date: Date.to_iso8601(@report.as_of_date))}
+        </span>
+      </div>
+    </:actions>
+    <.form for={@filter_form} id="net-worth-filters-form" phx-change="change_filters">
+      <div class="space-y-4">
+        <div class="flex flex-col gap-4 xl:flex-row xl:items-end xl:justify-between">
+          <div class="min-w-0 flex-1">
+            <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+              {dgettext("reports", "net_worth_important_dates_title")}
+            </p>
+            <div id="net-worth-date-presets" class="mt-2 flex flex-wrap gap-2">
+              <.link
+                :for={preset <- @date_presets}
+                id={"net-worth-date-preset-#{preset.key}"}
+                patch={preset.path}
+                class={[
+                  "rounded-full border px-3 py-1.5 text-xs transition",
+                  preset.active? &&
+                    "border-cyan-300/40 bg-cyan-400/12 text-cyan-50",
+                  !preset.active? &&
+                    "border-white/10 bg-white/[0.03] text-white/62 hover:border-white/20 hover:text-white/82"
+                ]}
+              >
+                <span>{preset.label}</span>
+                <span class="au-mono ml-2 text-[11px] opacity-70">
+                  {Date.to_iso8601(preset.date)}
+                </span>
+              </.link>
+            </div>
+          </div>
+
+          <div class="w-full xl:max-w-[220px] xl:shrink-0">
+            <.input
+              field={@filter_form[:as_of_date]}
+              type="date"
+              label={dgettext("reports", "net_worth_as_of_label")}
+            />
+          </div>
+        </div>
+
+        <div :if={@report.refresh_suggested?} id="net-worth-refresh-hint">
+          <.info_callout
+            title={dgettext("reports", "net_worth_refresh_hint_title")}
+            tone={:warn}
+          >
+            {dgettext("reports", "net_worth_refresh_hint_body")}
+          </.info_callout>
+        </div>
+      </div>
+    </.form>
+  </.section_panel>
+
+  <div
+    :if={!@report.empty?}
+    id="net-worth-coverage-counts"
+    class="flex flex-wrap gap-2"
+  >
+    <span
+      :for={coverage <- @coverage_counts_display}
+      class="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-xs text-white/58"
+    >
+      {coverage}
+    </span>
+  </div>
+
+  <div :if={!@report.empty?} id="net-worth-summary" class="grid gap-3 lg:grid-cols-3">
+    <.section_panel
+      :for={summary <- @summary_cards}
+      title={summary.currency_code}
+      class="overflow-hidden"
+    >
+      <div class="space-y-4">
+        <div class="rounded-2xl border border-emerald-300/20 bg-emerald-400/8 px-4 py-4">
+          <p class="text-[11px] uppercase tracking-[0.28em] text-emerald-100/60">
+            {dgettext("reports", "hub_net_worth_title")}
+          </p>
+          <p class="au-mono mt-2 text-2xl font-semibold text-white/95">{summary.net_worth}</p>
+        </div>
+
+        <dl class="space-y-3 text-sm">
+          <div class="flex items-center justify-between gap-4 border-t border-white/8 pt-3">
+            <dt class="text-white/55">{dgettext("reports", "currency_summary_assets")}</dt>
+            <dd class="au-mono text-right text-white/82">{summary.assets}</dd>
+          </div>
+          <div class="flex items-center justify-between gap-4">
+            <dt class="text-white/55">{dgettext("reports", "currency_summary_liabilities")}</dt>
+            <dd class="au-mono text-right text-white/82">{summary.liabilities}</dd>
+          </div>
+        </dl>
+
+        <p class="text-xs leading-relaxed text-white/52">{summary.coverage_meta}</p>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div :if={!@report.empty?} id="net-worth-accounts-card">
+    <.section_panel
+      title={dgettext("reports", "net_worth_accounts_title")}
+      class="overflow-hidden"
+    >
+      <div class="overflow-x-auto">
+        <table id="net-worth-accounts-table" class="min-w-full border-separate border-spacing-0">
+          <thead>
+            <tr class="text-left text-xs uppercase tracking-[0.22em] text-white/40">
+              <th
+                :if={@report.show_entity_column?}
+                class="border-b border-white/10 px-4 py-3 font-medium"
+              >
+                {dgettext("reports", "net_worth_table_entity")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium">
+                {dgettext("reports", "net_worth_table_account")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium">
+                {dgettext("reports", "net_worth_table_type")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium">
+                {dgettext("reports", "net_worth_table_currency")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium text-right">
+                {dgettext("reports", "net_worth_table_balance")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium">
+                {dgettext("reports", "net_worth_table_snapshot")}
+              </th>
+              <th class="border-b border-white/10 px-4 py-3 font-medium">
+                {dgettext("reports", "net_worth_table_coverage")}
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              :for={row <- @account_rows}
+              id={"net-worth-account-row-#{row.account_id}"}
+              class="text-sm text-white/82"
+            >
+              <td
+                :if={@report.show_entity_column?}
+                class="border-b border-white/8 px-4 py-3 align-top text-white/58"
+              >
+                {row.entity_name}
+              </td>
+              <td class="border-b border-white/8 px-4 py-3 align-top">
+                {row.account_name}
+              </td>
+              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
+                {row.account_type}
+              </td>
+              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
+                {row.currency_code}
+              </td>
+              <td class="au-mono border-b border-white/8 px-4 py-3 align-top text-right">
+                {row.balance_display}
+              </td>
+              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
+                {row.snapshot_used_display}
+              </td>
+              <td class="border-b border-white/8 px-4 py-3 align-top">
+                <.badge variant={row.coverage_variant}>
+                  {row.coverage_label}
+                </.badge>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div :if={@report.empty?} id="net-worth-empty">
+    <.empty_state text={dgettext("reports", "hub_net_worth_empty")} />
+  </div>
+</div>

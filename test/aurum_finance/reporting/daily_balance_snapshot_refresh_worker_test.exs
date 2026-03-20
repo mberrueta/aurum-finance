@@ -118,6 +118,47 @@ defmodule AurumFinance.Reporting.DailyBalanceSnapshotRefreshWorkerTest do
       assert Reporting.latest_snapshot_date_for_account(checking) == ~D[2026-03-10]
     end
 
+    test "broadcasts a coarse hub freshness refreshed signal after success" do
+      entity = insert(:entity)
+      checking = insert_account(entity)
+
+      expense =
+        insert_account(entity,
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      create_transaction!(entity, ~D[2026-03-10], [
+        %{account_id: checking.id, amount: Decimal.new("-10.0000")},
+        %{account_id: expense.id, amount: Decimal.new("10.0000")}
+      ])
+
+      assert :ok = Reporting.subscribe_hub_freshness()
+
+      assert {:ok, %Oban.Job{}} =
+               Reporting.enqueue_daily_balance_snapshot_refresh(checking.id, nil)
+
+      assert %{failure: 0, success: 1, snoozed: 0} =
+               Oban.drain_queue(queue: :reporting, with_scheduled: true)
+
+      assert_receive {:reporting_hub_freshness_refreshed,
+                      %{
+                        entity_id: entity_id,
+                        account_id: account_id,
+                        refresh_status: :rebuilt,
+                        requested_from_date: nil,
+                        effective_from_date: ~D[2026-03-10],
+                        refreshed_at: refreshed_at
+                      }}
+
+      assert entity_id == entity.id
+      assert account_id == checking.id
+      assert %DateTime{} = refreshed_at
+    end
+
     test "ignores pending sibling jobs from other accounts when merging runtime from_date" do
       entity = insert(:entity)
       checking = insert_account(entity)

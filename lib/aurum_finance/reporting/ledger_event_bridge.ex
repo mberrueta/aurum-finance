@@ -9,19 +9,22 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
   - `Reporting` subscribes and translates those notifications into refresh jobs
 
   This module intentionally does not recalculate snapshots inline. It only
-  enqueues one refresh per affected account and lets the reporting worker apply
-  the approved debounce and `from_date` merge rules.
+  enqueues one refresh per affected account, emits a coarse reporting freshness
+  invalidation signal, and lets the reporting worker apply the approved debounce
+  and `from_date` merge rules.
   """
 
   use GenServer
+  require Logger
 
   alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Reporting
+  alias AurumFinance.Reporting.PubSub, as: ReportingPubSub
 
   @doc """
   Starts the bridge process and subscribes it to ledger transaction events.
 
-  In normal runtime this process is supervised by `AurumFinance.Application`.
+  In normal runtime this process is started under the main application supervision tree.
   Tests can start it explicitly and grant SQL sandbox access before exercising
   enqueue behavior.
 
@@ -53,18 +56,43 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
 
   def handle_info(_message, state), do: {:noreply, state}
 
-  defp enqueue_snapshot_refreshes(%{account_ids: account_ids, from_date: from_date}) do
+  defp enqueue_snapshot_refreshes(
+         %{
+           entity_id: entity_id,
+           account_ids: account_ids,
+           from_date: from_date
+         } = _notification
+       ) do
+    account_ids = Enum.uniq(account_ids)
+
     account_ids
-    |> Enum.uniq()
     |> Enum.each(&enqueue_snapshot_refresh(&1, from_date))
+
+    ReportingPubSub.broadcast_hub_freshness_invalidated(%{
+      entity_id: entity_id,
+      account_ids: account_ids,
+      from_date: from_date,
+      occurred_at: DateTime.utc_now() |> DateTime.truncate(:microsecond)
+    })
+
+    :ok
   end
 
   defp enqueue_snapshot_refresh(account_id, from_date) do
-    account_id
-    |> Reporting.enqueue_daily_balance_snapshot_refresh(from_date)
-    |> normalize_enqueue_result()
+    case reporting_module().enqueue_daily_balance_snapshot_refresh(account_id, from_date) do
+      {:ok, _job} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.error(
+          "reporting snapshot refresh enqueue failed account_id=#{account_id} from_date=#{inspect(from_date)} reason=#{inspect(reason)}"
+        )
+
+        :ok
+    end
   end
 
-  defp normalize_enqueue_result({:ok, _job}), do: :ok
-  defp normalize_enqueue_result({:error, _reason}), do: :ok
+  defp reporting_module do
+    Application.get_env(:aurum_finance, :reporting_module, Reporting)
+  end
 end

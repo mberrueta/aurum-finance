@@ -40,7 +40,7 @@ defmodule AurumFinanceWeb do
     quote do
       use Phoenix.Controller, formats: [:html, :json]
 
-      use Gettext, backend: AurumFinanceWeb.Gettext
+      use Gettext, backend: AurumFinance.Gettext
 
       import Plug.Conn
 
@@ -80,7 +80,7 @@ defmodule AurumFinanceWeb do
   defp html_helpers do
     quote do
       # Translation
-      use Gettext, backend: AurumFinanceWeb.Gettext
+      use Gettext, backend: AurumFinance.Gettext
 
       # HTML escaping functionality
       import Phoenix.HTML

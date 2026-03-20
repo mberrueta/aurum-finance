@@ -8,7 +8,7 @@ defmodule AurumFinanceWeb.RootAuth do
   validation is enforced by `AurumFinance.Auth`.
   """
 
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   import Plug.Conn
   alias AurumFinance.Auth

@@ -4,7 +4,7 @@ defmodule AurumFinanceWeb.BadgeComponent do
   """
 
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   alias AurumFinance.Helpers
 

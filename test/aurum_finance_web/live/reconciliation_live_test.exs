@@ -618,6 +618,6 @@ defmodule AurumFinanceWeb.ReconciliationLiveTest do
   end
 
   defp rt(key, bindings \\ []) do
-    Gettext.dgettext(AurumFinanceWeb.Gettext, "reconciliation", key, bindings)
+    Gettext.dgettext(AurumFinance.Gettext, "reconciliation", key, bindings)
   end
 end
