@@ -5,7 +5,9 @@ Implementation roadmap by milestone. Each milestone maps to a GitHub milestone w
 ## Status
 
 Phase 1 (research) complete. Phase 2/3 (architecture + product definition) in progress.
-Implementation backlog (M1–M7) defined in GitHub issues.
+Implementation backlog (M1–M7) defined in GitHub issues. Reporting now has its
+first real user-facing read path via the `/reports` hub and `/reports/net-worth`
+page backed by `daily_balance_snapshots`.
 
 ## Milestones
 
@@ -21,7 +23,17 @@ Transaction categorization rules (grouped, prioritized, explainable).
 Classification layer is mutable; ledger facts are immutable.
 
 ### M4 — Reporting
-Net worth, monthly cashflow, drilldown to postings, projection v1 (recurring detection).
+Delivered in V1:
+- real `/reports` hub with coarse freshness and async refresh
+- real `/reports/net-worth` page
+- native-currency Net Worth read model backed by `daily_balance_snapshots`
+- latest-snapshot-on-or-before semantics with `exact`, `carried_forward`,
+  `refreshable_gap`, and `no_history` coverage states
+
+Still planned within Reporting follow-up work:
+- monthly cashflow
+- drilldown to postings
+- projection v1 recurring detection and broader report surfaces
 
 ### M5 — Investments
 Instruments, holdings, position snapshots, portfolio allocation, P&L realized/unrealized.

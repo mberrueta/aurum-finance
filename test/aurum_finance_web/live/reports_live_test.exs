@@ -23,10 +23,19 @@ defmodule AurumFinanceWeb.ReportsLiveTest do
     assert has_element?(view, "#reports-net-worth-card")
     assert has_element?(view, "#reports-net-worth-summary")
     assert has_element?(view, "#reports-net-worth-open[href=\"/reports/net-worth\"]")
+    assert has_element?(view, "#reports-refresh-submit")
+
+    html = render(view)
+
+    assert html =~ "Net Worth"
+    assert html =~ "Open report"
+    assert html =~ "As of #{Date.to_iso8601(Date.utc_today())}"
+    assert html =~ "1 accounts"
+    assert html =~ "USD"
 
     refute has_element?(view, "#reports-rebuild-form")
-    refute render(view) =~ "Cashflow (month)"
-    refute render(view) =~ "Portfolio allocation"
+    refute html =~ "Cashflow (month)"
+    refute html =~ "Portfolio allocation"
   end
 
   test "refresh action enqueues reporting jobs for included accounts", %{conn: conn} do

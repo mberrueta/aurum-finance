@@ -6,6 +6,46 @@ defmodule AurumFinance.Reporting.NetWorthTest do
   alias AurumFinance.Reporting.DailyBalanceSnapshot
 
   describe "net_worth_report/2" do
+    test "returns an empty report when no institution-managed asset or liability accounts are in scope" do
+      entity = insert(:entity, name: "Alpha")
+
+      _category_account =
+        insert_account(entity,
+          name: "Groceries",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      _system_managed_account =
+        insert_account(entity,
+          name: "Opening Balances",
+          account_type: :equity,
+          management_group: :system_managed,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      assert {:ok, report} = Reporting.net_worth_report([entity.id], as_of_date: ~D[2026-03-10])
+
+      assert report.empty? == true
+      assert report.included_account_count == 0
+      assert report.freshness_status == :up_to_date
+      assert report.refresh_suggested? == false
+      assert report.currency_summaries == []
+      assert report.account_rows == []
+
+      assert report.coverage_counts == %{
+               exact: 0,
+               carried_forward: 0,
+               refreshable_gap: 0,
+               no_history: 0
+             }
+    end
+
     test "filters the canonical account scope and keeps no-history rows visible" do
       entity = insert(:entity, name: "Alpha")
       other_entity = insert(:entity, name: "Beta")
@@ -144,6 +184,56 @@ defmodule AurumFinance.Reporting.NetWorthTest do
                  currency_code: "USD",
                  liabilities: Decimal.new("40.0000"),
                  net_worth: Decimal.new("60.0000"),
+                 no_history_count: 0
+               }
+             ]
+    end
+
+    test "selects the latest snapshot on or before the as-of date and ignores later snapshots" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      insert_snapshot!(checking, ~D[2026-03-08], "80.0000", "8.0000", ~U[2026-03-08 09:00:00Z])
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "20.0000", ~U[2026-03-10 09:00:00Z])
+      insert_snapshot!(checking, ~D[2026-03-12], "140.0000", "40.0000", ~U[2026-03-12 09:00:00Z])
+
+      assert {:ok, report} = Reporting.net_worth_report([entity.id], as_of_date: ~D[2026-03-11])
+
+      assert report.freshness_status == :up_to_date
+      assert report.refresh_suggested? == false
+
+      assert [row] = report.account_rows
+
+      assert row == %{
+               account_id: checking.id,
+               account_name: "Checking",
+               account_type: :asset,
+               balance: Decimal.new("100.0000"),
+               contributes_to_totals?: true,
+               coverage: :carried_forward,
+               currency_code: "USD",
+               entity: %{id: entity.id, name: "Alpha"},
+               ledger_balance: Decimal.new("100.0000"),
+               snapshot: %{
+                 closing_balance: Decimal.new("100.0000"),
+                 computed_at: row.snapshot.computed_at,
+                 daily_delta: Decimal.new("20.0000"),
+                 date: ~D[2026-03-10],
+                 projection_version: 1
+               },
+               snapshot_date_used: ~D[2026-03-10]
+             }
+
+      assert DateTime.compare(row.snapshot.computed_at, ~U[2026-03-10 09:00:00Z]) == :eq
+
+      assert report.currency_summaries == [
+               %{
+                 account_count: 1,
+                 assets: Decimal.new("100.0000"),
+                 covered_account_count: 1,
+                 currency_code: "USD",
+                 liabilities: Decimal.new("0.0000"),
+                 net_worth: Decimal.new("100.0000"),
                  no_history_count: 0
                }
              ]

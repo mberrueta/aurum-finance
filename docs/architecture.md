@@ -7,6 +7,8 @@ High-level system architecture for AurumFinance.
 Substantive architecture baseline for Phase 2. Context boundaries, dependency
 rules, data flows, and cross-cutting invariants are defined. This document is
 implementation-free and references accepted ADRs for decision rationale.
+Reporting now has its first production read path: a real `/reports` hub and a
+dedicated `/reports/net-worth` page backed by `daily_balance_snapshots`.
 
 ## Scope and intent
 
@@ -95,6 +97,25 @@ graph TD
 | `Ingestion` | File-to-ledger pipeline and provenance | ImportedFile, ImportedRow, ImportMaterialization, ImportRowMaterialization | Entity-scoped |
 | `Reconciliation` | Statement matching and reconciliation lifecycle | ReconciliationSession, MatchResult, Discrepancy, ReconciliationAuditLog | Entity-scoped |
 | `Reporting` | Retrospective/projection analytics | Read models (derived) | Entity-scoped + cross-entity aggregates |
+
+### Reporting V1 implementation note
+
+The first shipped reporting consumer is Net Worth V1:
+
+- `/reports` is a real reporting hub with one global async refresh action and a
+  coarse freshness badge (`Up to date` / `Outdated`)
+- `/reports/net-worth` is the canonical detailed page
+- the read model is native-currency only and uses the latest snapshot
+  `<= as_of_date` per included account
+- account scope is limited to non-archived institution-managed `asset` and
+  `liability` accounts
+- row coverage is surfaced as `exact`, `carried_forward`, `refreshable_gap`, or
+  `no_history`
+
+This V1 slice uses a narrow reporting-specific PubSub freshness signal as a
+bounded exception to the default synchronous cross-context communication rule.
+That exception exists only for projection/update signaling and does not imply a
+general event-driven architecture direction.
 
 ## System component view
 

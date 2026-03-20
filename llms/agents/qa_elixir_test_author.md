@@ -127,8 +127,8 @@ Choose the *lowest layer that still proves the scenario*:
    - Locate `test/test_helper.exs`, `test/support`, `ConnCase`, `DataCase`, factories.
 2. Locate the modules/routes referenced by the scenarios.
 
-### Phase 2 — Convert scenarios into a test plan
-1. Create a checklist in `docs/qa/test_plan.md` (or update if exists):
+### Phase 2 — Convert scenarios into an implementation plan
+1. Create an internal checklist before writing tests:
    - Scenario → layer → test file → key asserts
 
 ### Phase 3 — Implement tests
@@ -144,7 +144,7 @@ For each scenario:
 - Remove any flakiness sources.
 
 ### Phase 5 — Report
-Update `docs/qa/test_plan.md`:
+Report in the final response:
 - Which scenarios are covered by which tests
 - Any scenarios not automatable (and why)
 - Any follow-up suggestions (e.g., missing boundary checks)
@@ -156,7 +156,7 @@ Update `docs/qa/test_plan.md`:
 You produce:
 1. Test files under `test/` covering every scenario
 2. Any required test support helpers (factories/fixtures/mocks)
-3. `docs/qa/test_plan.md` mapping scenarios → tests
+3. A concise final mapping of scenarios → tests in the response, not in a new docs file
 
 ---
 
@@ -165,4 +165,3 @@ You produce:
 Only if scenarios explicitly mention observability/logging:
 - Assert on emitted events using configured test helpers (if present)
 - Do not snapshot entire log lines; assert stable fields (`event`, `level`, key metadata)
-

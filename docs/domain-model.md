@@ -224,11 +224,15 @@ Current implemented reporting scope includes:
 - forward-cumulative rebuilds from the oldest affected business date
 - async refresh orchestration via Oban
 - ledger-to-reporting trigger bridge using internal post-commit notifications
+- real `/reports` hub with coarse freshness and global async reporting refresh
+- real `/reports/net-worth` page backed by the Net Worth V1 read model
+- latest-snapshot-on-or-before semantics for included accounts
+- visible coverage states: `exact`, `carried_forward`, `refreshable_gap`, and `no_history`
 
 Still deferred in reporting:
 
-- final net worth dashboards
-- snapshot-backed report rendering in the UI
+- additional report types such as monthly cashflow
+- transaction/posting drilldown from reporting rows
 - FX-rendered reporting outputs
 - portfolio valuation and anomaly projections
 
