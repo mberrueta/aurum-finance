@@ -4,7 +4,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
   """
 
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   import AurumFinanceWeb.BadgeComponent, only: [account_type_label: 1]
   import AurumFinanceWeb.CoreComponents, only: [icon: 1, input: 1]

@@ -4,7 +4,7 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
   """
 
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   import AurumFinanceWeb.CoreComponents
   import AurumFinanceWeb.UiComponents

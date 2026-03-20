@@ -23,7 +23,7 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
   @doc """
   Starts the bridge process and subscribes it to ledger transaction events.
 
-  In normal runtime this process is supervised by `AurumFinance.Application`.
+  In normal runtime this process is started under the main application supervision tree.
   Tests can start it explicitly and grant SQL sandbox access before exercising
   enqueue behavior.
 

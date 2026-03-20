@@ -27,7 +27,7 @@ defmodule AurumFinanceWeb.CoreComponents do
 
   """
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   alias Phoenix.LiveView.JS
 
@@ -494,9 +494,9 @@ defmodule AurumFinanceWeb.CoreComponents do
     # with our gettext backend as first argument. Translations are
     # available in the errors.po file (as we use the "errors" domain).
     if count = opts[:count] do
-      Gettext.dngettext(AurumFinanceWeb.Gettext, "errors", msg, msg, count, opts)
+      Gettext.dngettext(AurumFinance.Gettext, "errors", msg, msg, count, opts)
     else
-      Gettext.dgettext(AurumFinanceWeb.Gettext, "errors", msg, opts)
+      Gettext.dgettext(AurumFinance.Gettext, "errors", msg, opts)
     end
   end
 

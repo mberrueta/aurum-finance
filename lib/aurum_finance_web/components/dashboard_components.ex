@@ -9,7 +9,7 @@ defmodule AurumFinanceWeb.DashboardComponents do
   """
 
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   import AurumFinanceWeb.UiComponents
 

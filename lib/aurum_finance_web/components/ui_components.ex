@@ -17,7 +17,7 @@ defmodule AurumFinanceWeb.UiComponents do
   """
 
   use Phoenix.Component
-  use Gettext, backend: AurumFinanceWeb.Gettext
+  use Gettext, backend: AurumFinance.Gettext
 
   @doc """
   Purpose: renders the standard page title row.
