@@ -8,13 +8,15 @@ defmodule AurumFinanceWeb.ReportsLive do
   alias AurumFinance.Entities
   alias AurumFinance.Reporting
 
+  @hub_refresh_debounce_ms 75
+
   @impl true
   def mount(_params, _session, socket) do
     entity_ids = visible_entity_ids()
     socket = assign_hub(socket, entity_ids)
 
     if connected?(socket) do
-      _ = Reporting.subscribe_hub_freshness()
+      _ = reporting_module().subscribe_hub_freshness()
     end
 
     {:ok, socket}
@@ -22,7 +24,7 @@ defmodule AurumFinanceWeb.ReportsLive do
 
   @impl true
   def handle_event("refresh_reporting", _params, socket) do
-    case Reporting.enqueue_hub_refresh(socket.assigns.entity_ids) do
+    case reporting_module().enqueue_hub_refresh(socket.assigns.entity_ids) do
       {:ok, _result} ->
         {:noreply,
          socket
@@ -36,42 +38,78 @@ defmodule AurumFinanceWeb.ReportsLive do
 
   @impl true
   def handle_info({:reporting_hub_freshness_invalidated, _payload}, socket) do
-    {:noreply, refresh_hub(socket)}
+    {:noreply, schedule_hub_refresh(socket)}
   end
 
   @impl true
   def handle_info({:reporting_hub_freshness_refreshed, _payload}, socket) do
-    {:noreply, socket |> refresh_hub() |> assign(:refresh_requested?, false)}
+    {:noreply, socket |> assign(:refresh_requested?, false) |> schedule_hub_refresh()}
+  end
+
+  @impl true
+  def handle_info(:refresh_hub, socket) do
+    {:noreply,
+     socket
+     |> assign(:hub_refresh_scheduled?, false)
+     |> refresh_hub()}
   end
 
   @impl true
   def handle_info(_message, socket), do: {:noreply, socket}
 
   defp assign_hub(socket, entity_ids) do
-    report = load_hub_report(entity_ids)
-
     socket
     |> assign(
       active_nav: :reports,
       page_title: dgettext("reports", "page_title"),
       entity_ids: entity_ids,
-      hub_report: report,
-      refresh_requested?: false
+      refresh_requested?: false,
+      hub_report_load_failed?: false,
+      hub_refresh_scheduled?: false
     )
-    |> assign_hub_report_derivatives(report)
+    |> then(&load_hub_report(&1, entity_ids))
+    |> then(fn {loaded_socket, report} ->
+      loaded_socket
+      |> assign(:hub_report, report)
+      |> assign_hub_report_derivatives(report)
+    end)
   end
 
   defp refresh_hub(socket) do
-    report = load_hub_report(socket.assigns.entity_ids)
+    {socket, report} = load_hub_report(socket, socket.assigns.entity_ids)
 
     socket
     |> assign(:hub_report, report)
     |> assign_hub_report_derivatives(report)
   end
 
-  defp load_hub_report(entity_ids) do
-    {:ok, report} = Reporting.net_worth_report(entity_ids)
-    report
+  defp schedule_hub_refresh(%{assigns: %{hub_refresh_scheduled?: true}} = socket), do: socket
+
+  defp schedule_hub_refresh(socket) do
+    Process.send_after(self(), :refresh_hub, @hub_refresh_debounce_ms)
+    assign(socket, :hub_refresh_scheduled?, true)
+  end
+
+  defp load_hub_report(socket, entity_ids) do
+    case reporting_module().net_worth_report(entity_ids) do
+      {:ok, report} ->
+        {
+          socket
+          |> clear_flash(:error)
+          |> assign(:hub_report_load_failed?, false),
+          report
+        }
+
+      {:error, _reason} ->
+        report = empty_report(Date.utc_today())
+
+        {
+          socket
+          |> put_flash(:error, dgettext("reports", "report_load_failed"))
+          |> assign(:hub_report_load_failed?, true),
+          report
+        }
+    end
   end
 
   defp visible_entity_ids do
@@ -79,27 +117,60 @@ defmodule AurumFinanceWeb.ReportsLive do
     |> Enum.map(& &1.id)
   end
 
+  defp reporting_module do
+    Application.get_env(:aurum_finance, :reporting_module, Reporting)
+  end
+
+  defp empty_report(as_of_date) do
+    %{
+      as_of_date: as_of_date,
+      freshness_status: :up_to_date,
+      refresh_suggested?: false,
+      empty?: true,
+      included_account_count: 0,
+      entity_count: 0,
+      show_entity_column?: false,
+      coverage_counts: %{exact: 0, carried_forward: 0, refreshable_gap: 0, no_history: 0},
+      currency_summaries: [],
+      account_rows: []
+    }
+  end
+
   defp assign_hub_report_derivatives(socket, report) do
     assign(socket,
-      freshness_badge_variant: freshness_badge_variant(report.freshness_status),
-      freshness_badge_label: freshness_badge_label(report.freshness_status),
-      net_worth_badge_variant: net_worth_badge_variant(report),
-      net_worth_status: net_worth_status(report),
+      freshness_badge_variant:
+        freshness_badge_variant(report.freshness_status, socket.assigns.hub_report_load_failed?),
+      freshness_badge_label:
+        freshness_badge_label(report.freshness_status, socket.assigns.hub_report_load_failed?),
+      net_worth_badge_variant:
+        net_worth_badge_variant(report, socket.assigns.hub_report_load_failed?),
+      net_worth_status: net_worth_status(report, socket.assigns.hub_report_load_failed?),
       compact_currency_summaries: compact_currency_summaries(report.currency_summaries)
     )
   end
 
-  defp freshness_badge_variant(:up_to_date), do: :good
-  defp freshness_badge_variant(:outdated), do: :warn
+  defp freshness_badge_variant(_status, true), do: :bad
+  defp freshness_badge_variant(:up_to_date, false), do: :good
+  defp freshness_badge_variant(:outdated, false), do: :warn
 
-  defp freshness_badge_label(:up_to_date), do: dgettext("reports", "hub_freshness_up_to_date")
-  defp freshness_badge_label(:outdated), do: dgettext("reports", "hub_freshness_outdated")
+  defp freshness_badge_label(_status, true),
+    do: dgettext("reports", "report_freshness_unavailable")
 
-  defp net_worth_badge_variant(%{empty?: true}), do: :warn
-  defp net_worth_badge_variant(_report), do: :good
+  defp freshness_badge_label(:up_to_date, false),
+    do: dgettext("reports", "hub_freshness_up_to_date")
 
-  defp net_worth_status(%{empty?: true}), do: dgettext("reports", "hub_report_status_empty")
-  defp net_worth_status(_report), do: dgettext("reports", "hub_report_status_ready")
+  defp freshness_badge_label(:outdated, false), do: dgettext("reports", "hub_freshness_outdated")
+
+  defp net_worth_badge_variant(_report, true), do: :bad
+  defp net_worth_badge_variant(%{empty?: true}, false), do: :warn
+  defp net_worth_badge_variant(_report, false), do: :good
+
+  defp net_worth_status(_report, true), do: dgettext("reports", "hub_report_status_unavailable")
+
+  defp net_worth_status(%{empty?: true}, false),
+    do: dgettext("reports", "hub_report_status_empty")
+
+  defp net_worth_status(_report, false), do: dgettext("reports", "hub_report_status_ready")
 
   defp compact_currency_summaries(currency_summaries) do
     Enum.map(currency_summaries, fn summary ->
@@ -113,6 +184,8 @@ defmodule AurumFinanceWeb.ReportsLive do
   defp compact_money(amount, currency_code) do
     sign = if Decimal.negative?(amount), do: "-", else: ""
 
+    # The hub only needs an approximate compact display like "USD 5.0K".
+    # The precise monetary values remain rendered separately below.
     compact_value =
       amount
       |> Decimal.abs()

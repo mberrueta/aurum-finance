@@ -1,13 +1,41 @@
 defmodule AurumFinanceWeb.ReportsLiveTest do
-  use AurumFinanceWeb.ConnCase, async: true
+  use AurumFinanceWeb.ConnCase, async: false
   use Oban.Testing, repo: AurumFinance.Repo
 
+  import AurumFinance.ReportingTestHelpers
   import Phoenix.LiveViewTest
-
-  alias AurumFinance.Ledger
-  alias AurumFinance.Repo
   alias AurumFinance.Reporting
-  alias AurumFinance.Reporting.DailyBalanceSnapshot
+
+  defmodule FailingReporting do
+    def net_worth_report(_entity_ids, _opts \\ []), do: {:error, :db_down}
+    def subscribe_hub_freshness, do: :ok
+    def enqueue_hub_refresh(_entity_ids), do: {:ok, %{status: :queued}}
+  end
+
+  defmodule CountingReporting do
+    def net_worth_report(_entity_ids, _opts \\ []) do
+      if test_pid = Application.get_env(:aurum_finance, :reporting_test_pid) do
+        send(test_pid, :hub_net_worth_report_called)
+      end
+
+      {:ok,
+       %{
+         as_of_date: Date.utc_today(),
+         freshness_status: :up_to_date,
+         refresh_suggested?: false,
+         empty?: true,
+         included_account_count: 0,
+         entity_count: 0,
+         show_entity_column?: false,
+         coverage_counts: %{exact: 0, carried_forward: 0, refreshable_gap: 0, no_history: 0},
+         currency_summaries: [],
+         account_rows: []
+       }}
+    end
+
+    def subscribe_hub_freshness, do: :ok
+    def enqueue_hub_refresh(_entity_ids), do: {:ok, %{status: :queued}}
+  end
 
   test "renders the reporting hub with a coarse freshness badge and net worth card", %{conn: conn} do
     entity = insert(:entity, name: "Alpha")
@@ -99,37 +127,69 @@ defmodule AurumFinanceWeb.ReportsLiveTest do
     assert {:ok, _result} = Reporting.refresh_daily_balance_snapshots(checking, nil)
 
     send(view.pid, {:reporting_hub_freshness_refreshed, %{account_id: checking.id}})
+    send(view.pid, :refresh_hub)
 
     assert has_element?(view, "#reports-freshness-badge")
     assert render(view) =~ "Up to date"
   end
 
-  defp insert_snapshot!(account, snapshot_date, closing_balance, daily_delta, computed_at \\ nil) do
-    computed_at = computed_at || DateTime.utc_now() |> DateTime.truncate(:microsecond)
+  test "keeps the LiveView alive when the hub report load fails", %{conn: conn} do
+    previous_reporting_module = Application.get_env(:aurum_finance, :reporting_module)
+    Application.put_env(:aurum_finance, :reporting_module, FailingReporting)
 
-    %DailyBalanceSnapshot{}
-    |> DailyBalanceSnapshot.changeset(%{
-      account_id: account.id,
-      entity_id: account.entity_id,
-      snapshot_date: snapshot_date,
-      closing_balance: Decimal.new(closing_balance),
-      daily_delta: Decimal.new(daily_delta),
-      computed_at: computed_at,
-      projection_version: 1
-    })
-    |> Repo.insert!()
+    on_exit(fn ->
+      if previous_reporting_module do
+        Application.put_env(:aurum_finance, :reporting_module, previous_reporting_module)
+      else
+        Application.delete_env(:aurum_finance, :reporting_module)
+      end
+    end)
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/reports")
+
+    assert has_element?(view, "#reports-page")
+    assert has_element?(view, "#reports-net-worth-empty")
+    assert has_element?(view, "#reports-freshness-badge", "Unavailable")
+    assert has_element?(view, "[role=alert]")
+    assert render(view) =~ "Unavailable"
   end
 
-  defp create_transaction!(entity, date, postings) do
-    {:ok, transaction} =
-      Ledger.create_transaction(%{
-        entity_id: entity.id,
-        date: date,
-        description: "Reports hub test transaction",
-        source_type: :manual,
-        postings: postings
-      })
+  test "debounces bursts of freshness events into one hub reload", %{conn: conn} do
+    previous_reporting_module = Application.get_env(:aurum_finance, :reporting_module)
+    previous_test_pid = Application.get_env(:aurum_finance, :reporting_test_pid)
+    Application.put_env(:aurum_finance, :reporting_module, CountingReporting)
+    Application.put_env(:aurum_finance, :reporting_test_pid, self())
 
-    transaction
+    on_exit(fn ->
+      if previous_reporting_module do
+        Application.put_env(:aurum_finance, :reporting_module, previous_reporting_module)
+      else
+        Application.delete_env(:aurum_finance, :reporting_module)
+      end
+
+      if previous_test_pid do
+        Application.put_env(:aurum_finance, :reporting_test_pid, previous_test_pid)
+      else
+        Application.delete_env(:aurum_finance, :reporting_test_pid)
+      end
+    end)
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/reports")
+    flush_hub_report_calls()
+
+    send(view.pid, {:reporting_hub_freshness_invalidated, %{}})
+    send(view.pid, {:reporting_hub_freshness_refreshed, %{}})
+    send(view.pid, {:reporting_hub_freshness_invalidated, %{}})
+
+    assert_receive :hub_net_worth_report_called, 250
+    refute_receive :hub_net_worth_report_called, 150
+  end
+
+  defp flush_hub_report_calls do
+    receive do
+      :hub_net_worth_report_called -> flush_hub_report_calls()
+    after
+      0 -> :ok
+    end
   end
 end

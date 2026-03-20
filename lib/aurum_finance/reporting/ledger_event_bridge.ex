@@ -15,6 +15,7 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
   """
 
   use GenServer
+  require Logger
 
   alias AurumFinance.Ledger.PubSub
   alias AurumFinance.Reporting
@@ -78,11 +79,20 @@ defmodule AurumFinance.Reporting.LedgerEventBridge do
   end
 
   defp enqueue_snapshot_refresh(account_id, from_date) do
-    account_id
-    |> Reporting.enqueue_daily_balance_snapshot_refresh(from_date)
-    |> normalize_enqueue_result()
+    case reporting_module().enqueue_daily_balance_snapshot_refresh(account_id, from_date) do
+      {:ok, _job} ->
+        :ok
+
+      {:error, reason} ->
+        Logger.error(
+          "reporting snapshot refresh enqueue failed account_id=#{account_id} from_date=#{inspect(from_date)} reason=#{inspect(reason)}"
+        )
+
+        :ok
+    end
   end
 
-  defp normalize_enqueue_result({:ok, _job}), do: :ok
-  defp normalize_enqueue_result({:error, _reason}), do: :ok
+  defp reporting_module do
+    Application.get_env(:aurum_finance, :reporting_module, Reporting)
+  end
 end

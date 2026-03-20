@@ -1,9 +1,9 @@
 defmodule AurumFinance.Reporting.NetWorthTest do
   use AurumFinance.DataCase, async: true
 
-  alias AurumFinance.Ledger
+  import AurumFinance.ReportingTestHelpers
+
   alias AurumFinance.Reporting
-  alias AurumFinance.Reporting.DailyBalanceSnapshot
 
   describe "net_worth_report/2" do
     test "returns an empty report when no institution-managed asset or liability accounts are in scope" do
@@ -290,35 +290,48 @@ defmodule AurumFinance.Reporting.NetWorthTest do
 
       assert Enum.map(report.account_rows, & &1.entity.name) == ["Alpha", "Beta"]
     end
-  end
 
-  defp insert_snapshot!(account, snapshot_date, closing_balance, daily_delta, computed_at \\ nil) do
-    computed_at =
-      computed_at || DateTime.utc_now() |> DateTime.truncate(:microsecond)
+    test "normalizes nil and duplicate entity ids in scope input" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
 
-    %DailyBalanceSnapshot{}
-    |> DailyBalanceSnapshot.changeset(%{
-      account_id: account.id,
-      entity_id: account.entity_id,
-      snapshot_date: snapshot_date,
-      closing_balance: Decimal.new(closing_balance),
-      daily_delta: Decimal.new(daily_delta),
-      computed_at: computed_at,
-      projection_version: 1
-    })
-    |> Repo.insert!()
-  end
+      insert_snapshot!(checking, ~D[2026-03-10], "10.0000", "10.0000")
 
-  defp create_transaction!(entity, date, postings) do
-    {:ok, transaction} =
-      Ledger.create_transaction(%{
-        entity_id: entity.id,
-        date: date,
-        description: "Net worth test transaction",
-        source_type: :manual,
-        postings: postings
-      })
+      assert {:ok, report} =
+               Reporting.net_worth_report([nil, entity.id, entity.id], as_of_date: ~D[2026-03-10])
 
-    transaction
+      assert report.included_account_count == 1
+      assert Enum.map(report.account_rows, & &1.account_id) == [checking.id]
+    end
+
+    test "marks exact-date snapshots as refreshable_gap when later inserts land on the same date" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      expense =
+        insert_account(entity,
+          name: "Dining",
+          account_type: :expense,
+          operational_subtype: nil,
+          management_group: :category,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "10.0000", ~U[2026-03-10 09:00:00Z])
+
+      create_transaction!(entity, ~D[2026-03-10], [
+        %{account_id: checking.id, amount: Decimal.new("-30.0000")},
+        %{account_id: expense.id, amount: Decimal.new("30.0000")}
+      ])
+
+      assert {:ok, report} = Reporting.net_worth_report([entity.id], as_of_date: ~D[2026-03-10])
+
+      assert report.freshness_status == :outdated
+      assert report.coverage_counts.refreshable_gap == 1
+
+      assert Enum.find(report.account_rows, &(&1.account_id == checking.id)).coverage ==
+               :refreshable_gap
+    end
   end
 end

@@ -16,6 +16,7 @@ defmodule AurumFinance.Reporting.PubSub do
      %{entity_id, account_id, refresh_status, requested_from_date, effective_from_date, refreshed_at}}`
     is emitted after one account refresh completes.
   """
+  require Logger
 
   @hub_freshness_topic "reporting:hub_freshness"
 
@@ -51,7 +52,7 @@ defmodule AurumFinance.Reporting.PubSub do
   """
   @spec subscribe_hub_freshness() :: :ok | {:error, term()}
   def subscribe_hub_freshness do
-    Phoenix.PubSub.subscribe(AurumFinance.PubSub, @hub_freshness_topic)
+    pubsub_module().subscribe(pubsub_server(), @hub_freshness_topic)
   end
 
   @doc """
@@ -77,11 +78,23 @@ defmodule AurumFinance.Reporting.PubSub do
   end
 
   defp broadcast(message) do
-    AurumFinance.PubSub
-    |> Phoenix.PubSub.broadcast(@hub_freshness_topic, message)
+    pubsub_server()
+    |> pubsub_module().broadcast(@hub_freshness_topic, message)
     |> normalize_broadcast_result()
   end
 
   defp normalize_broadcast_result(:ok), do: :ok
-  defp normalize_broadcast_result({:error, _reason}), do: :ok
+
+  defp normalize_broadcast_result({:error, reason}) do
+    Logger.error("reporting hub freshness broadcast failed reason=#{inspect(reason)}")
+    :ok
+  end
+
+  defp pubsub_module do
+    Application.get_env(:aurum_finance, :reporting_pubsub_module, Phoenix.PubSub)
+  end
+
+  defp pubsub_server do
+    Application.get_env(:aurum_finance, :reporting_pubsub_server, AurumFinance.PubSub)
+  end
 end

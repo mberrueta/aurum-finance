@@ -8,20 +8,26 @@ defmodule AurumFinanceWeb.NetWorthLive do
   alias AurumFinance.Entities
   alias AurumFinance.Reporting
 
+  @report_refresh_debounce_ms 75
+
   @impl true
   def mount(_params, _session, socket) do
+    empty_report = empty_report(Date.utc_today())
+
     socket =
       socket
       |> assign(
         active_nav: :reports,
         page_title: dgettext("reports", "net_worth_page_title"),
         entity_ids: visible_entity_ids(),
-        report: nil
+        report: empty_report,
+        report_load_failed?: false,
+        report_refresh_scheduled?: false
       )
-      |> assign_report_derivatives(Reporting.net_worth_report([]) |> empty_report_result())
+      |> assign_report_derivatives(empty_report)
 
     if connected?(socket) do
-      _ = Reporting.subscribe_hub_freshness()
+      _ = reporting_module().subscribe_hub_freshness()
     end
 
     {:ok, socket}
@@ -30,13 +36,11 @@ defmodule AurumFinanceWeb.NetWorthLive do
   @impl true
   def handle_params(params, _uri, socket) do
     as_of_date = parse_as_of_date(params)
-    report = load_report(socket.assigns.entity_ids, as_of_date)
 
     {:noreply,
      socket
-     |> assign(:report, report)
      |> assign(:as_of_date, as_of_date)
-     |> assign_report_derivatives(report)}
+     |> load_report(socket.assigns.entity_ids, as_of_date)}
   end
 
   @impl true
@@ -46,33 +50,64 @@ defmodule AurumFinanceWeb.NetWorthLive do
 
   @impl true
   def handle_info({:reporting_hub_freshness_invalidated, _payload}, socket) do
-    {:noreply, refresh_report(socket)}
+    {:noreply, schedule_report_refresh(socket)}
   end
 
   @impl true
   def handle_info({:reporting_hub_freshness_refreshed, _payload}, socket) do
-    {:noreply, refresh_report(socket)}
+    {:noreply, schedule_report_refresh(socket)}
+  end
+
+  @impl true
+  def handle_info(:refresh_report, socket) do
+    {:noreply,
+     socket
+     |> assign(:report_refresh_scheduled?, false)
+     |> refresh_report()}
   end
 
   @impl true
   def handle_info(_message, socket), do: {:noreply, socket}
 
   defp refresh_report(socket) do
-    report = load_report(socket.assigns.entity_ids, socket.assigns.as_of_date)
-
-    socket
-    |> assign(:report, report)
-    |> assign_report_derivatives(report)
+    load_report(socket, socket.assigns.entity_ids, socket.assigns.as_of_date)
   end
 
-  defp load_report(entity_ids, as_of_date) do
-    {:ok, report} = Reporting.net_worth_report(entity_ids, as_of_date: as_of_date)
-    report
+  defp schedule_report_refresh(%{assigns: %{report_refresh_scheduled?: true}} = socket),
+    do: socket
+
+  defp schedule_report_refresh(socket) do
+    Process.send_after(self(), :refresh_report, @report_refresh_debounce_ms)
+    assign(socket, :report_refresh_scheduled?, true)
+  end
+
+  defp load_report(socket, entity_ids, as_of_date) do
+    case reporting_module().net_worth_report(entity_ids, as_of_date: as_of_date) do
+      {:ok, report} ->
+        socket
+        |> clear_flash(:error)
+        |> assign(:report, report)
+        |> assign(:report_load_failed?, false)
+        |> assign_report_derivatives(report)
+
+      {:error, _reason} ->
+        report = empty_report(as_of_date)
+
+        socket
+        |> put_flash(:error, dgettext("reports", "report_load_failed"))
+        |> assign(:report, report)
+        |> assign(:report_load_failed?, true)
+        |> assign_report_derivatives(report)
+    end
   end
 
   defp visible_entity_ids do
     Entities.list_entities()
     |> Enum.map(& &1.id)
+  end
+
+  defp reporting_module do
+    Application.get_env(:aurum_finance, :reporting_module, Reporting)
   end
 
   defp parse_as_of_date(%{"as_of_date" => date}), do: parse_as_of_date(date)
@@ -90,8 +125,10 @@ defmodule AurumFinanceWeb.NetWorthLive do
   defp assign_report_derivatives(socket, report) do
     assign(socket,
       filter_form: to_form(%{"as_of_date" => Date.to_iso8601(report.as_of_date)}, as: :filters),
-      freshness_badge_variant: freshness_badge_variant(report.freshness_status),
-      freshness_badge_label: freshness_badge_label(report.freshness_status),
+      freshness_badge_variant:
+        freshness_badge_variant(report.freshness_status, socket.assigns.report_load_failed?),
+      freshness_badge_label:
+        freshness_badge_label(report.freshness_status, socket.assigns.report_load_failed?),
       date_presets: date_presets(report.as_of_date),
       summary_cards: build_summary_cards(report.currency_summaries),
       account_rows: build_account_rows(report.account_rows),
@@ -99,13 +136,32 @@ defmodule AurumFinanceWeb.NetWorthLive do
     )
   end
 
-  defp empty_report_result({:ok, report}), do: report
+  defp empty_report(as_of_date) do
+    %{
+      as_of_date: as_of_date,
+      freshness_status: :up_to_date,
+      refresh_suggested?: false,
+      empty?: true,
+      included_account_count: 0,
+      entity_count: 0,
+      show_entity_column?: false,
+      coverage_counts: %{exact: 0, carried_forward: 0, refreshable_gap: 0, no_history: 0},
+      currency_summaries: [],
+      account_rows: []
+    }
+  end
 
-  defp freshness_badge_variant(:up_to_date), do: :good
-  defp freshness_badge_variant(:outdated), do: :warn
+  defp freshness_badge_variant(_status, true), do: :bad
+  defp freshness_badge_variant(:up_to_date, false), do: :good
+  defp freshness_badge_variant(:outdated, false), do: :warn
 
-  defp freshness_badge_label(:up_to_date), do: dgettext("reports", "hub_freshness_up_to_date")
-  defp freshness_badge_label(:outdated), do: dgettext("reports", "hub_freshness_outdated")
+  defp freshness_badge_label(_status, true),
+    do: dgettext("reports", "report_freshness_unavailable")
+
+  defp freshness_badge_label(:up_to_date, false),
+    do: dgettext("reports", "hub_freshness_up_to_date")
+
+  defp freshness_badge_label(:outdated, false), do: dgettext("reports", "hub_freshness_outdated")
 
   defp build_summary_cards(currency_summaries) do
     Enum.map(currency_summaries, fn summary ->

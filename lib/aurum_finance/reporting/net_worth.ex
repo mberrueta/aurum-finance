@@ -114,11 +114,11 @@ defmodule AurumFinance.Reporting.NetWorth do
 
   defp get_report_for_scope(entity_ids, opts) do
     as_of_date = resolve_as_of_date(opts)
-    rows_query = account_rows_query(entity_ids, as_of_date)
-    stale_ids = stale_account_ids(rows_query, as_of_date)
+    rows = Repo.all(account_rows_query(entity_ids, as_of_date))
+    stale_ids = stale_account_ids(rows, as_of_date)
 
     entity_ids
-    |> build_account_rows(rows_query, as_of_date, stale_ids)
+    |> build_account_rows(rows, as_of_date, stale_ids)
     |> build_report(as_of_date)
     |> then(&{:ok, &1})
   end
@@ -157,12 +157,11 @@ defmodule AurumFinance.Reporting.NetWorth do
     }
   end
 
-  defp build_account_rows(entity_ids, rows_query, as_of_date, stale_ids) do
+  defp build_account_rows(entity_ids, rows, as_of_date, stale_ids) do
     stale_ids = MapSet.new(stale_ids)
     entity_ids_set = MapSet.new(entity_ids)
 
-    rows_query
-    |> Repo.all()
+    rows
     |> Enum.map(&build_account_row(&1, as_of_date, stale_ids))
     |> Enum.sort_by(fn row ->
       {row.currency_code, row.entity.name, row.account_name}
@@ -349,18 +348,41 @@ defmodule AurumFinance.Reporting.NetWorth do
       }
   end
 
-  defp stale_account_ids(rows_query, %Date{} = as_of_date) do
-    rows_query
-    |> subquery()
-    |> join(:inner, [row], posting in Posting, on: posting.account_id == row.account_id)
-    |> join(:inner, [_row, posting], transaction in Transaction,
+  defp stale_account_ids(rows, %Date{} = as_of_date) do
+    rows
+    |> stale_snapshot_cutoffs()
+    |> stale_account_ids_for_cutoffs(as_of_date)
+  end
+
+  defp stale_snapshot_cutoffs(rows) do
+    Enum.reduce(rows, [], fn row, acc ->
+      case row.snapshot_computed_at do
+        %DateTime{} = computed_at -> [{row.account_id, computed_at} | acc]
+        nil -> acc
+      end
+    end)
+  end
+
+  defp stale_account_ids_for_cutoffs([], _as_of_date), do: []
+
+  defp stale_account_ids_for_cutoffs(account_cutoffs, %Date{} = as_of_date) do
+    inserted_after_snapshot =
+      Enum.reduce(account_cutoffs, false, fn {account_id, snapshot_computed_at}, dynamic ->
+        dynamic(
+          [posting, transaction],
+          ^dynamic or
+            (posting.account_id == ^account_id and transaction.inserted_at > ^snapshot_computed_at)
+        )
+      end)
+
+    Posting
+    |> join(:inner, [posting], transaction in Transaction,
       on: transaction.id == posting.transaction_id
     )
-    |> where([row, _posting, _transaction], not is_nil(row.snapshot_computed_at))
-    |> where([_row, _posting, transaction], transaction.date <= ^as_of_date)
-    |> where([row, _posting, transaction], transaction.inserted_at > row.snapshot_computed_at)
-    |> distinct([row], row.account_id)
-    |> select([row, _posting, _transaction], row.account_id)
+    |> where([_posting, transaction], transaction.date <= ^as_of_date)
+    |> where(^inserted_after_snapshot)
+    |> distinct([posting], posting.account_id)
+    |> select([posting, _transaction], posting.account_id)
     |> Repo.all()
   end
 end
