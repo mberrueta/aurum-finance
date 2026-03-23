@@ -5,6 +5,8 @@ defmodule AurumFinanceWeb.NetWorthLive do
 
   use AurumFinanceWeb, :live_view
 
+  import AurumFinanceWeb.NetWorthComponents
+
   alias AurumFinance.Entities
   alias AurumFinance.Reporting
 
@@ -22,7 +24,11 @@ defmodule AurumFinanceWeb.NetWorthLive do
         entity_ids: visible_entity_ids(),
         report: empty_report,
         report_load_failed?: false,
-        report_refresh_scheduled?: false
+        report_refresh_scheduled?: false,
+        expanded_account_id: nil,
+        drilldown_account_row: nil,
+        drilldown_data: nil,
+        drilldown_page: 1
       )
       |> assign_report_derivatives(empty_report)
 
@@ -46,6 +52,23 @@ defmodule AurumFinanceWeb.NetWorthLive do
   @impl true
   def handle_event("change_filters", %{"filters" => %{"as_of_date" => date}}, socket) do
     {:noreply, push_patch(socket, to: net_worth_path(parse_as_of_date(%{"as_of_date" => date})))}
+  end
+
+  @impl true
+  def handle_event("toggle_drilldown", %{"id" => account_id}, socket) do
+    socket =
+      if socket.assigns.expanded_account_id == account_id do
+        clear_drilldown_state(socket)
+      else
+        load_drilldown(socket, account_id, 1)
+      end
+
+    {:noreply, socket}
+  end
+
+  @impl true
+  def handle_event("change_drilldown_page", %{"page" => page}, socket) do
+    {:noreply, load_drilldown_page(socket, page)}
   end
 
   @impl true
@@ -101,6 +124,41 @@ defmodule AurumFinanceWeb.NetWorthLive do
     end
   end
 
+  defp load_drilldown(socket, account_id, page) do
+    case account_row_by_id(socket.assigns.report.account_rows, account_id) do
+      nil ->
+        clear_drilldown_state(socket)
+
+      %{has_snapshot?: false} ->
+        clear_drilldown_state(socket)
+
+      account_row ->
+        case reporting_module().net_worth_drilldown_transactions(
+               account_id,
+               account_row.snapshot_date_used,
+               page: page
+             ) do
+          {:ok, drilldown_data} ->
+            socket
+            |> assign(:expanded_account_id, account_id)
+            |> assign(:drilldown_account_row, account_row)
+            |> assign(:drilldown_data, drilldown_data)
+            |> assign(:drilldown_page, drilldown_data.page)
+
+          {:error, _reason} ->
+            clear_drilldown_state(socket)
+        end
+    end
+  end
+
+  defp load_drilldown_page(%{assigns: %{drilldown_data: nil}} = socket, _page), do: socket
+
+  defp load_drilldown_page(socket, page) do
+    page = normalize_positive_integer(page, socket.assigns.drilldown_page)
+
+    load_drilldown(socket, socket.assigns.expanded_account_id, page)
+  end
+
   defp visible_entity_ids do
     Entities.list_entities()
     |> Enum.map(& &1.id)
@@ -132,7 +190,11 @@ defmodule AurumFinanceWeb.NetWorthLive do
       date_presets: date_presets(report.as_of_date),
       summary_cards: build_summary_cards(report.currency_summaries),
       account_rows: build_account_rows(report.account_rows),
-      coverage_counts_display: coverage_counts_display(report.coverage_counts)
+      coverage_counts_display: coverage_counts_display(report.coverage_counts),
+      expanded_account_id: nil,
+      drilldown_account_row: nil,
+      drilldown_data: nil,
+      drilldown_page: 1
     )
   end
 
@@ -184,6 +246,8 @@ defmodule AurumFinanceWeb.NetWorthLive do
     Enum.map(account_rows, fn row ->
       %{
         account_id: row.account_id,
+        has_snapshot?: not is_nil(row.snapshot_date_used),
+        snapshot_date_used: row.snapshot_date_used,
         entity_name: row.entity.name,
         account_name: row.account_name,
         account_type: net_worth_account_type_label(row.account_type),
@@ -289,4 +353,32 @@ defmodule AurumFinanceWeb.NetWorthLive do
   defp net_worth_path(%Date{} = as_of_date) do
     ~p"/reports/net-worth?#{[as_of_date: Date.to_iso8601(as_of_date)]}"
   end
+
+  defp clear_drilldown_state(socket) do
+    assign(socket,
+      expanded_account_id: nil,
+      drilldown_account_row: nil,
+      drilldown_data: nil,
+      drilldown_page: 1
+    )
+  end
+
+  defp account_row_by_id(account_rows, account_id) do
+    Enum.find(account_rows, &(&1.account_id == account_id))
+  end
+
+  defp normalize_positive_integer(page, _default_page) when is_integer(page) and page > 0,
+    do: page
+
+  defp normalize_positive_integer(page, default_page) when is_binary(page) do
+    case Integer.parse(page) do
+      {int, ""} when int > 0 -> int
+      _ -> default_page
+    end
+  end
+
+  defp normalize_positive_integer(_page, default_page), do: default_page
+
+  defp drilldown_colspan(true), do: 7
+  defp drilldown_colspan(false), do: 6
 end

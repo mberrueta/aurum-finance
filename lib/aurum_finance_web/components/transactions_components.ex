@@ -32,18 +32,18 @@ defmodule AurumFinanceWeb.TransactionsComponents do
         id={"#{@id}-summary"}
         phx-click="toggle_transaction"
         phx-value-id={@transaction.id}
-        class="cursor-pointer transition hover:bg-white/[0.04]"
+        class="au-table-row-interactive"
       >
-        <td class="px-4 py-3 au-mono whitespace-nowrap text-white/72">
+        <td class="au-mono whitespace-nowrap text-white/72">
           {Date.to_iso8601(@transaction.date)}
         </td>
-        <td class="px-4 py-3 text-white/92">
+        <td class="text-white/92">
           <div>{@transaction.description}</div>
           <div :if={@transaction.correlation_id} class="mt-1 text-xs text-white/45 au-mono">
             {dgettext("transactions", "label_correlation_id")}: {@transaction.correlation_id}
           </div>
         </td>
-        <td class="px-4 py-3 text-white/78">
+        <td class="text-white/78">
           <.link
             :if={@classification_record && @classification_record.category_account}
             id={"#{@id}-filter-category"}
@@ -65,7 +65,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             {dgettext("transactions", "classification_unclassified")}
           </span>
         </td>
-        <td class="px-4 py-3 text-white/78">
+        <td class="text-white/78">
           <div
             :if={@classification_record && present_tags?(@classification_record.tags)}
             class="flex max-w-56 flex-wrap gap-1"
@@ -87,7 +87,7 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             {dgettext("transactions", "classification_unclassified")}
           </span>
         </td>
-        <td class="px-4 py-3">
+        <td>
           <.link
             id={"#{@id}-filter-source"}
             patch={
@@ -102,10 +102,10 @@ defmodule AurumFinanceWeb.TransactionsComponents do
             </.badge>
           </.link>
         </td>
-        <td class="px-4 py-3 au-mono text-white/72">
+        <td class="au-mono text-white/72">
           {length(@transaction.postings)}
         </td>
-        <td class="px-4 py-3">
+        <td>
           <.badge :if={@transaction.voided_at} variant={:bad}>
             {dgettext("transactions", "badge_voided")}
           </.badge>

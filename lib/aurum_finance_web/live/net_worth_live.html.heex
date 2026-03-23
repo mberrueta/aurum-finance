@@ -130,66 +130,98 @@
       class="overflow-hidden"
     >
       <div class="overflow-x-auto">
-        <table id="net-worth-accounts-table" class="min-w-full border-separate border-spacing-0">
+        <table id="net-worth-accounts-table" class="au-table">
           <thead>
-            <tr class="text-left text-xs uppercase tracking-[0.22em] text-white/40">
-              <th
-                :if={@report.show_entity_column?}
-                class="border-b border-white/10 px-4 py-3 font-medium"
-              >
+            <tr>
+              <th :if={@report.show_entity_column?}>
                 {dgettext("reports", "net_worth_table_entity")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium">
+              <th>
                 {dgettext("reports", "net_worth_table_account")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium">
+              <th>
                 {dgettext("reports", "net_worth_table_type")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium">
+              <th>
                 {dgettext("reports", "net_worth_table_currency")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium text-right">
+              <th class="text-right">
                 {dgettext("reports", "net_worth_table_balance")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium">
+              <th>
                 {dgettext("reports", "net_worth_table_snapshot")}
               </th>
-              <th class="border-b border-white/10 px-4 py-3 font-medium">
+              <th>
                 {dgettext("reports", "net_worth_table_coverage")}
               </th>
             </tr>
           </thead>
-          <tbody>
+          <tbody :for={row <- @account_rows} id={"net-worth-account-body-#{row.account_id}"}>
             <tr
-              :for={row <- @account_rows}
               id={"net-worth-account-row-#{row.account_id}"}
-              class="text-sm text-white/82"
+              phx-click={if(row.has_snapshot?, do: "toggle_drilldown")}
+              phx-value-id={if(row.has_snapshot?, do: row.account_id)}
+              class={[
+                "text-sm text-white/82",
+                row.has_snapshot? && "au-table-row-interactive"
+              ]}
             >
               <td
                 :if={@report.show_entity_column?}
-                class="border-b border-white/8 px-4 py-3 align-top text-white/58"
+                class="text-white/58"
               >
                 {row.entity_name}
               </td>
-              <td class="border-b border-white/8 px-4 py-3 align-top">
-                {row.account_name}
+              <td>
+                <div class="flex flex-col gap-1">
+                  <span>{row.account_name}</span>
+                </div>
               </td>
-              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
+              <td class="text-white/58">
                 {row.account_type}
               </td>
-              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
+              <td class="text-white/58">
                 {row.currency_code}
               </td>
-              <td class="au-mono border-b border-white/8 px-4 py-3 align-top text-right">
+              <td class="au-mono text-right">
                 {row.balance_display}
               </td>
-              <td class="border-b border-white/8 px-4 py-3 align-top text-white/58">
-                {row.snapshot_used_display}
+              <td class="text-white/58">
+                <div class="flex flex-col gap-1">
+                  <span>{row.snapshot_used_display}</span>
+                  <div class="flex flex-wrap gap-2">
+                    <.badge :if={!row.has_snapshot?} variant={:bad}>
+                      {dgettext("reports", "drilldown_no_snapshot_badge")}
+                    </.badge>
+                    <.badge :if={row.coverage_variant == :warn} variant={:warn}>
+                      {dgettext("reports", "drilldown_outdated_badge")}
+                    </.badge>
+                  </div>
+                </div>
               </td>
-              <td class="border-b border-white/8 px-4 py-3 align-top">
+              <td>
                 <.badge variant={row.coverage_variant}>
                   {row.coverage_label}
                 </.badge>
+              </td>
+            </tr>
+
+            <tr
+              :if={
+                @expanded_account_id == row.account_id and
+                  not is_nil(@drilldown_account_row) and
+                  not is_nil(@drilldown_data)
+              }
+              id={"net-worth-drilldown-#{row.account_id}"}
+              class="bg-white/[0.03]"
+            >
+              <td colspan={drilldown_colspan(@report.show_entity_column?)} class="px-4 py-4">
+                <.drilldown_panel
+                  account_id={row.account_id}
+                  account_row={@drilldown_account_row}
+                  drilldown_data={@drilldown_data}
+                  drilldown_page={@drilldown_page}
+                />
               </td>
             </tr>
           </tbody>

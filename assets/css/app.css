@@ -439,11 +439,19 @@
 
 .au-table tbody tr:hover td {
   background: rgba(255, 255, 255, 0.02);
-  cursor: pointer;
 }
 
 .au-table .text-right {
   text-align: right;
+}
+
+.au-table-row-interactive {
+  transition: background 0.15s ease;
+  cursor: pointer;
+}
+
+.au-table-row-interactive:hover td {
+  background: rgba(255, 255, 255, 0.04);
 }
 
 /* Import pipeline step indicators */
