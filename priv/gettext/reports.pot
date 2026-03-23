@@ -11,7 +11,7 @@
 msgid ""
 msgstr ""
 
-#: lib/aurum_finance_web/live/reports_live.ex:63
+#: lib/aurum_finance_web/live/reports_live.ex:64
 #: lib/aurum_finance_web/live/reports_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "page_title"
@@ -29,14 +29,14 @@ msgstr ""
 msgid "currency_summary_liabilities"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:163
-#: lib/aurum_finance_web/live/reports_live.ex:161
+#: lib/aurum_finance_web/live/net_worth_live.ex:164
+#: lib/aurum_finance_web/live/reports_live.ex:162
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_outdated"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:161
-#: lib/aurum_finance_web/live/reports_live.ex:159
+#: lib/aurum_finance_web/live/net_worth_live.ex:162
+#: lib/aurum_finance_web/live/reports_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_up_to_date"
 msgstr ""
@@ -95,14 +95,14 @@ msgstr ""
 msgid "hub_refresh_failed"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:158
-#: lib/aurum_finance_web/live/reports_live.ex:156
+#: lib/aurum_finance_web/live/net_worth_live.ex:159
+#: lib/aurum_finance_web/live/reports_live.ex:157
 #, elixir-autogen, elixir-format
 msgid "report_freshness_unavailable"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:96
-#: lib/aurum_finance_web/live/reports_live.ex:107
+#: lib/aurum_finance_web/live/net_worth_live.ex:97
+#: lib/aurum_finance_web/live/reports_live.ex:108
 #, elixir-autogen, elixir-format
 msgid "report_load_failed"
 msgstr ""
@@ -112,17 +112,17 @@ msgstr ""
 msgid "hub_refresh_pending"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reports_live.ex:170
+#: lib/aurum_finance_web/live/reports_live.ex:171
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_empty"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reports_live.ex:167
+#: lib/aurum_finance_web/live/reports_live.ex:168
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_unavailable"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reports_live.ex:172
+#: lib/aurum_finance_web/live/reports_live.ex:173
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_ready"
 msgstr ""
@@ -132,12 +132,12 @@ msgstr ""
 msgid "hub_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:199
+#: lib/aurum_finance_web/live/net_worth_live.ex:200
 #, elixir-autogen, elixir-format
 msgid "net_worth_account_type_asset"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:202
+#: lib/aurum_finance_web/live/net_worth_live.ex:203
 #, elixir-autogen, elixir-format
 msgid "net_worth_account_type_liability"
 msgstr ""
@@ -157,47 +157,47 @@ msgstr ""
 msgid "net_worth_back_to_hub"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:205
+#: lib/aurum_finance_web/live/net_worth_live.ex:206
 #, elixir-autogen, elixir-format
 msgid "net_worth_balance_unavailable"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:228
+#: lib/aurum_finance_web/live/net_worth_live.ex:229
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_carried_forward"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:244
+#: lib/aurum_finance_web/live/net_worth_live.ex:245
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_carried_forward"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:243
+#: lib/aurum_finance_web/live/net_worth_live.ex:244
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_exact"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:250
+#: lib/aurum_finance_web/live/net_worth_live.ex:251
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_no_history"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:247
+#: lib/aurum_finance_web/live/net_worth_live.ex:248
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_refreshable_gap"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:225
+#: lib/aurum_finance_web/live/net_worth_live.ex:226
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_exact"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:234
+#: lib/aurum_finance_web/live/net_worth_live.ex:235
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_no_history"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:231
+#: lib/aurum_finance_web/live/net_worth_live.ex:232
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_refreshable_gap"
 msgstr ""
@@ -223,17 +223,17 @@ msgstr ""
 msgid "net_worth_page_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:265
+#: lib/aurum_finance_web/live/net_worth_live.ex:266
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_last_month_end"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:271
+#: lib/aurum_finance_web/live/net_worth_live.ex:272
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_last_year_end"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:262
+#: lib/aurum_finance_web/live/net_worth_live.ex:263
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_today"
 msgstr ""
@@ -258,27 +258,27 @@ msgstr ""
 msgid "net_worth_scope_entities"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:218
+#: lib/aurum_finance_web/live/net_worth_live.ex:219
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_carried_forward"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:214
+#: lib/aurum_finance_web/live/net_worth_live.ex:215
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_exact"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:210
+#: lib/aurum_finance_web/live/net_worth_live.ex:211
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_none"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:222
+#: lib/aurum_finance_web/live/net_worth_live.ex:223
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_refreshable_gap"
 msgstr ""
 
-#: lib/aurum_finance_web/live/net_worth_live.ex:173
+#: lib/aurum_finance_web/live/net_worth_live.ex:174
 #, elixir-autogen, elixir-format
 msgid "net_worth_summary_coverage"
 msgstr ""
