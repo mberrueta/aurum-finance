@@ -49,6 +49,7 @@ defmodule AurumFinance.MixProject do
       {:phoenix, "~> 1.8.4"},
       {:phoenix_ecto, "~> 4.5"},
       {:ecto_sql, "~> 3.13"},
+      {:scrivener_ecto, "~> 3.1"},
       {:postgrex, ">= 0.0.0"},
       {:oban, "~> 2.20"},
       {:oban_web, "~> 2.11"},

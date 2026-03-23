@@ -3,6 +3,7 @@ defmodule AurumFinance.Reporting.NetWorthTest do
 
   import AurumFinance.ReportingTestHelpers
 
+  alias AurumFinance.Ledger
   alias AurumFinance.Reporting
 
   describe "net_worth_report/2" do
@@ -332,6 +333,371 @@ defmodule AurumFinance.Reporting.NetWorthTest do
 
       assert Enum.find(report.account_rows, &(&1.account_id == checking.id)).coverage ==
                :refreshable_gap
+    end
+  end
+
+  describe "drilldown_transactions/3" do
+    test "S01: groups postings by transaction_id and sums duplicate postings for the selected account" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("10.0000")},
+            %{account_id: checking.id, amount: Decimal.new("-4.0000")},
+            %{account_id: offset.id, amount: Decimal.new("-6.0000")}
+          ],
+          "Split balance explanation"
+        )
+
+      assert {:ok,
+              %{
+                transactions: [row],
+                total_count: 1,
+                page: 1,
+                per_page: 20,
+                total_pages: 1
+              }} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10])
+
+      assert row.transaction_id == transaction.id
+      assert row.date == ~D[2026-03-10]
+      assert row.description == "Split balance explanation"
+      assert row.net_amount == Decimal.new("6.0000")
+    end
+
+    test "S02: excludes transactions after the snapshot date boundary" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      before_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-12.0000")},
+            %{account_id: offset.id, amount: Decimal.new("12.0000")}
+          ],
+          "Before boundary"
+        )
+
+      _after_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-11],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-99.0000")},
+            %{account_id: offset.id, amount: Decimal.new("99.0000")}
+          ],
+          "After boundary"
+        )
+
+      assert {:ok, %{transactions: [row], total_count: 1}} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10])
+
+      assert row.transaction_id == before_transaction.id
+      assert row.description == "Before boundary"
+      assert row.net_amount == Decimal.new("-12.0000")
+    end
+
+    test "S03: orders transactions by date desc and inserted_at desc" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      _earlier_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-10.0000")},
+            %{account_id: offset.id, amount: Decimal.new("10.0000")}
+          ],
+          "Earlier inserted"
+        )
+
+      later_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-20.0000")},
+            %{account_id: offset.id, amount: Decimal.new("20.0000")}
+          ],
+          "Later inserted"
+        )
+
+      assert {:ok, %{transactions: [first, second]}} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10])
+
+      assert first.transaction_id == later_transaction.id
+      assert first.description == "Later inserted"
+      assert second.description == "Earlier inserted"
+    end
+
+    test "S04: paginates results with Scrivener defaults and page boundaries" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      created_transactions =
+        for n <- 1..21 do
+          create_transaction!(
+            entity,
+            ~D[2026-03-10],
+            [
+              %{account_id: checking.id, amount: Decimal.new("-1.0000")},
+              %{account_id: offset.id, amount: Decimal.new("1.0000")}
+            ],
+            "Paginated #{n}"
+          )
+        end
+
+      assert {:ok,
+              %{
+                transactions: page_one_entries,
+                total_count: 21,
+                page: 1,
+                per_page: 20,
+                total_pages: 2
+              }} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10],
+                 page: 1,
+                 per_page: 20
+               )
+
+      assert length(page_one_entries) == 20
+      assert hd(page_one_entries).transaction_id == List.last(created_transactions).id
+      assert List.last(page_one_entries).transaction_id == Enum.at(created_transactions, 1).id
+
+      assert {:ok,
+              %{
+                transactions: page_two_entries,
+                total_count: 21,
+                page: 2,
+                per_page: 20,
+                total_pages: 2
+              }} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10],
+                 page: 2,
+                 per_page: 20
+               )
+
+      assert length(page_two_entries) == 1
+      assert hd(page_two_entries).transaction_id == hd(created_transactions).id
+    end
+
+    test "S05: returns an empty result set when the account has no transactions" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      assert {:ok,
+              %{
+                transactions: [],
+                total_count: 0,
+                page: 1,
+                per_page: 20,
+                total_pages: 1
+              }} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10])
+    end
+
+    test "S06: returns an empty result set for a non-existent account_id" do
+      assert {:ok,
+              %{
+                transactions: [],
+                total_count: 0,
+                page: 1,
+                per_page: 20,
+                total_pages: 1
+              }} =
+               Reporting.net_worth_drilldown_transactions(Ecto.UUID.generate(), ~D[2026-03-10])
+    end
+
+    test "S07: preserves liability account raw posting amounts without taking abs" do
+      entity = insert(:entity, name: "Alpha")
+
+      liability =
+        insert_account(entity,
+          name: "Credit Card",
+          account_type: :liability,
+          operational_subtype: :credit_card
+        )
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :asset,
+          operational_subtype: :bank_checking
+        )
+
+      insert_snapshot!(liability, ~D[2026-03-10], "-40.0000", "0.0000")
+
+      transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: liability.id, amount: Decimal.new("-15.0000")},
+            %{account_id: offset.id, amount: Decimal.new("15.0000")}
+          ],
+          "Liability movement"
+        )
+
+      assert {:ok, %{transactions: [row], total_count: 1}} =
+               Reporting.net_worth_drilldown_transactions(liability.id, ~D[2026-03-10])
+
+      assert row.transaction_id == transaction.id
+      assert row.net_amount == Decimal.new("-15.0000")
+    end
+
+    test "S08: retains voided transactions because the current projection does not filter them out" do
+      entity = insert(:entity, name: "Alpha")
+      checking = insert_account(entity, name: "Checking")
+
+      offset =
+        insert_account(entity,
+          name: "Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000")
+
+      transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-25.0000")},
+            %{account_id: offset.id, amount: Decimal.new("25.0000")}
+          ],
+          "Voided movement"
+        )
+
+      {:ok, %{voided: voided, reversal: reversal}} = Ledger.void_transaction(transaction)
+
+      assert %DateTime{} = voided.voided_at
+
+      assert {:ok, %{transactions: rows, total_count: 2}} =
+               Reporting.net_worth_drilldown_transactions(checking.id, ~D[2026-03-10])
+
+      assert Enum.map(rows, & &1.transaction_id) == [reversal.id, voided.id]
+      assert Enum.map(rows, & &1.net_amount) == [Decimal.new("25.0000"), Decimal.new("-25.0000")]
+    end
+
+    test "S09: keeps the entity boundary explicit when two entities have overlapping dates" do
+      entity_a = insert(:entity, name: "Alpha")
+      entity_b = insert(:entity, name: "Beta")
+
+      account_a = insert_account(entity_a, name: "A Cash")
+      account_b = insert_account(entity_b, name: "B Cash")
+
+      offset_a =
+        insert_account(entity_a,
+          name: "A Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      offset_b =
+        insert_account(entity_b,
+          name: "B Offset",
+          account_type: :expense,
+          management_group: :category,
+          operational_subtype: nil,
+          institution_name: nil,
+          institution_account_ref: nil
+        )
+
+      insert_snapshot!(account_a, ~D[2026-03-10], "10.0000", "0.0000")
+      insert_snapshot!(account_b, ~D[2026-03-10], "20.0000", "0.0000")
+
+      transaction_a =
+        create_transaction!(
+          entity_a,
+          ~D[2026-03-10],
+          [
+            %{account_id: account_a.id, amount: Decimal.new("-11.0000")},
+            %{account_id: offset_a.id, amount: Decimal.new("11.0000")}
+          ],
+          "Alpha transaction"
+        )
+
+      _transaction_b =
+        create_transaction!(
+          entity_b,
+          ~D[2026-03-10],
+          [
+            %{account_id: account_b.id, amount: Decimal.new("-22.0000")},
+            %{account_id: offset_b.id, amount: Decimal.new("22.0000")}
+          ],
+          "Beta transaction"
+        )
+
+      assert {:ok, %{transactions: [row], total_count: 1}} =
+               Reporting.net_worth_drilldown_transactions(account_a.id, ~D[2026-03-10])
+
+      assert row.transaction_id == transaction_a.id
+      assert row.description == "Alpha transaction"
+      assert row.net_amount == Decimal.new("-11.0000")
     end
   end
 end

@@ -88,7 +88,7 @@ defmodule AurumFinanceWeb.FxLive do
             </thead>
             <tbody>
               <tr :for={entry <- Enum.reverse(@history)}>
-                <td class="au-mono whitespace-nowrap">{entry.date}</td>
+                <td class="au-mono">{entry.date}</td>
                 <td class="au-mono text-right">{format_rate(entry.rate)}</td>
                 <td>
                   <.badge>{@selected_series.type}</.badge>

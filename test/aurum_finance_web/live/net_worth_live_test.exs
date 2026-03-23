@@ -242,11 +242,228 @@ defmodule AurumFinanceWeb.NetWorthLiveTest do
     refute_receive {:net_worth_report_called, _as_of_date}, 150
   end
 
+  describe "drilldown UI" do
+    test "S01: opens and closes a drilldown panel for a snapshot-backed row and shows its summary",
+         %{
+           conn: conn
+         } do
+      entity = insert(:entity, name: "Alpha")
+      offset = insert_category_account(entity, "Offset")
+      checking = insert_account(entity, name: "Checking")
+      savings = insert_account(entity, name: "Savings")
+
+      no_history =
+        insert_account(entity,
+          name: "Card",
+          account_type: :liability,
+          operational_subtype: :credit_card
+        )
+
+      insert_snapshot!(checking, ~D[2026-03-10], "100.0000", "0.0000", ~U[2026-03-10 09:00:00Z])
+      insert_snapshot!(savings, ~D[2026-03-10], "200.0000", "0.0000")
+
+      stale_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: checking.id, amount: Decimal.new("-15.0000")},
+            %{account_id: offset.id, amount: Decimal.new("15.0000")}
+          ],
+          "Stale balance explanation"
+        )
+
+      _exact_transaction =
+        create_transaction!(
+          entity,
+          ~D[2026-03-10],
+          [
+            %{account_id: savings.id, amount: Decimal.new("-25.0000")},
+            %{account_id: offset.id, amount: Decimal.new("25.0000")}
+          ],
+          "Exact balance explanation"
+        )
+
+      {:ok, view, _html} =
+        conn |> log_in_root() |> live("/reports/net-worth?as_of_date=2026-03-10")
+
+      assert has_element?(
+               view,
+               "#net-worth-account-row-#{checking.id}[phx-click=\"toggle_drilldown\"]"
+             )
+
+      assert has_element?(view, "#net-worth-account-row-#{checking.id}", "Outdated")
+      assert has_element?(view, "#net-worth-account-row-#{no_history.id}", "No snapshot")
+      refute has_element?(view, "#net-worth-account-row-#{no_history.id}[phx-click]")
+
+      view
+      |> element("#net-worth-account-row-#{checking.id}")
+      |> render_click()
+
+      assert has_element?(view, "#net-worth-drilldown-#{checking.id}")
+
+      panel_html = view |> element("#net-worth-drilldown-#{checking.id}") |> render()
+
+      assert panel_html =~ "Balance Explanation"
+      assert panel_html =~ "Outdated"
+      assert panel_html =~ "Balance of 100.00 USD as of 2026-03-10"
+      assert has_element?(view, "#net-worth-drilldown-#{checking.id} th", "Date")
+      assert has_element?(view, "#net-worth-drilldown-#{checking.id} th", "Description")
+      assert has_element?(view, "#net-worth-drilldown-#{checking.id} th", "Amount")
+
+      assert has_element?(
+               view,
+               "#net-worth-drilldown-#{checking.id}-transaction-#{stale_transaction.id}"
+             )
+
+      view
+      |> element("#net-worth-account-row-#{checking.id}")
+      |> render_click()
+
+      refute has_element?(view, "#net-worth-drilldown-#{checking.id}")
+    end
+
+    test "S02: opening a different row closes the previous drilldown panel", %{conn: conn} do
+      entity = insert(:entity, name: "Alpha")
+      offset = insert_category_account(entity, "Offset")
+      first_account = insert_account(entity, name: "First")
+      second_account = insert_account(entity, name: "Second")
+
+      insert_snapshot!(first_account, ~D[2026-03-10], "100.0000", "0.0000")
+      insert_snapshot!(second_account, ~D[2026-03-10], "200.0000", "0.0000")
+
+      create_transaction!(
+        entity,
+        ~D[2026-03-10],
+        [
+          %{account_id: first_account.id, amount: Decimal.new("-10.0000")},
+          %{account_id: offset.id, amount: Decimal.new("10.0000")}
+        ],
+        "First explanation"
+      )
+
+      create_transaction!(
+        entity,
+        ~D[2026-03-10],
+        [
+          %{account_id: second_account.id, amount: Decimal.new("-20.0000")},
+          %{account_id: offset.id, amount: Decimal.new("20.0000")}
+        ],
+        "Second explanation"
+      )
+
+      {:ok, view, _html} =
+        conn |> log_in_root() |> live("/reports/net-worth?as_of_date=2026-03-10")
+
+      view
+      |> element("#net-worth-account-row-#{first_account.id}")
+      |> render_click()
+
+      assert has_element?(view, "#net-worth-drilldown-#{first_account.id}")
+
+      view
+      |> element("#net-worth-account-row-#{second_account.id}")
+      |> render_click()
+
+      refute has_element?(view, "#net-worth-drilldown-#{first_account.id}")
+      assert has_element?(view, "#net-worth-drilldown-#{second_account.id}")
+    end
+
+    test "S03: paginates drilldown transactions and resets to page 1 when opening a different row",
+         %{
+           conn: conn
+         } do
+      entity = insert(:entity, name: "Alpha")
+      offset = insert_category_account(entity, "Offset")
+      primary_account = insert_account(entity, name: "Primary")
+      secondary_account = insert_account(entity, name: "Secondary")
+
+      insert_snapshot!(primary_account, ~D[2026-03-10], "100.0000", "0.0000")
+      insert_snapshot!(secondary_account, ~D[2026-03-10], "200.0000", "0.0000")
+
+      primary_transactions =
+        for n <- 1..21 do
+          create_transaction!(
+            entity,
+            ~D[2026-03-10],
+            [
+              %{account_id: primary_account.id, amount: Decimal.new("-1.0000")},
+              %{account_id: offset.id, amount: Decimal.new("1.0000")}
+            ],
+            "Primary #{n}"
+          )
+        end
+
+      secondary_transactions =
+        for n <- 1..21 do
+          create_transaction!(
+            entity,
+            ~D[2026-03-10],
+            [
+              %{account_id: secondary_account.id, amount: Decimal.new("-1.0000")},
+              %{account_id: offset.id, amount: Decimal.new("1.0000")}
+            ],
+            "Secondary #{n}"
+          )
+        end
+
+      {:ok, view, _html} =
+        conn |> log_in_root() |> live("/reports/net-worth?as_of_date=2026-03-10")
+
+      view
+      |> element("#net-worth-account-row-#{primary_account.id}")
+      |> render_click()
+
+      assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}")
+      assert has_element?(view, "#net-worth-drilldown-prev-#{primary_account.id}")
+      assert has_element?(view, "#net-worth-drilldown-next-#{primary_account.id}")
+      assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}", "Page 1 of 2")
+
+      assert has_element?(
+               view,
+               "#net-worth-drilldown-#{primary_account.id}-transaction-#{List.last(primary_transactions).id}"
+             )
+
+      view
+      |> element("#net-worth-drilldown-next-#{primary_account.id}")
+      |> render_click()
+
+      assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}", "Page 2 of 2")
+
+      assert has_element?(
+               view,
+               "#net-worth-drilldown-#{primary_account.id}-transaction-#{hd(primary_transactions).id}"
+             )
+
+      view
+      |> element("#net-worth-account-row-#{secondary_account.id}")
+      |> render_click()
+
+      assert has_element?(view, "#net-worth-drilldown-#{secondary_account.id}", "Page 1 of 2")
+
+      assert has_element?(
+               view,
+               "#net-worth-drilldown-#{secondary_account.id}-transaction-#{List.last(secondary_transactions).id}"
+             )
+    end
+  end
+
   defp flush_net_worth_report_calls do
     receive do
       {:net_worth_report_called, _as_of_date} -> flush_net_worth_report_calls()
     after
       0 -> :ok
     end
+  end
+
+  defp insert_category_account(entity, name) do
+    insert_account(entity,
+      name: name,
+      account_type: :expense,
+      management_group: :category,
+      operational_subtype: nil,
+      institution_name: nil,
+      institution_account_ref: nil
+    )
   end
 end

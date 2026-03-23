@@ -148,8 +148,8 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
 
   def posting_row(assigns) do
     ~H"""
-    <tr id={@id} class={["border-t border-white/6 transition", @inspected? && "bg-sky-400/10"]}>
-      <td class="whitespace-nowrap px-4 py-3">
+    <tr id={@id} class={[@inspected? && "bg-sky-400/10"]}>
+      <td class="whitespace-nowrap">
         <button
           :if={selectable_posting?(@posting, @session_completed?)}
           id={"toggle-posting-#{@posting.id}"}
@@ -172,10 +172,10 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
           -
         </span>
       </td>
-      <td class="whitespace-nowrap px-4 py-3 text-sm text-white/72">
+      <td class="whitespace-nowrap text-white/72">
         {format_date(@posting.transaction_date)}
       </td>
-      <td class="px-4 py-3">
+      <td>
         <div class="space-y-1">
           <p class="text-sm font-medium text-white/92">{@posting.transaction_description}</p>
           <p :if={present?(@posting.reason)} class="text-xs text-white/48">
@@ -183,15 +183,15 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
           </p>
         </div>
       </td>
-      <td class="whitespace-nowrap px-4 py-3 text-sm font-medium text-white/92">
+      <td class="whitespace-nowrap font-medium text-white/92">
         {format_money(@posting.amount, @currency_code)}
       </td>
-      <td class="whitespace-nowrap px-4 py-3">
+      <td class="whitespace-nowrap">
         <.badge variant={posting_status_variant(@posting.reconciliation_status)}>
           {posting_status_label(@posting.reconciliation_status)}
         </.badge>
       </td>
-      <td class="whitespace-nowrap px-4 py-3">
+      <td class="whitespace-nowrap">
         <div class="flex flex-wrap items-center gap-2">
           <button
             id={"inspect-posting-#{@posting.id}"}

@@ -26,6 +26,7 @@ defmodule AurumFinance.Reporting.NetWorth do
   @type coverage_status :: :exact | :carried_forward | :refreshable_gap | :no_history
   @type freshness_status :: :up_to_date | :outdated
   @type option :: {:as_of_date, Date.t()}
+  @type drilldown_option :: {:page, pos_integer()} | {:per_page, pos_integer()}
 
   @type entity_display :: %{
           id: Ecto.UUID.t(),
@@ -84,6 +85,21 @@ defmodule AurumFinance.Reporting.NetWorth do
           account_rows: [account_row()]
         }
 
+  @type drilldown_transaction :: %{
+          transaction_id: Ecto.UUID.t(),
+          date: Date.t(),
+          description: String.t(),
+          net_amount: Decimal.t()
+        }
+
+  @type drilldown_report :: %{
+          transactions: [drilldown_transaction()],
+          total_count: non_neg_integer(),
+          page: pos_integer(),
+          per_page: pos_integer(),
+          total_pages: non_neg_integer()
+        }
+
   @doc """
   Returns the Net Worth V1 report for the provided entity scope.
 
@@ -103,6 +119,54 @@ defmodule AurumFinance.Reporting.NetWorth do
     entity_ids
     |> normalize_entity_ids()
     |> get_report_for_scope(opts)
+  end
+
+  @doc """
+  Returns paginated transactions that explain one account snapshot balance.
+
+  The drilldown is bounded by the snapshot date used by the report. It groups
+  postings by transaction so each row represents one transaction.
+
+  ## Examples
+
+      iex> {:ok, result} =
+      ...>   AurumFinance.Reporting.NetWorth.drilldown_transactions(
+      ...>     Ecto.UUID.generate(),
+      ...>     ~D[2026-03-20]
+      ...>   )
+      iex> result.total_count
+      0
+      iex> result.page
+      1
+      iex> result.per_page
+      20
+  """
+  @spec drilldown_transactions(Ecto.UUID.t(), Date.t(), [drilldown_option()]) ::
+          {:ok, drilldown_report()} | {:error, term()}
+  def drilldown_transactions(account_id, as_of_date, opts \\ []) do
+    with :ok <- validate_account_id(account_id),
+         {:ok, %Date{} = as_of_date} <- validate_as_of_date(as_of_date),
+         {:ok, page, per_page} <- resolve_drilldown_pagination(opts) do
+      page_result =
+        account_id
+        |> drilldown_transactions_query(as_of_date)
+        |> order_by(
+          [posting, transaction, _account, _entity],
+          desc: transaction.date,
+          desc: transaction.inserted_at,
+          desc: transaction.id
+        )
+        |> Repo.paginate(page: page, page_size: per_page)
+
+      {:ok,
+       %{
+         transactions: page_result.entries,
+         total_count: page_result.total_entries,
+         page: page_result.page_number,
+         per_page: page_result.page_size,
+         total_pages: page_result.total_pages
+       }}
+    end
   end
 
   defp get_report_for_scope([], opts) do
@@ -304,6 +368,51 @@ defmodule AurumFinance.Reporting.NetWorth do
       covered_account_count: 0,
       no_history_count: 0
     }
+  end
+
+  defp validate_account_id(account_id) when is_binary(account_id), do: :ok
+  defp validate_account_id(account_id), do: {:error, {:invalid_account_id, account_id}}
+
+  defp validate_as_of_date(%Date{} = date), do: {:ok, date}
+  defp validate_as_of_date(other), do: {:error, {:invalid_as_of_date, other}}
+
+  defp resolve_drilldown_pagination(opts) when is_list(opts) do
+    with {:ok, page} <- normalize_positive_integer(Keyword.get(opts, :page, 1), :page),
+         {:ok, per_page} <-
+           normalize_positive_integer(Keyword.get(opts, :per_page, 20), :per_page) do
+      {:ok, page, per_page}
+    end
+  end
+
+  defp resolve_drilldown_pagination(other), do: {:error, {:invalid_options, other}}
+
+  defp normalize_positive_integer(value, _key) when is_integer(value) and value > 0,
+    do: {:ok, value}
+
+  defp normalize_positive_integer(value, key), do: {:error, {:invalid_option, key, value}}
+
+  defp drilldown_transactions_query(account_id, %Date{} = as_of_date) do
+    from posting in Posting,
+      join: transaction in Transaction,
+      on: transaction.id == posting.transaction_id,
+      join: account in Account,
+      on: account.id == posting.account_id and account.entity_id == transaction.entity_id,
+      join: entity in Entity,
+      on: entity.id == account.entity_id and entity.id == transaction.entity_id,
+      where: posting.account_id == ^account_id,
+      where: transaction.date <= ^as_of_date,
+      group_by: [
+        transaction.id,
+        transaction.date,
+        transaction.description,
+        transaction.inserted_at
+      ],
+      select: %{
+        transaction_id: transaction.id,
+        date: transaction.date,
+        description: transaction.description,
+        net_amount: sum(posting.amount)
+      }
   end
 
   defp account_rows_query(entity_ids, %Date{} = as_of_date) do

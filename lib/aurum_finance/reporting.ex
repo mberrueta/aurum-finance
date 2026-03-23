@@ -31,6 +31,7 @@ defmodule AurumFinance.Reporting do
           | {:date_to, Date.t()}
 
   @type net_worth_opt :: {:as_of_date, Date.t()}
+  @type net_worth_drilldown_opt :: NetWorth.drilldown_option()
   @type refresh_result :: %{
           status: :queued,
           entity_count: non_neg_integer(),
@@ -168,6 +169,25 @@ defmodule AurumFinance.Reporting do
           {:ok, map()} | {:error, term()}
   def net_worth_report(entity_ids, opts \\ []) when is_list(entity_ids) do
     NetWorth.get_report(entity_ids, opts)
+  end
+
+  @doc """
+  Returns paginated drilldown transactions for one Net Worth account row.
+
+  ## Examples
+
+      iex> {:ok, result} =
+      ...>   AurumFinance.Reporting.net_worth_drilldown_transactions(
+      ...>     Ecto.UUID.generate(),
+      ...>     ~D[2026-03-20]
+      ...>   )
+      iex> result.total_count
+      0
+  """
+  @spec net_worth_drilldown_transactions(Ecto.UUID.t(), Date.t(), [net_worth_drilldown_opt()]) ::
+          {:ok, NetWorth.drilldown_report()} | {:error, term()}
+  def net_worth_drilldown_transactions(account_id, as_of_date, opts \\ []) do
+    NetWorth.drilldown_transactions(account_id, as_of_date, opts)
   end
 
   @doc """

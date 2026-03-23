@@ -1,175 +1,176 @@
 msgid ""
 msgstr ""
-"Language: en\n"
+"Language: pt\n"
+"Content-Type: text/plain; charset=UTF-8\n"
 
 #: lib/aurum_finance_web/live/reports_live.ex:64
 #: lib/aurum_finance_web/live/reports_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "page_title"
-msgstr "Reports"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:113
 #: lib/aurum_finance_web/live/reports_live.html.heex:96
 #, elixir-autogen, elixir-format
 msgid "currency_summary_assets"
-msgstr "Assets"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:117
 #: lib/aurum_finance_web/live/reports_live.html.heex:101
 #, elixir-autogen, elixir-format
 msgid "currency_summary_liabilities"
-msgstr "Liabilities"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:224
 #: lib/aurum_finance_web/live/reports_live.ex:162
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_outdated"
-msgstr "Outdated"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:222
 #: lib/aurum_finance_web/live/reports_live.ex:160
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_up_to_date"
-msgstr "Up to date"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:49
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_accounts"
-msgstr "%{count} accounts"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:31
 #: lib/aurum_finance_web/live/reports_live.html.heex:44
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_as_of"
-msgstr "As of %{date}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_description"
-msgstr "The first real report is backed by daily balance snapshots and stays honest about freshness, coverage, and currency scope."
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:224
 #, elixir-autogen, elixir-format
 msgid "drilldown_header"
-msgstr "Balance Explanation"
+msgstr "Explicação do saldo"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:194
 #, elixir-autogen, elixir-format
 msgid "drilldown_no_snapshot_badge"
-msgstr "No snapshot"
+msgstr "Sem snapshot"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:324
 #, elixir-autogen, elixir-format
 msgid "drilldown_no_transactions"
-msgstr "No transactions found"
+msgstr "Nenhuma transação encontrada"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:197
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:230
 #, elixir-autogen, elixir-format
 msgid "drilldown_outdated_badge"
-msgstr "Outdated"
+msgstr "Desatualizado"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:274
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:275
 #, elixir-autogen, elixir-format
 msgid "drilldown_next"
-msgstr "Next"
+msgstr "Próximo"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:250
 #, elixir-autogen, elixir-format
 msgid "drilldown_page_info"
-msgstr "Page %{page} of %{total_pages}"
+msgstr "Página %{page} de %{total_pages}"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:261
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:262
 #, elixir-autogen, elixir-format
 msgid "drilldown_prev"
-msgstr "Previous"
+msgstr "Anterior"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:234
 #, elixir-autogen, elixir-format
 msgid "drilldown_summary"
-msgstr "Balance of %{amount} as of %{date}"
+msgstr "Saldo de %{amount} em %{date}"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:294
 #, elixir-autogen, elixir-format
 msgid "drilldown_table_amount"
-msgstr "Amount"
+msgstr "Valor"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:288
 #, elixir-autogen, elixir-format
 msgid "drilldown_table_date"
-msgstr "Date"
+msgstr "Data"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:291
 #, elixir-autogen, elixir-format
 msgid "drilldown_table_description"
-msgstr "Description"
+msgstr "Descrição"
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:337
 #: lib/aurum_finance_web/live/reports_live.html.heex:110
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_empty"
-msgstr "No eligible institution-managed asset or liability accounts are in scope yet."
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_open"
-msgstr "Open report"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:57
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_refresh_hint"
-msgstr "Refresh suggested"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:106
 #: lib/aurum_finance_web/live/reports_live.html.heex:31
 #: lib/aurum_finance_web/live/reports_live.html.heex:86
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_title"
-msgstr "Net Worth"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:23
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_action"
-msgstr "Refresh reports"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.ex:32
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_enqueued"
-msgstr "Reporting refresh queued."
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.ex:35
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_failed"
-msgstr "Could not queue the reporting refresh."
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:219
 #: lib/aurum_finance_web/live/reports_live.ex:157
 #, elixir-autogen, elixir-format
 msgid "report_freshness_unavailable"
-msgstr "Unavailable"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:118
 #: lib/aurum_finance_web/live/reports_live.ex:108
 #, elixir-autogen, elixir-format
 msgid "report_load_failed"
-msgstr "Could not load the report right now."
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.html.heex:14
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_pending"
-msgstr "Refresh pending"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.ex:171
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_empty"
-msgstr "No data"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.ex:168
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_unavailable"
-msgstr "Unavailable"
+msgstr ""
 
 #: lib/aurum_finance_web/live/reports_live.ex:173
 #, elixir-autogen, elixir-format
@@ -179,190 +180,190 @@ msgstr ""
 #: lib/aurum_finance_web/live/reports_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "hub_subtitle"
-msgstr "A real reporting hub centered on Net Worth, with one coarse freshness signal and one async refresh action."
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:262
 #, elixir-autogen, elixir-format
 msgid "net_worth_account_type_asset"
-msgstr "Asset"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:265
 #, elixir-autogen, elixir-format
 msgid "net_worth_account_type_liability"
-msgstr "Liability"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:129
 #, elixir-autogen, elixir-format
 msgid "net_worth_accounts_title"
-msgstr "Accounts"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:67
 #, elixir-autogen, elixir-format
 msgid "net_worth_as_of_label"
-msgstr "As of date"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:13
 #, elixir-autogen, elixir-format
 msgid "net_worth_back_to_hub"
-msgstr "Back to reports"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:268
 #, elixir-autogen, elixir-format
 msgid "net_worth_balance_unavailable"
-msgstr "Not available"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:291
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_carried_forward"
-msgstr "Carried forward"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:307
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_carried_forward"
-msgstr "%{count} carried forward"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:306
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_exact"
-msgstr "%{count} exact"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:313
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_no_history"
-msgstr "%{count} no history"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:310
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_counts_refreshable_gap"
-msgstr "%{count} refreshable gaps"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:288
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_exact"
-msgstr "Exact"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:297
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_no_history"
-msgstr "No history"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:294
 #, elixir-autogen, elixir-format
 msgid "net_worth_coverage_refreshable_gap"
-msgstr "Refreshable gap"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:19
 #, elixir-autogen, elixir-format
 msgid "net_worth_filters_title"
-msgstr "Report filters"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:40
 #, elixir-autogen, elixir-format
 msgid "net_worth_important_dates_title"
-msgstr "Important dates"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "net_worth_page_subtitle"
-msgstr "Detailed balances by currency and account, with explicit snapshot coverage and visible no-history rows."
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:21
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "net_worth_page_title"
-msgstr "Net Worth"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:328
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_last_month_end"
-msgstr "Last month end"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:334
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_last_year_end"
-msgstr "Last year end"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:325
 #, elixir-autogen, elixir-format
 msgid "net_worth_preset_today"
-msgstr "Today"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:77
 #, elixir-autogen, elixir-format
 msgid "net_worth_refresh_hint_body"
-msgstr "Some balances are older than the available ledger facts for this date. Refreshing reporting snapshots will bring the page current."
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:74
 #, elixir-autogen, elixir-format
 msgid "net_worth_refresh_hint_title"
-msgstr "Refresh suggested"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "net_worth_scope_accounts"
-msgstr "%{count} included accounts"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:28
 #, elixir-autogen, elixir-format
 msgid "net_worth_scope_entities"
-msgstr "%{count} entities"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:281
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_carried_forward"
-msgstr "Carried from %{date}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:277
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_exact"
-msgstr "Snapshot on %{date}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:273
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_none"
-msgstr "No snapshot"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:285
 #, elixir-autogen, elixir-format
 msgid "net_worth_snapshot_refreshable_gap"
-msgstr "Stale since %{date}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:234
 #, elixir-autogen, elixir-format
 msgid "net_worth_summary_coverage"
-msgstr "%{covered} covered of %{total} accounts · %{no_history} no history"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:140
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_account"
-msgstr "Account"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:149
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_balance"
-msgstr "Balance"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:155
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_coverage"
-msgstr "Coverage"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_currency"
-msgstr "Currency"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:137
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_entity"
-msgstr "Entity"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:152
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_snapshot"
-msgstr "Snapshot Used"
+msgstr ""
 
 #: lib/aurum_finance_web/live/net_worth_live.html.heex:143
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_type"
-msgstr "Type"
+msgstr ""
