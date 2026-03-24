@@ -16,7 +16,10 @@ defmodule AurumFinance.Fx do
 
   alias AurumFinance.Fx.FxRateRecord
   alias AurumFinance.Fx.FxSeries
+  alias AurumFinance.Fx.SyncWorker
   alias AurumFinance.Repo
+
+  require Logger
 
   @staleness_window_days 4
 
@@ -106,9 +109,13 @@ defmodule AurumFinance.Fx do
   """
   @spec create_fx_series(map()) :: {:ok, FxSeries.t()} | {:error, Ecto.Changeset.t()}
   def create_fx_series(attrs) do
-    %FxSeries{}
-    |> FxSeries.create_changeset(attrs)
-    |> Repo.insert()
+    with {:ok, series} <-
+           %FxSeries{}
+           |> FxSeries.create_changeset(attrs)
+           |> Repo.insert() do
+      maybe_enqueue_backfill(series)
+      {:ok, series}
+    end
   end
 
   @doc """
@@ -146,18 +153,20 @@ defmodule AurumFinance.Fx do
   @spec delete_fx_series(FxSeries.t()) ::
           {:ok, FxSeries.t()} | {:error, :has_records} | {:error, Ecto.Changeset.t()}
   def delete_fx_series(%FxSeries{} = series) do
-    record_count =
-      FxRateRecord
-      |> where([r], r.fx_series_id == ^series.id)
-      |> select([r], count(r.id))
-      |> Repo.one()
-
-    if record_count > 0 do
-      {:error, :has_records}
-    else
-      Repo.delete(series)
-    end
+    series.id
+    |> count_rate_records()
+    |> do_delete(series)
   end
+
+  defp count_rate_records(fx_series_id) do
+    FxRateRecord
+    |> where([r], r.fx_series_id == ^fx_series_id)
+    |> select([r], count(r.id))
+    |> Repo.one()
+  end
+
+  defp do_delete(0, series), do: Repo.delete(series)
+  defp do_delete(_count, _series), do: {:error, :has_records}
 
   @doc """
   Returns an `FxSeries` changeset for form rendering.
@@ -169,13 +178,9 @@ defmodule AurumFinance.Fx do
       false
   """
   @spec change_fx_series(FxSeries.t(), map()) :: Ecto.Changeset.t()
-  def change_fx_series(%FxSeries{} = series, attrs \\ %{}) do
-    if series.id do
-      FxSeries.update_changeset(series, attrs)
-    else
-      FxSeries.create_changeset(series, attrs)
-    end
-  end
+  def change_fx_series(series, attrs \\ %{})
+  def change_fx_series(%FxSeries{id: nil} = series, attrs), do: FxSeries.create_changeset(series, attrs)
+  def change_fx_series(%FxSeries{} = series, attrs), do: FxSeries.update_changeset(series, attrs)
 
   # ---------------------------------------------------------------------------
   # Compatible series filtering
@@ -297,6 +302,147 @@ defmodule AurumFinance.Fx do
        effective_date: record.effective_date,
        inverted: false
      }}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Rate record upsert
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Bulk-upserts rate records for a given FX series.
+
+  Uses `Repo.insert_all/3` with `ON CONFLICT` to replace existing rate values
+  when the `(fx_series_id, effective_date)` pair already exists. Returns
+  `{:ok, count}` where `count` is the number of rows inserted or updated.
+
+  ## Examples
+
+  ```elixir
+  {:ok, 2} =
+    AurumFinance.Fx.upsert_rate_records(series.id, [
+      %{date: ~D[2024-01-02], value: Decimal.new("5.50")},
+      %{date: ~D[2024-01-03], value: Decimal.new("5.55")}
+    ])
+  ```
+  """
+  @spec upsert_rate_records(Ecto.UUID.t(), [%{date: Date.t(), value: Decimal.t()}]) ::
+          {:ok, non_neg_integer()}
+  def upsert_rate_records(_fx_series_id, []), do: {:ok, 0}
+
+  def upsert_rate_records(fx_series_id, rows) when is_list(rows) do
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+
+    entries =
+      Enum.map(rows, fn %{date: date, value: value} ->
+        %{
+          id: Ecto.UUID.generate(),
+          fx_series_id: fx_series_id,
+          effective_date: date,
+          rate_value: value,
+          inserted_at: now,
+          updated_at: now
+        }
+      end)
+
+    {count, _} =
+      Repo.insert_all(FxRateRecord, entries,
+        on_conflict: {:replace, [:rate_value, :updated_at]},
+        conflict_target: [:fx_series_id, :effective_date]
+      )
+
+    {:ok, count}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Sync entrypoints
+  # ---------------------------------------------------------------------------
+
+  @doc """
+  Enqueues an FX sync job for the given series, covering the range from the
+  day after the most recent existing rate record (or `series.from_date` if no
+  records exist) through `series.to_date` or today.
+
+  Only meaningful for `provider_module` series.
+
+  ## Examples
+
+  ```elixir
+  {:ok, %Oban.Job{}} = AurumFinance.Fx.enqueue_fx_sync(series)
+  ```
+  """
+  @spec enqueue_fx_sync(FxSeries.t()) :: {:ok, Oban.Job.t()} | {:error, term()}
+  def enqueue_fx_sync(%FxSeries{source_kind: :provider_module} = series) do
+    max_date = max_effective_date(series.id)
+    from_date = compute_sync_from_date(series, max_date)
+    to_date = series.to_date || Date.utc_today()
+
+    case Date.compare(from_date, to_date) do
+      :gt ->
+        {:error, :already_up_to_date}
+
+      _ ->
+        series.id
+        |> SyncWorker.new_job(from_date, to_date)
+        |> Oban.insert()
+    end
+  end
+
+  def enqueue_fx_sync(%FxSeries{source_kind: :csv_upload}) do
+    {:error, :not_a_provider_series}
+  end
+
+  # ---------------------------------------------------------------------------
+  # Private helpers for sync
+  # ---------------------------------------------------------------------------
+
+  defp maybe_enqueue_backfill(%FxSeries{source_kind: :provider_module} = series) do
+    to_date = series.to_date || Date.utc_today()
+
+    series.id
+    |> SyncWorker.new_job(series.from_date, to_date)
+    |> Oban.insert()
+    |> log_backfill_result(series, to_date)
+  end
+
+  defp maybe_enqueue_backfill(%FxSeries{}), do: :noop
+
+  defp log_backfill_result({:ok, job}, series, to_date) do
+    Logger.info("FX backfill enqueued for new series",
+      event: "fx.backfill.enqueued",
+      fx_series_id: series.id,
+      from_date: Date.to_iso8601(series.from_date),
+      to_date: Date.to_iso8601(to_date)
+    )
+
+    {:ok, job}
+  end
+
+  defp log_backfill_result({:error, reason}, series, _to_date) do
+    Logger.warning("FX backfill enqueue failed",
+      event: "fx.backfill.error",
+      fx_series_id: series.id,
+      reason: inspect(reason)
+    )
+
+    {:error, reason}
+  end
+
+  defp max_effective_date(fx_series_id) do
+    FxRateRecord
+    |> where([r], r.fx_series_id == ^fx_series_id)
+    |> select([r], max(r.effective_date))
+    |> Repo.one()
+  end
+
+  defp compute_sync_from_date(series, nil), do: series.from_date
+
+  defp compute_sync_from_date(series, %Date{} = max_date) do
+    next = Date.add(max_date, 1)
+
+    case Date.compare(next, series.from_date) do
+      :lt -> series.from_date
+      _ -> next
+    end
   end
 
   # ---------------------------------------------------------------------------

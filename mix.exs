@@ -73,6 +73,7 @@ defmodule AurumFinance.MixProject do
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
       {:bcrypt_elixir, "~> 3.0"},
+      {:req, "~> 0.5"},
 
       # Development
       {:live_debugger, "~> 0.6.0", only: :dev},

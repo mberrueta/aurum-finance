@@ -52,3 +52,4 @@ config :aurum_finance, Oban,
   queues: false
 
 config :aurum_finance, :start_reporting_ledger_event_bridge, false
+config :aurum_finance, :start_fx_global_sync_scheduler, false
