@@ -28,18 +28,10 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
 
   @daily_interval_ms :timer.hours(24)
 
-  # ---------------------------------------------------------------------------
-  # Client API
-  # ---------------------------------------------------------------------------
-
   @doc false
   def start_link(opts \\ []) do
     GenServer.start_link(__MODULE__, opts, name: __MODULE__)
   end
-
-  # ---------------------------------------------------------------------------
-  # GenServer callbacks
-  # ---------------------------------------------------------------------------
 
   @impl GenServer
   def init(_opts) do
@@ -53,10 +45,6 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
     schedule_run(@daily_interval_ms)
     {:noreply, state}
   end
-
-  # ---------------------------------------------------------------------------
-  # Private
-  # ---------------------------------------------------------------------------
 
   defp schedule_run(delay_ms) do
     Process.send_after(self(), :run, delay_ms)

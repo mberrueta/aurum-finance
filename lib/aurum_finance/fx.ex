@@ -23,10 +23,6 @@ defmodule AurumFinance.Fx do
 
   @staleness_window_days 4
 
-  # ---------------------------------------------------------------------------
-  # FX Series CRUD
-  # ---------------------------------------------------------------------------
-
   @doc """
   Lists all FX series with aggregated `row_count` and `last_ingested_date`.
 
@@ -182,10 +178,6 @@ defmodule AurumFinance.Fx do
   def change_fx_series(%FxSeries{id: nil} = series, attrs), do: FxSeries.create_changeset(series, attrs)
   def change_fx_series(%FxSeries{} = series, attrs), do: FxSeries.update_changeset(series, attrs)
 
-  # ---------------------------------------------------------------------------
-  # Compatible series filtering
-  # ---------------------------------------------------------------------------
-
   @doc """
   Lists FX series compatible with converting from `account_currency_code` to
   `target_currency_code` as of `as_of_date`.
@@ -236,10 +228,6 @@ defmodule AurumFinance.Fx do
     (direct_results ++ inverted_results)
     |> Enum.sort_by(& &1.name)
   end
-
-  # ---------------------------------------------------------------------------
-  # FX rate lookup
-  # ---------------------------------------------------------------------------
 
   @doc """
   Looks up the most recent FX rate for a series on or before `as_of_date`,
@@ -304,10 +292,6 @@ defmodule AurumFinance.Fx do
      }}
   end
 
-  # ---------------------------------------------------------------------------
-  # Rate record upsert
-  # ---------------------------------------------------------------------------
-
   @doc """
   Bulk-upserts rate records for a given FX series.
 
@@ -353,10 +337,6 @@ defmodule AurumFinance.Fx do
     {:ok, count}
   end
 
-  # ---------------------------------------------------------------------------
-  # Sync entrypoints
-  # ---------------------------------------------------------------------------
-
   @doc """
   Enqueues an FX sync job for the given series, covering the range from the
   day after the most recent existing rate record (or `series.from_date` if no
@@ -390,10 +370,6 @@ defmodule AurumFinance.Fx do
   def enqueue_fx_sync(%FxSeries{source_kind: :csv_upload}) do
     {:error, :not_a_provider_series}
   end
-
-  # ---------------------------------------------------------------------------
-  # Private helpers for sync
-  # ---------------------------------------------------------------------------
 
   defp maybe_enqueue_backfill(%FxSeries{source_kind: :provider_module} = series) do
     to_date = series.to_date || Date.utc_today()
@@ -444,10 +420,6 @@ defmodule AurumFinance.Fx do
       _ -> next
     end
   end
-
-  # ---------------------------------------------------------------------------
-  # Private filter helpers
-  # ---------------------------------------------------------------------------
 
   defp filter_query(query, []), do: query
 
