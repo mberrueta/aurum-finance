@@ -329,7 +329,50 @@ erDiagram
     }
 ```
 
-## Implementation Notes
+## V1 Implementation Constraint
+
+This ADR describes the long-term target architecture for FX rate storage and
+lookup. The first shipped FX feature (`feat/23_fx_series_report_conversion`)
+implements a deliberately narrowed V1 that is compatible with this architecture
+but does not build all of it.
+
+**V1 ships:**
+
+- `AurumFinance.Fx.FxSeries` — identified by `(name, slug)`, not by the full
+  `(base, quote, rate_type, jurisdiction)` composite key. Fields: `name`,
+  `slug` (auto-generated, immutable), `description`, `base_currency_code`,
+  `quote_currency_code`, `from_date`, `to_date`, `source_kind`
+  (`csv_upload` | `provider_module`), `provider_module`.
+- `AurumFinance.Fx.FxRateRecord` — one row per day with `effective_date`
+  (`:date`, not a timestamp). Fields: `fx_series_id`, `effective_date`,
+  `rate_value`. Unique on `(fx_series_id, effective_date)`.
+- CSV upload and provider-module ingestion with simple upsert semantics.
+- Report-time FX conversion: `latest_on_or_before` with a 4-day staleness
+  window. Returns `{:ok, rate}` or `{:error, :rate_not_found}`.
+
+**Explicitly deferred from V1:**
+
+- `rate_type` and `jurisdiction_code` columns on series identity.
+- Intraday / `effective_at` timestamp granularity (`effective_date` is a
+  `:date` column for daily-only use in V1).
+- `TaxRateSnapshot` entity and tax-event workflow.
+- `FxIngestionBatch` tracking table.
+- `Currency` registry table.
+- `quality_flag`, `source_reference`, `fetched_at` metadata on rate records.
+- Jurisdiction resolution and fallback lookup semantics.
+- Multi-account or net-worth-level FX aggregation.
+
+**Migration path:**
+
+V1 schema columns are a strict subset of the full model. When future milestones
+add `rate_type`, `jurisdiction_code`, or `effective_at`, these will be additive
+migrations on the existing tables. No breaking renames are required.
+
+## Target-Model Implementation Notes
+
+These notes apply to the long-term target architecture described in this ADR.
+Where a note references a field or concept listed as deferred in the
+**V1 Implementation Constraint** section above, it does not apply to V1.
 
 - `rate_type` and `jurisdiction_code` are strings, not enums.
 - Prefer composite unique constraints on series identity and ingestion

@@ -22,7 +22,8 @@ config :aurum_finance, Oban,
   queues: [
     imports: 5,
     materializations: 5,
-    reporting: 5
+    reporting: 5,
+    fx: 3
   ]
 
 # Configure the endpoint
