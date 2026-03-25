@@ -29,6 +29,11 @@ defmodule AurumFinanceWeb.Layouts do
 
   attr :active_nav, :atom, default: nil, doc: "active nav item id, e.g. :dashboard"
   attr :page_title, :string, default: nil, doc: "current page title shown in the topbar"
+
+  attr :breadcrumbs, :list,
+    default: [],
+    doc: "optional breadcrumb items as %{label: ..., path: ...}"
+
   attr :inner_content, :any, default: nil
   slot :inner_block
 
@@ -80,10 +85,29 @@ defmodule AurumFinanceWeb.Layouts do
         <header class="au-topbar">
           <div class="flex items-center gap-2 min-w-0 text-[13px]">
             <span class="text-white/50 shrink-0">{dgettext("layout", "breadcrumb_app")}</span>
-            <span class="text-white/30 shrink-0">/</span>
-            <span class="text-white/88 truncate font-medium">
-              {@page_title || dgettext("layout", "nav_dashboard")}
-            </span>
+            <%= if @breadcrumbs == [] do %>
+              <span class="text-white/30 shrink-0">/</span>
+              <span class="text-white/88 truncate font-medium">
+                {@page_title || dgettext("layout", "nav_dashboard")}
+              </span>
+            <% else %>
+              <%= for {item, idx} <- Enum.with_index(@breadcrumbs) do %>
+                <span class="text-white/30 shrink-0">/</span>
+                <%= if item.path do %>
+                  <.link
+                    id={"app-breadcrumb-#{idx}"}
+                    navigate={item.path}
+                    class="text-white/72 hover:text-white transition truncate"
+                  >
+                    {item.label}
+                  </.link>
+                <% else %>
+                  <span id={"app-breadcrumb-#{idx}"} class="text-white/88 truncate font-medium">
+                    {item.label}
+                  </span>
+                <% end %>
+              <% end %>
+            <% end %>
           </div>
           <div class="flex items-center gap-[10px]">
             <.link

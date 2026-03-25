@@ -11,6 +11,7 @@ defmodule AurumFinanceWeb.UiComponents do
     - section_panel/1 — common titled section card with optional badge/actions
     - info_label/1    — field label with small info tooltip icon
     - info_callout/1  — informative callout with tone-based colors/icons
+    - pagination_controls/1 — reusable prev/next controls with page info badge
 
   Utility:
     - format_money/2  — formats a number as "sign + value + currency code"
@@ -285,6 +286,48 @@ defmodule AurumFinanceWeb.UiComponents do
   defp callout_icon(:warn), do: "!"
   defp callout_icon(:tip), do: "t"
   defp callout_icon(_), do: "i"
+
+  @doc """
+  Purpose: renders compact reusable pagination controls.
+
+  Use: pass the current page, total pages, and target event.
+  The controls are hidden when `total_pages <= 1`.
+  """
+  attr :id_prefix, :string, required: true
+  attr :page, :integer, required: true
+  attr :total_pages, :integer, required: true
+  attr :event, :string, required: true
+  attr :info_text, :string, required: true
+  attr :prev_label, :string, default: "Prev"
+  attr :next_label, :string, default: "Next"
+
+  def pagination_controls(assigns) do
+    ~H"""
+    <div :if={@total_pages > 1} class="flex items-center gap-2 text-xs text-white/54">
+      <span class="rounded-full border border-white/10 px-3 py-1">{@info_text}</span>
+      <button
+        id={"#{@id_prefix}-prev"}
+        type="button"
+        phx-click={@event}
+        phx-value-page={@page - 1}
+        disabled={@page <= 1}
+        class="au-btn px-3"
+      >
+        {@prev_label}
+      </button>
+      <button
+        id={"#{@id_prefix}-next"}
+        type="button"
+        phx-click={@event}
+        phx-value-page={@page + 1}
+        disabled={@page >= @total_pages}
+        class="au-btn au-btn-primary px-3"
+      >
+        {@next_label}
+      </button>
+    </div>
+    """
+  end
 
   @doc """
   Purpose: formats numeric amounts for consistent UI display.

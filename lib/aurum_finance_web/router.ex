@@ -50,6 +50,7 @@ defmodule AurumFinanceWeb.Router do
       live "/reconciliation", ReconciliationLive, :index
       live "/reconciliation/:session_id", ReconciliationLive, :show
       live "/fx", FxLive, :index
+      live "/fx/:slug", FxLive, :show
       live "/reports", ReportsLive, :index
       live "/reports/net-worth", NetWorthLive, :index
       live "/settings", SettingsLive, :index

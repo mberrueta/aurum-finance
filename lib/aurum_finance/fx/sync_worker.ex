@@ -48,6 +48,8 @@ defmodule AurumFinance.Fx.SyncWorker do
 
   @impl Oban.Worker
   def perform(%Oban.Job{
+        attempt: attempt,
+        max_attempts: max_attempts,
         args: %{
           "fx_series_id" => fx_series_id,
           "from_date" => from_date_str,
@@ -57,6 +59,7 @@ defmodule AurumFinance.Fx.SyncWorker do
     with {:ok, from_date} <- Date.from_iso8601(from_date_str),
          {:ok, to_date} <- Date.from_iso8601(to_date_str) do
       series = Fx.get_fx_series!(fx_series_id)
+      :ok = Fx.record_sync_tracking(series, :active, attempted_at: now())
 
       Logger.info("FX sync started",
         event: "fx.sync.start",
@@ -68,14 +71,20 @@ defmodule AurumFinance.Fx.SyncWorker do
 
       series.provider_module
       |> Provider.fetch_rates(series, from_date, to_date)
-      |> handle_fetch_result(series)
+      |> handle_fetch_result(series, attempt, max_attempts)
     end
   end
 
   def perform(%Oban.Job{}), do: {:discard, "invalid sync job args"}
 
-  defp handle_fetch_result({:ok, rows}, series) do
+  defp handle_fetch_result({:ok, rows}, series, _attempt, _max_attempts) do
     {:ok, count} = Fx.upsert_rate_records(series.id, rows)
+
+    :ok =
+      Fx.record_sync_tracking(series, completed_status(series),
+        sync_message: nil,
+        attempted_at: now()
+      )
 
     Logger.info("FX sync completed",
       event: "fx.sync.complete",
@@ -87,7 +96,9 @@ defmodule AurumFinance.Fx.SyncWorker do
     :ok
   end
 
-  defp handle_fetch_result({:error, reason}, series) do
+  defp handle_fetch_result({:error, reason}, series, attempt, max_attempts) do
+    maybe_record_terminal_failure(series, reason, attempt, max_attempts)
+
     Logger.warning("FX sync failed",
       event: "fx.sync.error",
       fx_series_id: series.id,
@@ -97,4 +108,25 @@ defmodule AurumFinance.Fx.SyncWorker do
 
     {:error, reason}
   end
+
+  defp maybe_record_terminal_failure(series, reason, attempt, max_attempts)
+       when attempt >= max_attempts do
+    Fx.record_sync_tracking(series, :error,
+      sync_message: inspect(reason),
+      attempted_at: now()
+    )
+  end
+
+  defp maybe_record_terminal_failure(_series, _reason, _attempt, _max_attempts), do: :ok
+
+  defp completed_status(%{to_date: %Date{} = to_date}) do
+    case Date.compare(to_date, Date.utc_today()) do
+      :lt -> :stopped
+      _ -> :active
+    end
+  end
+
+  defp completed_status(_series), do: :active
+
+  defp now, do: DateTime.utc_now() |> DateTime.truncate(:microsecond)
 end

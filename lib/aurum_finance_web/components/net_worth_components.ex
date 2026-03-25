@@ -31,42 +31,20 @@ defmodule AurumFinanceWeb.NetWorthComponents do
           </p>
         </div>
 
-        <div
-          :if={@drilldown_data.total_pages > 1}
-          class="flex items-center gap-2 text-xs text-white/54"
-        >
-          <span class="rounded-full border border-white/10 px-3 py-1">
-            {dgettext("reports", "drilldown_page_info",
+        <.pagination_controls
+          id_prefix={"net-worth-drilldown-#{@account_id}"}
+          page={@drilldown_page}
+          total_pages={@drilldown_data.total_pages}
+          event="change_drilldown_page"
+          info_text={
+            dgettext("reports", "drilldown_page_info",
               page: @drilldown_page,
               total_pages: @drilldown_data.total_pages
-            )}
-          </span>
-          <.button
-            id={"net-worth-drilldown-prev-#{@account_id}"}
-            type="button"
-            phx-click="change_drilldown_page"
-            phx-value-page={@drilldown_page - 1}
-            disabled={@drilldown_page <= 1}
-            title={dgettext("reports", "drilldown_prev")}
-            aria-label={dgettext("reports", "drilldown_prev")}
-            class="au-btn px-3"
-          >
-            <.icon name="hero-chevron-left" class="size-4" />
-          </.button>
-          <.button
-            id={"net-worth-drilldown-next-#{@account_id}"}
-            type="button"
-            phx-click="change_drilldown_page"
-            phx-value-page={@drilldown_page + 1}
-            disabled={@drilldown_page >= @drilldown_data.total_pages}
-            variant="primary"
-            title={dgettext("reports", "drilldown_next")}
-            aria-label={dgettext("reports", "drilldown_next")}
-            class="px-3"
-          >
-            <.icon name="hero-chevron-right" class="size-4" />
-          </.button>
-        </div>
+            )
+          }
+          prev_label={dgettext("reports", "drilldown_prev")}
+          next_label={dgettext("reports", "drilldown_next")}
+        />
       </div>
 
       <div class="mt-4 overflow-x-auto">

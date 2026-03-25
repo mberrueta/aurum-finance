@@ -70,7 +70,7 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
         SyncWorker.new_job(series.id, from_date, to_date)
       end)
 
-    {:ok, inserted} = Oban.insert_all(jobs)
+    inserted = Oban.insert_all(jobs)
 
     Logger.info("FX global sync: enqueued stale series",
       event: "fx.scheduler.enqueued",
@@ -84,7 +84,7 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
     max_dates =
       from(r in FxRateRecord,
         group_by: r.fx_series_id,
-        select: {r.fx_series_id, max(r.effective_date)}
+        select: %{fx_series_id: r.fx_series_id, effective_date: max(r.effective_date)}
       )
 
     series_with_max =

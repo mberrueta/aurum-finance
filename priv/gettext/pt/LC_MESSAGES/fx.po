@@ -1,262 +1,265 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
 msgid ""
 msgstr ""
-"Language: en\n"
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
-## Page
 #: lib/aurum_finance_web/live/fx_live.ex:43
 #: lib/aurum_finance_web/live/fx_live.html.heex:3
 #, elixir-autogen, elixir-format
 msgid "page_title"
-msgstr "FX Rates"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:138
 #, elixir-autogen, elixir-format
 msgid "btn_back_to_list"
-msgstr "Back to list"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:398
 #: lib/aurum_finance_web/live/fx_live.html.heex:542
 #, elixir-autogen, elixir-format
 msgid "btn_cancel"
-msgstr "Cancel"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:406
 #, elixir-autogen, elixir-format
 msgid "btn_confirm_delete"
-msgstr "Delete"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:551
 #, elixir-autogen, elixir-format
 msgid "btn_create_series"
-msgstr "Create Series"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:118
 #, elixir-autogen, elixir-format
 msgid "btn_delete"
-msgstr "Delete"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:108
 #: lib/aurum_finance_web/live/fx_live.html.heex:146
 #, elixir-autogen, elixir-format
 msgid "btn_edit"
-msgstr "Edit"
+msgstr ""
 
-## Buttons
 #: lib/aurum_finance_web/live/fx_live.html.heex:14
 #: lib/aurum_finance_web/live/fx_live.html.heex:27
 #, elixir-autogen, elixir-format
 msgid "btn_new_series"
-msgstr "New FX Series"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:250
 #, elixir-autogen, elixir-format
 msgid "btn_refresh_sync_status"
-msgstr "Refresh Status"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:552
 #, elixir-autogen, elixir-format
 msgid "btn_save_changes"
-msgstr "Save Changes"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:241
 #, elixir-autogen, elixir-format
 msgid "btn_sync_now"
-msgstr "Sync Now"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:286
 #: lib/aurum_finance_web/live/fx_live.html.heex:294
 #, elixir-autogen, elixir-format
 msgid "btn_upload_csv"
-msgstr "Upload CSV"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:99
 #, elixir-autogen, elixir-format
 msgid "btn_view"
-msgstr "View"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:45
 #, elixir-autogen, elixir-format
 msgid "col_actions"
-msgstr "Actions"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:319
 #, elixir-autogen, elixir-format
 msgid "col_effective_date"
-msgstr "Effective Date"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:40
 #, elixir-autogen, elixir-format
 msgid "col_from"
-msgstr "From"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:42
 #, elixir-autogen, elixir-format
 msgid "col_last_ingested"
-msgstr "Last Ingested"
+msgstr ""
 
-## Table columns
 #: lib/aurum_finance_web/live/fx_live.html.heex:35
 #, elixir-autogen, elixir-format
 msgid "col_name"
-msgstr "Name"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:36
 #, elixir-autogen, elixir-format
 msgid "col_pair"
-msgstr "Pair"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "col_provider"
-msgstr "Provider"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:320
 #, elixir-autogen, elixir-format
 msgid "col_rate_value"
-msgstr "Rate"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:43
 #, elixir-autogen, elixir-format
 msgid "col_rows"
-msgstr "Rows"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:37
 #, elixir-autogen, elixir-format
 msgid "col_source"
-msgstr "Source"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:39
 #, elixir-autogen, elixir-format
 msgid "col_status"
-msgstr "Status"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "col_to"
-msgstr "To"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:389
 #, elixir-autogen, elixir-format
 msgid "delete_confirm_body"
-msgstr "Are you sure you want to delete \"%{name}\"? This action cannot be undone."
+msgstr ""
 
-## Delete confirmation
 #: lib/aurum_finance_web/live/fx_live.html.heex:386
 #, elixir-autogen, elixir-format
 msgid "delete_confirm_title"
-msgstr "Delete FX Series?"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:155
 #, elixir-autogen, elixir-format
 msgid "detail_section_metadata"
-msgstr "Series Metadata"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:259
 #, elixir-autogen, elixir-format
 msgid "detail_section_rate_records"
-msgstr "Rate Records"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:208
 #, elixir-autogen, elixir-format
 msgid "detail_section_sync_status"
-msgstr "Sync Status"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:306
 #, elixir-autogen, elixir-format
 msgid "empty_rate_records"
-msgstr "No rate records yet for this series."
+msgstr ""
 
-## Empty states
 #: lib/aurum_finance_web/live/fx_live.html.heex:25
 #, elixir-autogen, elixir-format
 msgid "empty_state_no_series"
-msgstr "No FX series yet."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:452
 #: lib/aurum_finance_web/live/fx_live.html.heex:469
 #, elixir-autogen, elixir-format
 msgid "field_base_currency"
-msgstr "Base Currency"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:168
 #: lib/aurum_finance_web/live/fx_live.html.heex:445
 #, elixir-autogen, elixir-format
 msgid "field_description"
-msgstr "Description"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:190
 #: lib/aurum_finance_web/live/fx_live.html.heex:525
 #, elixir-autogen, elixir-format
 msgid "field_from_date"
-msgstr "From Date"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:225
 #, elixir-autogen, elixir-format
 msgid "field_last_attempt"
-msgstr "Last Attempt"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:198
 #, elixir-autogen, elixir-format
 msgid "field_last_ingested"
-msgstr "Last Ingested"
+msgstr ""
 
-## Form fields
 #: lib/aurum_finance_web/live/fx_live.html.heex:160
 #: lib/aurum_finance_web/live/fx_live.html.heex:438
 #, elixir-autogen, elixir-format
 msgid "field_name"
-msgstr "Name"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:172
 #, elixir-autogen, elixir-format
 msgid "field_pair"
-msgstr "Currency Pair"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:184
 #: lib/aurum_finance_web/live/fx_live.html.heex:504
 #: lib/aurum_finance_web/live/fx_live.html.heex:515
 #, elixir-autogen, elixir-format
 msgid "field_provider"
-msgstr "Provider"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:460
 #: lib/aurum_finance_web/live/fx_live.html.heex:475
 #, elixir-autogen, elixir-format
 msgid "field_quote_currency"
-msgstr "Quote Currency"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:164
 #, elixir-autogen, elixir-format
 msgid "field_slug"
-msgstr "Slug"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:178
 #: lib/aurum_finance_web/live/fx_live.html.heex:486
 #: lib/aurum_finance_web/live/fx_live.html.heex:494
 #, elixir-autogen, elixir-format
 msgid "field_source_kind"
-msgstr "Source Kind"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:219
 #, elixir-autogen, elixir-format
 msgid "field_sync_range"
-msgstr "Requested Range"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:194
 #: lib/aurum_finance_web/live/fx_live.html.heex:531
 #, elixir-autogen, elixir-format
 msgid "field_to_date"
-msgstr "To Date (optional)"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:240
 #, elixir-autogen, elixir-format
 msgid "flash_delete_blocked_has_records"
-msgstr "Cannot delete: this series has rate records. Remove all records first."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:246
 #, elixir-autogen, elixir-format
 msgid "flash_delete_failed"
-msgstr "Delete failed. Please try again."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:313
 #: lib/aurum_finance_web/live/fx_live.ex:333
@@ -264,277 +267,272 @@ msgstr "Delete failed. Please try again."
 #: lib/aurum_finance_web/live/fx_live.ex:633
 #, elixir-autogen, elixir-format
 msgid "flash_save_failed"
-msgstr "Save failed. Please try again."
+msgstr ""
 
-## Flash messages
 #: lib/aurum_finance_web/live/fx_live.ex:295
 #, elixir-autogen, elixir-format
 msgid "flash_series_created"
-msgstr "FX series created."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:233
 #, elixir-autogen, elixir-format
 msgid "flash_series_deleted"
-msgstr "FX series deleted."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:296
 #, elixir-autogen, elixir-format
 msgid "flash_series_updated"
-msgstr "FX series updated."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:141
 #, elixir-autogen, elixir-format
 msgid "flash_sync_already_up_to_date"
-msgstr "This series is already up to date."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:150
 #, elixir-autogen, elixir-format
 msgid "flash_sync_enqueue_failed"
-msgstr "Could not enqueue the FX sync. Please try again."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:135
 #, elixir-autogen, elixir-format
 msgid "flash_sync_enqueued"
-msgstr "FX sync enqueued."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:121
 #: lib/aurum_finance_web/live/fx_live.ex:146
 #, elixir-autogen, elixir-format
 msgid "flash_sync_not_supported"
-msgstr "Only provider-backed series can be synced."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:422
 #, elixir-autogen, elixir-format
 msgid "form_subtitle_edit"
-msgstr "Currency pair, source kind, and provider are locked after creation."
+msgstr ""
 
-## Form subtitles
 #: lib/aurum_finance_web/live/fx_live.html.heex:417
 #, elixir-autogen, elixir-format
 msgid "form_title_create"
-msgstr "New FX Series"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:418
 #, elixir-autogen, elixir-format
 msgid "form_title_edit"
-msgstr "Edit FX Series"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:310
 #, elixir-autogen, elixir-format
 msgid "hint_sync_provider"
-msgstr "Trigger a provider sync to fetch rate records for this series."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:309
 #, elixir-autogen, elixir-format
 msgid "hint_upload_csv"
-msgstr "Upload a CSV file to add rate records to this series."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:5
 #, elixir-autogen, elixir-format
 msgid "page_subtitle"
-msgstr "Named FX rate series for reporting, tax snapshots, and multi-currency conversion."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:454
 #, elixir-autogen, elixir-format
 msgid "prompt_select_base_currency"
-msgstr "Select a base currency"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:506
 #, elixir-autogen, elixir-format
 msgid "prompt_select_provider"
-msgstr "Select provider…"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:462
 #, elixir-autogen, elixir-format
 msgid "prompt_select_quote_currency"
-msgstr "Select a quote currency"
+msgstr ""
 
-## Form prompts
 #: lib/aurum_finance_web/live/fx_live.html.heex:488
 #, elixir-autogen, elixir-format
 msgid "prompt_select_source_kind"
-msgstr "Select source…"
+msgstr ""
 
-## Section headers
 #: lib/aurum_finance_web/live/fx_live.html.heex:20
 #, elixir-autogen, elixir-format
 msgid "section_series"
-msgstr "Rate Series"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:344
 #, elixir-autogen, elixir-format
 msgid "series_status_active"
-msgstr "Active"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:347
 #, elixir-autogen, elixir-format
 msgid "series_status_error"
-msgstr "Error"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:350
 #, elixir-autogen, elixir-format
 msgid "series_status_stopped"
-msgstr "Stopped"
+msgstr ""
 
-## Source kind labels
 #: lib/aurum_finance_web/live/fx_live.ex:337
 #, elixir-autogen, elixir-format
 msgid "source_kind_csv_upload"
-msgstr "CSV Upload"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:338
 #, elixir-autogen, elixir-format
 msgid "source_kind_provider_module"
-msgstr "Provider"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:389
 #, elixir-autogen, elixir-format
 msgid "sync_comment_active"
-msgstr "This provider-backed series is active and ready to sync."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:431
 #, elixir-autogen, elixir-format
 msgid "sync_comment_cancelled"
-msgstr "The latest sync job was cancelled."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:394
 #: lib/aurum_finance_web/live/fx_live.ex:423
 #, elixir-autogen, elixir-format
 msgid "sync_comment_failed"
-msgstr "The latest sync failed. Error: %{error}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:427
 #, elixir-autogen, elixir-format
 msgid "sync_comment_failed_generic"
-msgstr "The latest sync failed."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:386
 #, elixir-autogen, elixir-format
 msgid "sync_comment_never_run"
-msgstr "No provider sync has run yet for this series."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:435
 #, elixir-autogen, elixir-format
 msgid "sync_comment_not_applicable"
-msgstr "This series does not use a provider-backed sync workflow."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:411
 #, elixir-autogen, elixir-format
 msgid "sync_comment_ok"
-msgstr "The latest sync completed successfully at %{timestamp}."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:397
 #, elixir-autogen, elixir-format
 msgid "sync_comment_queued"
-msgstr "A sync job is queued for %{from_date} to %{to_date}."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:415
 #, elixir-autogen, elixir-format
 msgid "sync_comment_retrying"
-msgstr "The latest attempt failed and Oban will retry. Error: %{error}"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:419
 #, elixir-autogen, elixir-format
 msgid "sync_comment_retrying_generic"
-msgstr "The latest attempt failed and Oban will retry."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:404
 #, elixir-autogen, elixir-format
 msgid "sync_comment_running"
-msgstr "A sync job is currently running for %{from_date} to %{to_date}."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:391
 #, elixir-autogen, elixir-format
 msgid "sync_comment_stopped"
-msgstr "This provider-backed series reached its configured end date and is stopped."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:439
 #, elixir-autogen, elixir-format
 msgid "sync_comment_unknown"
-msgstr "The latest sync job is in an unknown state."
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:364
 #, elixir-autogen, elixir-format
 msgid "sync_status_active"
-msgstr "Active"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:372
 #, elixir-autogen, elixir-format
 msgid "sync_status_cancelled"
-msgstr "Cancelled"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:365
 #: lib/aurum_finance_web/live/fx_live.ex:371
 #, elixir-autogen, elixir-format
 msgid "sync_status_failed"
-msgstr "Sync Failed"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:363
 #, elixir-autogen, elixir-format
 msgid "sync_status_never_run"
-msgstr "Never Run"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:361
 #, elixir-autogen, elixir-format
 msgid "sync_status_not_applicable"
-msgstr "Not applicable"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:369
 #, elixir-autogen, elixir-format
 msgid "sync_status_ok"
-msgstr "Completed"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:367
 #, elixir-autogen, elixir-format
 msgid "sync_status_queued"
-msgstr "Queued"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:370
 #, elixir-autogen, elixir-format
 msgid "sync_status_retrying"
-msgstr "Retrying"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:368
 #, elixir-autogen, elixir-format
 msgid "sync_status_running"
-msgstr "Running"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:366
 #, elixir-autogen, elixir-format
 msgid "sync_status_stopped"
-msgstr "Stopped"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:373
 #, elixir-autogen, elixir-format
 msgid "sync_status_unknown"
-msgstr "Unknown"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:364
 #, elixir-autogen, elixir-format
 msgid "btn_next_page"
-msgstr "Next"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:363
 #, elixir-autogen, elixir-format
 msgid "btn_prev_page"
-msgstr "Prev"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:322
 #, elixir-autogen, elixir-format
 msgid "col_inverse_rate"
-msgstr "Inverse"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:321
 #, elixir-autogen, elixir-format
 msgid "col_rate_variation"
-msgstr "Variation"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:272
 #, elixir-autogen, elixir-format
 msgid "field_filter_date"
-msgstr "Date (±2 days)"
+msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.html.heex:358
 #, elixir-autogen, elixir-format
 msgid "rate_page_indicator"
-msgstr "Page %{current_page} / %{total_pages}"
+msgstr ""

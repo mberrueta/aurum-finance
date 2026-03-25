@@ -1,0 +1,640 @@
+<div id="fx-page" class="space-y-5">
+  <div :if={@view == :list}>
+    <.page_header title={dgettext("fx", "page_title")}>
+      <:subtitle>
+        {dgettext("fx", "page_subtitle")}
+      </:subtitle>
+      <:actions>
+        <button
+          id="fx-new-series-btn"
+          type="button"
+          class="au-btn au-btn-primary"
+          phx-click="new_series"
+        >
+          {dgettext("fx", "btn_new_series")}
+        </button>
+      </:actions>
+    </.page_header>
+
+    <div id="fx-what-is">
+      <.info_callout title="What Are FX Series?" tone={:info}>
+        <p>
+          FX series define one currency pair and store daily rates used by reports and conversions.
+        </p>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>Use one series per pair and source.</li>
+          <li>`csv_upload` is for manual control of historical rates.</li>
+          <li>`provider_module` is for automated provider sync.</li>
+        </ul>
+      </.info_callout>
+    </div>
+
+    <.section_panel
+      title={dgettext("fx", "section_series")}
+      badge={Integer.to_string(length(@series))}
+      badge_variant={:purple}
+    >
+      <div :if={@series == []} id="fx-series-empty-state" class="au-empty">
+        <p>{dgettext("fx", "empty_state_no_series")}</p>
+        <button type="button" class="au-btn au-btn-primary mt-3" phx-click="new_series">
+          {dgettext("fx", "btn_new_series")}
+        </button>
+      </div>
+
+      <div :if={@series != []} id="fx-series-list" class="overflow-x-auto">
+        <table class="au-table">
+          <thead>
+            <tr>
+              <th>{dgettext("fx", "col_name")}</th>
+              <th>{dgettext("fx", "col_pair")}</th>
+              <th>{dgettext("fx", "col_source")}</th>
+              <th>{dgettext("fx", "col_provider")}</th>
+              <th>{dgettext("fx", "col_status")}</th>
+              <th>{dgettext("fx", "col_from")}</th>
+              <th>{dgettext("fx", "col_to")}</th>
+              <th>{dgettext("fx", "col_last_ingested")}</th>
+              <th class="text-right">{dgettext("fx", "col_rows")}</th>
+              <th>
+                <span class="sr-only">{dgettext("fx", "col_actions")}</span>
+              </th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr
+              :for={series <- @series}
+              id={"fx-series-row-#{series.id}"}
+              class="transition hover:bg-white/5"
+            >
+              <td class="font-medium text-white/90">
+                <.link
+                  class="text-left hover:text-white transition"
+                  patch={~p"/fx/#{series.slug}"}
+                >
+                  {series.name}
+                </.link>
+              </td>
+              <td class="au-mono text-white/70">
+                {series.base_currency_code}/{series.quote_currency_code}
+              </td>
+              <td>
+                <.badge>{source_kind_label(series.source_kind)}</.badge>
+              </td>
+              <td class="text-white/60 text-xs">
+                {series.provider_module || "-"}
+              </td>
+              <td>
+                <div class="flex flex-col gap-1">
+                  <.badge variant={series_status_variant(series)}>
+                    {series_status_label(series)}
+                  </.badge>
+                  <p
+                    :if={series.sync_message}
+                    class="max-w-xs text-xs leading-4 text-rose-200/80"
+                    title={series.sync_message}
+                  >
+                    {series.sync_message}
+                  </p>
+                </div>
+              </td>
+              <td class="au-mono text-white/60 text-xs">{format_date(series.from_date)}</td>
+              <td class="au-mono text-white/60 text-xs">{format_date(series.to_date)}</td>
+              <td class="au-mono text-white/60 text-xs">
+                {format_date(series.last_ingested_date)}
+              </td>
+              <td class="au-mono text-right text-white/70">{series.row_count}</td>
+              <td>
+                <div class="flex items-center gap-2">
+                  <.link
+                    id={"fx-view-btn-#{series.id}"}
+                    class="au-btn"
+                    patch={~p"/fx/#{series.slug}"}
+                  >
+                    {dgettext("fx", "btn_view")}
+                  </.link>
+                  <button
+                    id={"fx-edit-btn-#{series.id}"}
+                    type="button"
+                    class="au-btn"
+                    phx-click="edit_series"
+                    phx-value-id={series.id}
+                  >
+                    {dgettext("fx", "btn_edit")}
+                  </button>
+                  <button
+                    :if={series.row_count == 0}
+                    id={"fx-delete-btn-#{series.id}"}
+                    type="button"
+                    class="au-btn"
+                    phx-click="confirm_delete"
+                    phx-value-id={series.id}
+                  >
+                    {dgettext("fx", "btn_delete")}
+                  </button>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </.section_panel>
+
+    <div id="fx-list-guidance">
+      <.au_card>
+        <:header>
+          <span>FX Guidance</span>
+        </:header>
+
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <.info_callout title="How To Use" tone={:info}>
+            <ul class="list-disc space-y-1 pl-5">
+              <li>Choose provider series for ongoing market updates.</li>
+              <li>Use manual series for custom or backfilled historical datasets.</li>
+              <li>Open detail pages to inspect rates and sync/import actions.</li>
+            </ul>
+          </.info_callout>
+
+          <div class="space-y-3">
+            <.info_callout title="Warnings" tone={:warn}>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>Changing identities (pair/source/provider) requires a new series.</li>
+                <li>Series with existing records cannot be deleted.</li>
+              </ul>
+            </.info_callout>
+
+            <.info_callout title="Tips" tone={:tip}>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>Keep names explicit, for example `USD/BRL BCB PTAX`.</li>
+                <li>Set an early `from_date` when importing long history.</li>
+              </ul>
+            </.info_callout>
+          </div>
+        </div>
+      </.au_card>
+    </div>
+  </div>
+
+  <div :if={@view == :detail && @selected_series} id="fx-series-detail">
+    <.page_header title={@selected_series.name}>
+      <:subtitle>
+        {@selected_series.base_currency_code}/{@selected_series.quote_currency_code} &nbsp;•&nbsp;{source_kind_label(
+          @selected_series.source_kind
+        )}
+      </:subtitle>
+      <:actions>
+        <.link class="au-btn" patch={~p"/fx"}>
+          {dgettext("fx", "btn_back_to_list")}
+        </.link>
+        <button
+          type="button"
+          class="au-btn"
+          phx-click="edit_series"
+          phx-value-id={@selected_series.id}
+        >
+          {dgettext("fx", "btn_edit")}
+        </button>
+      </:actions>
+    </.page_header>
+
+    <div id="fx-detail-guidance">
+      <.au_card>
+        <:header>
+          <span>Series Guidance</span>
+        </:header>
+
+        <div class="grid grid-cols-1 gap-3 lg:grid-cols-2">
+          <.info_callout title="Current Mode" tone={:info}>
+            <p>
+              {if @selected_series.source_kind == :csv_upload,
+                do:
+                  "This is a manual CSV series. Upload files here to create or update stored rates.",
+                else:
+                  "This is a provider-backed series. Use Sync Now to enqueue fetch jobs from the configured provider."}
+            </p>
+          </.info_callout>
+
+          <div class="space-y-3">
+            <.info_callout title="Warnings" tone={:warn}>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>Rates are date-based and should be imported as daily close values.</li>
+                <li>Provider sync confirms enqueue first; completion may happen later.</li>
+              </ul>
+            </.info_callout>
+
+            <.info_callout title="Tips" tone={:tip}>
+              <ul class="list-disc space-y-1 pl-5">
+                <li>Use the date filter to inspect local windows around a target day.</li>
+                <li>Variation and inverse columns are calculated on the fly for quick checks.</li>
+              </ul>
+            </.info_callout>
+          </div>
+        </div>
+      </.au_card>
+    </div>
+
+    <div class="grid grid-cols-1 gap-4 lg:grid-cols-2">
+      <div class="space-y-4">
+        <.au_card>
+          <:header>
+            <span>{dgettext("fx", "detail_section_metadata")}</span>
+          </:header>
+
+          <dl class="space-y-2 text-sm">
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_name")}</dt>
+              <dd class="text-white/90 font-medium">{@selected_series.name}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_slug")}</dt>
+              <dd class="au-mono text-white/70">{@selected_series.slug}</dd>
+            </div>
+            <div :if={@selected_series.description} class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_description")}</dt>
+              <dd class="text-white/70 text-right max-w-xs">{@selected_series.description}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_pair")}</dt>
+              <dd class="au-mono text-white/90">
+                {@selected_series.base_currency_code}/{@selected_series.quote_currency_code}
+              </dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_source_kind")}</dt>
+              <dd>
+                <.badge>{source_kind_label(@selected_series.source_kind)}</.badge>
+              </dd>
+            </div>
+            <div :if={@selected_series.provider_module} class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_provider")}</dt>
+              <dd class="au-mono text-white/70 text-right text-xs">
+                {@selected_series.provider_module}
+              </dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_from_date")}</dt>
+              <dd class="au-mono text-white/70">{format_date(@selected_series.from_date)}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_to_date")}</dt>
+              <dd class="au-mono text-white/70">{format_date(@selected_series.to_date)}</dd>
+            </div>
+            <div class="flex justify-between">
+              <dt class="text-white/50">{dgettext("fx", "field_last_ingested")}</dt>
+              <dd class="au-mono text-white/70 text-xs">
+                {format_date(@selected_series.last_ingested_date)}
+              </dd>
+            </div>
+          </dl>
+        </.au_card>
+
+        <.au_card :if={@selected_series.source_kind == :provider_module}>
+          <:header>
+            <span>{dgettext("fx", "detail_section_sync_status")}</span>
+            <.badge variant={sync_status_variant(@sync_status)}>
+              {sync_status_label(@sync_status)}
+            </.badge>
+          </:header>
+
+          <div id="fx-sync-status" class="space-y-3">
+            <div class="rounded-2xl border border-white/10 bg-white/5 px-4 py-3">
+              <p class="text-sm text-white/82">{sync_status_comment(@sync_status)}</p>
+              <dl class="mt-3 grid grid-cols-1 gap-2 text-xs text-white/55 sm:grid-cols-2">
+                <div>
+                  <dt>{dgettext("fx", "field_sync_range")}</dt>
+                  <dd class="au-mono mt-1 text-white/72">
+                    {format_date(@sync_status.from_date)} -> {format_date(@sync_status.to_date)}
+                  </dd>
+                </div>
+                <div>
+                  <dt>{dgettext("fx", "field_last_attempt")}</dt>
+                  <dd class="au-mono mt-1 text-white/72">
+                    {format_datetime(@sync_status.last_attempt_at)}
+                  </dd>
+                </div>
+              </dl>
+            </div>
+
+            <div class="flex flex-wrap gap-2">
+              <button
+                id="fx-sync-now-btn"
+                type="button"
+                class="au-btn au-btn-primary"
+                phx-click="sync_now"
+                phx-value-id={@selected_series.id}
+              >
+                {dgettext("fx", "btn_sync_now")}
+              </button>
+              <button
+                id="fx-refresh-sync-status-btn"
+                type="button"
+                class="au-btn"
+                phx-click="refresh_sync_status"
+                phx-value-id={@selected_series.id}
+              >
+                {dgettext("fx", "btn_refresh_sync_status")}
+              </button>
+            </div>
+          </div>
+        </.au_card>
+      </div>
+
+      <.au_card>
+        <:header>
+          <span>{dgettext("fx", "detail_section_rate_records")}</span>
+          <.badge variant={:purple}>{@rate_total_count}</.badge>
+        </:header>
+
+        <.form
+          id="fx-rate-filter-form"
+          for={@rate_filter_form}
+          phx-change="filter_rate_records"
+          class="mb-3"
+        >
+          <.input
+            field={@rate_filter_form[:date]}
+            type="date"
+            label={dgettext("fx", "field_filter_date")}
+          />
+        </.form>
+
+        <.form
+          :if={@selected_series.source_kind == :csv_upload}
+          id="fx-csv-upload-form"
+          for={%{}}
+          phx-change="validate_csv_upload"
+          phx-submit="import_csv"
+          class="mb-4 flex flex-wrap items-end gap-2"
+        >
+          <div class="flex-1 min-w-56">
+            <label for={@uploads.csv.ref} class="label mb-1">
+              {dgettext("fx", "btn_upload_csv")}
+            </label>
+            <.live_file_input
+              upload={@uploads.csv}
+              class="block w-full rounded-xl border border-white/15 bg-white/5 px-3 py-2 text-sm text-white/80 file:mr-3 file:rounded-lg file:border-0 file:bg-white/10 file:px-3 file:py-1.5 file:text-sm file:text-white hover:file:bg-white/15"
+            />
+          </div>
+          <button type="submit" class="au-btn au-btn-primary">
+            {dgettext("fx", "btn_upload_csv")}
+          </button>
+        </.form>
+        <p
+          :if={csv_upload_error(@uploads.csv)}
+          id="fx-csv-upload-error"
+          class="mb-4 text-sm text-rose-300"
+        >
+          {csv_upload_error(@uploads.csv)}
+        </p>
+
+        <div :if={@rate_records == []} id="fx-rate-records-empty-state" class="au-empty h-96">
+          <p>{dgettext("fx", "empty_rate_records")}</p>
+          <p class="mt-2 text-xs text-white/50">
+            {if @selected_series.source_kind == :csv_upload,
+              do: dgettext("fx", "hint_upload_csv"),
+              else: dgettext("fx", "hint_sync_provider")}
+          </p>
+        </div>
+
+        <div :if={@rate_records != []} id="fx-rate-records-table-wrapper" class="h-96">
+          <div class="h-full overflow-y-auto overflow-x-auto">
+            <table class="au-table">
+              <thead>
+                <tr>
+                  <th>{dgettext("fx", "col_effective_date")}</th>
+                  <th class="text-right">{dgettext("fx", "col_rate_value")}</th>
+                  <th class="text-right">{dgettext("fx", "col_rate_variation")}</th>
+                  <th class="text-right">{dgettext("fx", "col_inverse_rate")}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  :for={{record, idx} <- Enum.with_index(@rate_records)}
+                  class="transition-colors hover:bg-white/10"
+                >
+                  <td class="au-mono text-white/70 text-sm">
+                    {format_day_date(record.effective_date)}
+                  </td>
+                  <td class="au-mono text-right text-white/90">
+                    {format_rate(record.rate_value)}
+                  </td>
+                  <td class="au-mono text-right text-white/80">
+                    {format_rate_variation(
+                      record.rate_value,
+                      previous_rate_value(@rate_records, idx)
+                    )}
+                  </td>
+                  <td class="au-mono text-right text-white/80">
+                    {format_inverse_rate(record.rate_value)}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <div class="mt-3 flex items-center justify-end">
+          <.pagination_controls
+            id_prefix="fx-rate-page"
+            page={@rate_page}
+            total_pages={@rate_total_pages}
+            event="change_rate_page"
+            info_text={
+              dgettext("fx", "rate_page_indicator",
+                current_page: @rate_page,
+                total_pages: @rate_total_pages
+              )
+            }
+            prev_label={dgettext("fx", "btn_prev_page")}
+            next_label={dgettext("fx", "btn_next_page")}
+          />
+        </div>
+      </.au_card>
+    </div>
+  </div>
+
+  <div
+    :if={@pending_delete}
+    id="fx-delete-confirm"
+    class="relative z-50"
+    role="dialog"
+    aria-modal="true"
+    aria-labelledby="fx-delete-confirm-title"
+  >
+    <div class="fixed inset-0 bg-slate-950/70 backdrop-blur-sm" />
+    <div class="fixed inset-0 z-10 flex items-center justify-center p-4">
+      <div class="w-full max-w-sm rounded-2xl border border-white/12 bg-slate-900 p-6 shadow-2xl">
+        <h3
+          id="fx-delete-confirm-title"
+          class="text-base font-semibold text-white/92"
+        >
+          {dgettext("fx", "delete_confirm_title")}
+        </h3>
+        <p class="mt-2 text-sm text-white/60">
+          {dgettext("fx", "delete_confirm_body", name: @pending_delete.name)}
+        </p>
+        <div class="mt-5 flex justify-end gap-3">
+          <button
+            id="fx-delete-cancel-btn"
+            type="button"
+            class="au-btn"
+            phx-click="cancel_delete"
+          >
+            {dgettext("fx", "btn_cancel")}
+          </button>
+          <button
+            id="fx-delete-confirm-btn"
+            type="button"
+            class="au-btn"
+            phx-click="do_delete"
+          >
+            {dgettext("fx", "btn_confirm_delete")}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <.right_sidebar_panel
+    open={@form_mode != :none}
+    title={
+      if @form_mode == :create,
+        do: dgettext("fx", "form_title_create"),
+        else: dgettext("fx", "form_title_edit")
+    }
+    subtitle={
+      if @form_mode == :edit,
+        do: dgettext("fx", "form_subtitle_edit"),
+        else: nil
+    }
+    close_event="close_form"
+    panel_id="fx-series-form"
+  >
+    <.form
+      id="fx-series-form-inner"
+      for={@form}
+      phx-change="validate"
+      phx-submit="save"
+      class="space-y-2"
+    >
+      <.input
+        field={@form[:name]}
+        type="text"
+        label={dgettext("fx", "field_name")}
+        required
+      />
+
+      <.input
+        field={@form[:description]}
+        type="textarea"
+        label={dgettext("fx", "field_description")}
+      />
+
+      <div :if={@form_mode == :create} class="grid grid-cols-2 gap-2">
+        <.input
+          field={@form[:base_currency_code]}
+          type="select"
+          label={dgettext("fx", "field_base_currency")}
+          options={currency_options(@form, :base)}
+          prompt={dgettext("fx", "prompt_select_base_currency")}
+          required
+        />
+        <.input
+          field={@form[:quote_currency_code]}
+          type="select"
+          label={dgettext("fx", "field_quote_currency")}
+          options={currency_options(@form, :quote)}
+          prompt={dgettext("fx", "prompt_select_quote_currency")}
+          required
+        />
+      </div>
+
+      <div :if={@form_mode == :edit} class="grid grid-cols-2 gap-2">
+        <div class="fieldset mb-2">
+          <span class="label mb-1">{dgettext("fx", "field_base_currency")}</span>
+          <p class="au-mono text-white/70 text-sm px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+            {@editing_series.base_currency_code}
+          </p>
+        </div>
+        <div class="fieldset mb-2">
+          <span class="label mb-1">{dgettext("fx", "field_quote_currency")}</span>
+          <p class="au-mono text-white/70 text-sm px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+            {@editing_series.quote_currency_code}
+          </p>
+        </div>
+      </div>
+
+      <div :if={@form_mode == :create}>
+        <.input
+          field={@form[:source_kind]}
+          type="select"
+          label={dgettext("fx", "field_source_kind")}
+          options={FxSeries.source_kinds()}
+          prompt={dgettext("fx", "prompt_select_source_kind")}
+          required
+        />
+      </div>
+
+      <div :if={@form_mode == :edit} class="fieldset mb-2">
+        <span class="label mb-1">{dgettext("fx", "field_source_kind")}</span>
+        <p class="text-white/70 text-sm px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+          {source_kind_label(@editing_series.source_kind)}
+        </p>
+      </div>
+
+      <div :if={@form_mode == :create && form_source_kind(@form) == "provider_module"}>
+        <.input
+          field={@form[:provider_module]}
+          type="select"
+          label={dgettext("fx", "field_provider")}
+          options={FxSeries.supported_providers()}
+          prompt={dgettext("fx", "prompt_select_provider")}
+          required
+        />
+      </div>
+
+      <div
+        :if={@form_mode == :edit && @editing_series.source_kind == :provider_module}
+        class="fieldset mb-2"
+      >
+        <span class="label mb-1">{dgettext("fx", "field_provider")}</span>
+        <p class="au-mono text-white/70 text-xs px-3 py-2 rounded-xl border border-white/10 bg-white/5">
+          {@editing_series.provider_module}
+        </p>
+      </div>
+
+      <div class="grid grid-cols-2 gap-2">
+        <.input
+          field={@form[:from_date]}
+          type="date"
+          label={dgettext("fx", "field_from_date")}
+          required
+        />
+        <.input
+          field={@form[:to_date]}
+          type="date"
+          label={dgettext("fx", "field_to_date")}
+        />
+      </div>
+
+      <div class="flex items-center justify-end gap-2 pt-2">
+        <button
+          id="fx-cancel-form-btn"
+          type="button"
+          class="au-btn"
+          phx-click="close_form"
+        >
+          {dgettext("fx", "btn_cancel")}
+        </button>
+        <button
+          id="fx-save-btn"
+          type="submit"
+          class="au-btn au-btn-primary"
+          disabled={@saving}
+        >
+          {if @form_mode == :create,
+            do: dgettext("fx", "btn_create_series"),
+            else: dgettext("fx", "btn_save_changes")}
+        </button>
+      </div>
+    </.form>
+  </.right_sidebar_panel>
+</div>

@@ -1,0 +1,288 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/aurum_finance_web/live/entities_live.ex:14
+#: lib/aurum_finance_web/live/entities_live.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "btn_new_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:18
+#, elixir-autogen, elixir-format
+msgid "btn_hide_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "btn_show_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:39
+#, elixir-autogen, elixir-format
+msgid "section_entities"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:45
+#, elixir-autogen, elixir-format
+msgid "empty_state"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:54
+#, elixir-autogen, elixir-format
+msgid "badge_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:36
+#, elixir-autogen, elixir-format
+msgid "entity_type_individual"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:37
+#, elixir-autogen, elixir-format
+msgid "entity_type_legal_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:38
+#, elixir-autogen, elixir-format
+msgid "entity_type_trust"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:39
+#, elixir-autogen, elixir-format
+msgid "entity_type_other"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:60
+#, elixir-autogen, elixir-format
+msgid "label_fiscal"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:76
+#, elixir-autogen, elixir-format
+msgid "btn_edit"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:86
+#, elixir-autogen, elixir-format
+msgid "btn_archive"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:96
+#, elixir-autogen, elixir-format
+msgid "btn_unarchive"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:142
+#, elixir-autogen, elixir-format
+msgid "form_title_edit"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:143
+#, elixir-autogen, elixir-format
+msgid "form_title_create"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:158
+#, elixir-autogen, elixir-format
+msgid "field_name"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:164
+#, elixir-autogen, elixir-format
+msgid "field_type"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:165
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_type"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:176
+#, elixir-autogen, elixir-format
+msgid "field_tax_identifier"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:177
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_tax_identifier"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:185
+#, elixir-autogen, elixir-format
+msgid "field_country_code"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:186
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_country_code"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:199
+#, elixir-autogen, elixir-format
+msgid "field_fiscal_residency_country_code"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:200
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_fiscal_residency_country_code"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:213
+#, elixir-autogen, elixir-format
+msgid "field_default_tax_rate_type"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:214
+#, elixir-autogen, elixir-format
+msgid "tooltip_field_default_tax_rate_type"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:223
+#, elixir-autogen, elixir-format
+msgid "hint_default_tax_rate_type_derived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:226
+#, elixir-autogen, elixir-format
+msgid "field_notes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:230
+#, elixir-autogen, elixir-format
+msgid "btn_clear"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:235
+#, elixir-autogen, elixir-format
+msgid "btn_save_changes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:236
+#, elixir-autogen, elixir-format
+msgid "btn_create_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.ex:59
+#, elixir-autogen, elixir-format
+msgid "flash_entity_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.ex:68
+#, elixir-autogen, elixir-format
+msgid "flash_entity_unarchived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.ex:94
+#, elixir-autogen, elixir-format
+msgid "flash_entity_updated"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.ex:95
+#, elixir-autogen, elixir-format
+msgid "flash_entity_created"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.ex:109
+#, elixir-autogen, elixir-format
+msgid "flash_audit_logging_failed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:107
+#, elixir-autogen, elixir-format
+msgid "section_guidance"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:27
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_body"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "callout_what_is_item_3"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:111
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:113
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:114
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:115
+#, elixir-autogen, elixir-format
+msgid "callout_how_use_item_3"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:120
+#, elixir-autogen, elixir-format
+msgid "callout_warning_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:122
+#, elixir-autogen, elixir-format
+msgid "callout_warning_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:123
+#, elixir-autogen, elixir-format
+msgid "callout_warning_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:126
+#, elixir-autogen, elixir-format
+msgid "callout_tips_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:128
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/entities_live.html.heex:129
+#, elixir-autogen, elixir-format
+msgid "callout_tips_item_2"
+msgstr ""

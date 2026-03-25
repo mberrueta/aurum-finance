@@ -15,6 +15,7 @@ defmodule AurumFinance.Fx.FxSeries do
 
   import Ecto.Changeset
 
+  alias AurumFinance.Fx.Provider
   alias AurumFinance.Helpers
 
   @primary_key {:id, :binary_id, autogenerate: true}
@@ -23,6 +24,7 @@ defmodule AurumFinance.Fx.FxSeries do
   @type t :: %__MODULE__{}
 
   @source_kinds [:csv_upload, :provider_module]
+  @sync_statuses [:active, :error, :stopped]
   @supported_providers ["bcb_ptax", "frankfurter_ecb"]
   @create_required [:name, :base_currency_code, :quote_currency_code, :from_date, :source_kind]
   @create_optional [:description, :to_date, :provider_module]
@@ -40,6 +42,9 @@ defmodule AurumFinance.Fx.FxSeries do
     field :to_date, :date
     field :source_kind, Ecto.Enum, values: @source_kinds
     field :provider_module, :string
+    field :sync_status, Ecto.Enum, values: @sync_statuses, default: :active
+    field :sync_message, :string
+    field :last_sync_attempted_at, :utc_datetime_usec
 
     # Virtual fields populated by list/filter queries
     field :row_count, :integer, virtual: true, default: 0
@@ -88,6 +93,7 @@ defmodule AurumFinance.Fx.FxSeries do
     |> validate_currency_codes()
     |> validate_date_range()
     |> validate_provider_module()
+    |> validate_provider_currency_pair()
     |> put_slug()
     |> unique_constraint(:slug, name: :fx_series_slug_index)
   end
@@ -148,6 +154,36 @@ defmodule AurumFinance.Fx.FxSeries do
   """
   @spec supported_providers() :: [String.t()]
   def supported_providers, do: @supported_providers
+
+  @doc """
+  Returns the common currency options used by the UI when no provider-specific
+  restriction applies.
+  """
+  @spec common_currency_options() :: [{String.t(), String.t()}]
+  def common_currency_options do
+    Provider.common_currency_codes()
+    |> Enum.map(&{&1, &1})
+  end
+
+  @doc """
+  Returns allowed base currency options for a provider-backed series.
+  """
+  @spec base_currency_options(String.t() | nil) :: [{String.t(), String.t()}]
+  def base_currency_options(provider_identifier) do
+    provider_identifier
+    |> Provider.base_currency_codes()
+    |> Enum.map(&{&1, &1})
+  end
+
+  @doc """
+  Returns allowed quote currency options for a provider-backed series.
+  """
+  @spec quote_currency_options(String.t() | nil) :: [{String.t(), String.t()}]
+  def quote_currency_options(provider_identifier) do
+    provider_identifier
+    |> Provider.quote_currency_codes()
+    |> Enum.map(&{&1, &1})
+  end
 
   defp put_slug(changeset) do
     case get_change(changeset, :name) do
@@ -253,4 +289,52 @@ defmodule AurumFinance.Fx.FxSeries do
   end
 
   defp validate_provider_absent(changeset, _source_kind, _provider), do: changeset
+
+  defp validate_provider_currency_pair(changeset) do
+    source_kind = get_field(changeset, :source_kind)
+    provider = get_field(changeset, :provider_module)
+    base_currency_code = get_field(changeset, :base_currency_code)
+    quote_currency_code = get_field(changeset, :quote_currency_code)
+
+    validate_provider_currency_pair(
+      changeset,
+      source_kind,
+      provider,
+      base_currency_code,
+      quote_currency_code
+    )
+  end
+
+  defp validate_provider_currency_pair(
+         changeset,
+         :provider_module,
+         provider,
+         base_currency_code,
+         quote_currency_code
+       )
+       when is_binary(provider) and is_binary(base_currency_code) and
+              is_binary(quote_currency_code) do
+    if Provider.compatible_currency_pair?(provider, base_currency_code, quote_currency_code) do
+      changeset
+    else
+      add_error(
+        changeset,
+        :quote_currency_code,
+        Gettext.dgettext(
+          AurumFinance.Gettext,
+          "errors",
+          "error_fx_provider_currency_pair_not_supported"
+        )
+      )
+    end
+  end
+
+  defp validate_provider_currency_pair(
+         changeset,
+         _source_kind,
+         _provider,
+         _base_currency_code,
+         _quote_currency_code
+       ),
+       do: changeset
 end

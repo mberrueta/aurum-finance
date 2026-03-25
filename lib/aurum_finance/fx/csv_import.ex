@@ -117,8 +117,12 @@ defmodule AurumFinance.Fx.CsvImport do
   def import(%FxSeries{source_kind: :csv_upload} = series, rows) when is_list(rows) do
     {:ok, overlap_result} = check_overlap(series.id, rows)
     overlap_count = count_overlapping(overlap_result)
+    oldest_imported_date = oldest_imported_date(rows)
 
-    {:ok, _count} = Fx.upsert_rate_records(series.id, rows)
+    Repo.transaction(fn ->
+      {:ok, _count} = Fx.upsert_rate_records(series.id, rows)
+      maybe_update_series_from_date(series, oldest_imported_date)
+    end)
 
     {:ok, %{inserted: length(rows) - overlap_count, updated: overlap_count}}
   end
@@ -128,6 +132,22 @@ defmodule AurumFinance.Fx.CsvImport do
 
   defp build_overlap_result([]), do: {:ok, :no_overlap}
   defp build_overlap_result(overlap), do: {:ok, {:overlap, overlap}}
+
+  defp oldest_imported_date([]), do: nil
+  defp oldest_imported_date(rows), do: Enum.min_by(rows, & &1.date, Date).date
+
+  defp maybe_update_series_from_date(_series, nil), do: :ok
+
+  defp maybe_update_series_from_date(%FxSeries{} = series, oldest_date) do
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+
+    FxSeries
+    |> where([s], s.id == ^series.id)
+    |> where([s], s.from_date > ^oldest_date)
+    |> Repo.update_all(set: [from_date: oldest_date, updated_at: now])
+
+    :ok
+  end
 
   defp split_lines(content) do
     content

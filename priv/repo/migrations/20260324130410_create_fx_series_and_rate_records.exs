@@ -14,6 +14,9 @@ defmodule AurumFinance.Repo.Migrations.CreateFxSeriesAndRateRecords do
       add :to_date, :date
       add :source_kind, :string, null: false
       add :provider_module, :string
+      add :sync_status, :string, null: false, default: "active"
+      add :sync_message, :text
+      add :last_sync_attempted_at, :utc_datetime_usec
 
       timestamps(type: :utc_datetime_usec)
     end

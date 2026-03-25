@@ -415,8 +415,8 @@ defmodule AurumFinanceWeb.NetWorthLiveTest do
       |> render_click()
 
       assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}")
-      assert has_element?(view, "#net-worth-drilldown-prev-#{primary_account.id}")
-      assert has_element?(view, "#net-worth-drilldown-next-#{primary_account.id}")
+      assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}-prev")
+      assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}-next")
       assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}", "Page 1 of 2")
 
       assert has_element?(
@@ -425,7 +425,7 @@ defmodule AurumFinanceWeb.NetWorthLiveTest do
              )
 
       view
-      |> element("#net-worth-drilldown-next-#{primary_account.id}")
+      |> element("#net-worth-drilldown-#{primary_account.id}-next")
       |> render_click()
 
       assert has_element?(view, "#net-worth-drilldown-#{primary_account.id}", "Page 2 of 2")

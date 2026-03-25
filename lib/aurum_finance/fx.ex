@@ -18,10 +18,12 @@ defmodule AurumFinance.Fx do
   alias AurumFinance.Fx.FxSeries
   alias AurumFinance.Fx.SyncWorker
   alias AurumFinance.Repo
+  alias Oban.Job
 
   require Logger
 
   @staleness_window_days 4
+  @sync_statuses [:active, :error, :stopped]
 
   @doc """
   Lists all FX series with aggregated `row_count` and `last_ingested_date`.
@@ -55,6 +57,68 @@ defmodule AurumFinance.Fx do
     |> filter_query(opts)
     |> order_by([s], asc: s.name)
     |> Repo.all()
+  end
+
+  @doc """
+  Lists the most recent rate records for an FX series, ordered by `effective_date` descending.
+
+  Accepts:
+  - `limit:` (default 30)
+  - `offset:` (default 0)
+  - `from_date:` (`Date.t()`)
+  - `to_date:` (`Date.t()`)
+  """
+  @spec list_fx_rate_records(FxSeries.t(), keyword()) :: [FxRateRecord.t()]
+  def list_fx_rate_records(%FxSeries{id: id}, opts \\ []) do
+    limit = Keyword.get(opts, :limit, 30)
+    offset = Keyword.get(opts, :offset, 0)
+
+    FxRateRecord
+    |> where([r], r.fx_series_id == ^id)
+    |> filter_rate_record_query(opts)
+    |> order_by([r], desc: r.effective_date)
+    |> offset(^offset)
+    |> limit(^limit)
+    |> Repo.all()
+  end
+
+  @doc """
+  Returns paginated rate records for an FX series, ordered by `effective_date` descending.
+
+  Accepts:
+  - `page:` (default 1)
+  - `page_size:` (default Repo/Scrivener config)
+  - `from_date:` (`Date.t()`)
+  - `to_date:` (`Date.t()`)
+  """
+  @spec paginate_fx_rate_records(FxSeries.t(), keyword()) :: Scrivener.Page.t(FxRateRecord.t())
+  def paginate_fx_rate_records(%FxSeries{id: id}, opts \\ []) do
+    page = Keyword.get(opts, :page, 1)
+    page_size = Keyword.get(opts, :page_size)
+
+    page_opts =
+      [page: page]
+      |> maybe_put_page_size(page_size)
+
+    FxRateRecord
+    |> where([r], r.fx_series_id == ^id)
+    |> filter_rate_record_query(opts)
+    |> order_by([r], desc: r.effective_date)
+    |> Repo.paginate(page_opts)
+  end
+
+  @doc """
+  Counts rate records for an FX series using the same date filters as `list_fx_rate_records/2`.
+
+  Accepts `from_date:` and `to_date:` options.
+  """
+  @spec count_fx_rate_records(FxSeries.t(), keyword()) :: non_neg_integer()
+  def count_fx_rate_records(%FxSeries{id: id}, opts \\ []) do
+    FxRateRecord
+    |> where([r], r.fx_series_id == ^id)
+    |> filter_rate_record_query(opts)
+    |> select([r], count(r.id))
+    |> Repo.one()
   end
 
   @doc """
@@ -175,7 +239,10 @@ defmodule AurumFinance.Fx do
   """
   @spec change_fx_series(FxSeries.t(), map()) :: Ecto.Changeset.t()
   def change_fx_series(series, attrs \\ %{})
-  def change_fx_series(%FxSeries{id: nil} = series, attrs), do: FxSeries.create_changeset(series, attrs)
+
+  def change_fx_series(%FxSeries{id: nil} = series, attrs),
+    do: FxSeries.create_changeset(series, attrs)
+
   def change_fx_series(%FxSeries{} = series, attrs), do: FxSeries.update_changeset(series, attrs)
 
   @doc """
@@ -358,17 +425,86 @@ defmodule AurumFinance.Fx do
 
     case Date.compare(from_date, to_date) do
       :gt ->
+        :ok = record_sync_tracking(series, stopped_status_for(series))
         {:error, :already_up_to_date}
 
       _ ->
-        series.id
-        |> SyncWorker.new_job(from_date, to_date)
-        |> Oban.insert()
+        with {:ok, job} <-
+               series.id
+               |> SyncWorker.new_job(from_date, to_date)
+               |> Oban.insert() do
+          :ok = record_sync_tracking(series, :active, sync_message: nil)
+          {:ok, job}
+        end
     end
   end
 
   def enqueue_fx_sync(%FxSeries{source_kind: :csv_upload}) do
     {:error, :not_a_provider_series}
+  end
+
+  @doc """
+  Returns the latest Oban sync job status for one FX series.
+
+  The returned map is UI-oriented and includes the normalized status plus the
+  most recent error message when a sync failed or is retrying.
+
+  ## Examples
+
+  ```elixir
+  status = AurumFinance.Fx.latest_sync_status(series)
+  status.state in [:never_run, :queued, :running, :ok, :retrying, :failed, :cancelled]
+  ```
+  """
+  @spec latest_sync_status(FxSeries.t()) :: map()
+  def latest_sync_status(%FxSeries{id: fx_series_id, source_kind: :provider_module} = series) do
+    fx_series_id
+    |> latest_sync_job()
+    |> build_sync_status(series)
+  end
+
+  def latest_sync_status(%FxSeries{
+        sync_status: status,
+        sync_message: message,
+        last_sync_attempted_at: attempted_at
+      }) do
+    %{
+      state: status || :not_applicable,
+      job_state: nil,
+      from_date: nil,
+      to_date: nil,
+      last_attempt_at: attempted_at,
+      finished_at: nil,
+      error: message
+    }
+  end
+
+  @doc """
+  Persists the sync tracking state for one FX series.
+
+  This powers the list UI status/error columns so terminal failures remain
+  visible even after the Oban job has finished retrying.
+  """
+  @spec record_sync_tracking(FxSeries.t(), :active | :error | :stopped, keyword()) :: :ok
+  def record_sync_tracking(%FxSeries{id: fx_series_id}, status, opts \\ [])
+      when status in @sync_statuses do
+    sync_message = Keyword.get(opts, :sync_message)
+    attempted_at = Keyword.get(opts, :attempted_at)
+    now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
+
+    _ =
+      FxSeries
+      |> where([series], series.id == ^fx_series_id)
+      |> Repo.update_all(
+        set: [
+          sync_status: status,
+          sync_message: sync_message,
+          last_sync_attempted_at: attempted_at,
+          updated_at: now
+        ]
+      )
+
+    :ok
   end
 
   defp maybe_enqueue_backfill(%FxSeries{source_kind: :provider_module} = series) do
@@ -421,6 +557,79 @@ defmodule AurumFinance.Fx do
     end
   end
 
+  defp latest_sync_job(fx_series_id) do
+    Job
+    |> where([job], job.worker == "AurumFinance.Fx.SyncWorker")
+    |> where([job], fragment("?->>? = ?", job.args, "fx_series_id", ^fx_series_id))
+    |> order_by([job], desc: job.inserted_at, desc: job.id)
+    |> limit(1)
+    |> Repo.one()
+  end
+
+  defp build_sync_status(nil, %FxSeries{} = series) do
+    %{
+      state: series.sync_status || :never_run,
+      job_state: nil,
+      from_date: nil,
+      to_date: nil,
+      last_attempt_at: series.last_sync_attempted_at,
+      finished_at: nil,
+      error: series.sync_message
+    }
+  end
+
+  defp build_sync_status(%Job{} = job, _series) do
+    %{
+      state: normalize_job_state(job.state),
+      job_state: job.state,
+      from_date: parse_job_date(job.args["from_date"]),
+      to_date: parse_job_date(job.args["to_date"]),
+      last_attempt_at: job.attempted_at || job.inserted_at,
+      finished_at: job.completed_at || job.discarded_at || job.cancelled_at,
+      error: latest_job_error(job.errors)
+    }
+  end
+
+  defp normalize_job_state("available"), do: :queued
+  defp normalize_job_state("scheduled"), do: :queued
+  defp normalize_job_state("executing"), do: :running
+  defp normalize_job_state("completed"), do: :ok
+  defp normalize_job_state("retryable"), do: :retrying
+  defp normalize_job_state("discarded"), do: :failed
+  defp normalize_job_state("cancelled"), do: :cancelled
+  defp normalize_job_state(_), do: :unknown
+
+  defp parse_job_date(nil), do: nil
+  defp parse_job_date("__first_effective_date__"), do: nil
+
+  defp parse_job_date(date) when is_binary(date) do
+    case Date.from_iso8601(date) do
+      {:ok, parsed_date} -> parsed_date
+      _ -> nil
+    end
+  end
+
+  defp latest_job_error([]), do: nil
+
+  defp latest_job_error(errors) when is_list(errors) do
+    errors
+    |> List.last()
+    |> extract_job_error()
+  end
+
+  defp extract_job_error(%{"error" => error}) when is_binary(error), do: error
+  defp extract_job_error(%{error: error}) when is_binary(error), do: error
+  defp extract_job_error(_), do: nil
+
+  defp stopped_status_for(%FxSeries{to_date: nil}), do: :active
+
+  defp stopped_status_for(%FxSeries{to_date: %Date{} = to_date}) do
+    case Date.compare(to_date, Date.utc_today()) do
+      :lt -> :stopped
+      _ -> :active
+    end
+  end
+
   defp filter_query(query, []), do: query
 
   defp filter_query(query, [{:source_kind, source_kind} | rest]) do
@@ -444,4 +653,25 @@ defmodule AurumFinance.Fx do
   defp filter_query(query, [_unknown_filter | rest]) do
     filter_query(query, rest)
   end
+
+  defp filter_rate_record_query(query, []), do: query
+
+  defp filter_rate_record_query(query, [{:from_date, %Date{} = from_date} | rest]) do
+    query
+    |> where([r], r.effective_date >= ^from_date)
+    |> filter_rate_record_query(rest)
+  end
+
+  defp filter_rate_record_query(query, [{:to_date, %Date{} = to_date} | rest]) do
+    query
+    |> where([r], r.effective_date <= ^to_date)
+    |> filter_rate_record_query(rest)
+  end
+
+  defp filter_rate_record_query(query, [_unknown_filter | rest]) do
+    filter_rate_record_query(query, rest)
+  end
+
+  defp maybe_put_page_size(opts, nil), do: opts
+  defp maybe_put_page_size(opts, page_size), do: Keyword.put(opts, :page_size, page_size)
 end

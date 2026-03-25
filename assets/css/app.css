@@ -437,8 +437,16 @@
   font-size: 13px;
 }
 
+.au-table tbody tr:nth-child(odd) td {
+  background: #ffffff1f;
+}
+
+.au-table tbody tr:nth-child(even) td {
+  background: #ffffff0a;
+}
+
 .au-table tbody tr:hover td {
-  background: rgba(255, 255, 255, 0.02);
+  background: #ffffff33;
 }
 
 .au-table .text-right {

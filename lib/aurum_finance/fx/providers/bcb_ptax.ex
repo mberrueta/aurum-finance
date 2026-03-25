@@ -2,14 +2,16 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
   @moduledoc """
   FX rate provider for the BCB PTAX (Banco Central do Brasil) API.
 
-  Fetches daily selling rates (`cotacaoVenda`) for a currency pair where one
-  side is BRL. The BCB PTAX API is public and requires no authentication.
+  Fetches daily selling rates (`cotacaoVenda`) for supported `XXX/BRL` pairs.
+  The BCB PTAX API is public and requires no authentication.
 
   Endpoint format:
-    `https://ptax.bcb.gov.br/ptax_internet/api/v1/cotacaoMoedaPeriodo/{currencyCode}/{startDate}/{endDate}`
+    `https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata/CotacaoMoedaPeriodo(...)`
 
-  The API uses MM-DD-YYYY date format in the URL and returns JSON with a
-  `value` array containing `cotacaoVenda` and `dataHoraCotacao` fields.
+  The API uses MM-DD-YYYY date format in query parameters and returns JSON with
+  a `value` array containing `cotacaoVenda`, `dataHoraCotacao`, and
+  `tipoBoletim` fields. We keep only `Fechamento` quotes to persist one daily
+  row per date.
 
   No credentials required. No env vars needed.
   """
@@ -20,13 +22,18 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
 
   require Logger
 
-  @base_url "https://ptax.bcb.gov.br/ptax_internet/api/v1/cotacaoMoedaPeriodo"
+  @default_base_url "https://olinda.bcb.gov.br/olinda/servico/PTAX/versao/v1/odata"
+  @closing_bulletin "Fechamento"
 
   @impl AurumFinance.Fx.Provider
   @spec fetch(FxSeries.t(), Date.t(), Date.t()) ::
           {:ok, [%{date: Date.t(), value: Decimal.t()}]} | {:error, term()}
-  def fetch(%FxSeries{} = series, %Date{} = from_date, %Date{} = to_date) do
-    currency_code = non_brl_currency(series)
+  def fetch(
+        %FxSeries{quote_currency_code: "BRL"} = series,
+        %Date{} = from_date,
+        %Date{} = to_date
+      ) do
+    currency_code = series.base_currency_code
     url = build_url(currency_code, from_date, to_date)
 
     url
@@ -34,14 +41,23 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
     |> parse_response()
   end
 
-  defp non_brl_currency(%FxSeries{base_currency_code: "BRL", quote_currency_code: code}), do: code
-  defp non_brl_currency(%FxSeries{base_currency_code: code, quote_currency_code: "BRL"}), do: code
-  defp non_brl_currency(%FxSeries{base_currency_code: base}), do: base
+  def fetch(%FxSeries{}, %Date{}, %Date{}), do: {:error, :unsupported_currency_pair}
 
   defp build_url(currency_code, from_date, to_date) do
     start_str = format_date_mmddyyyy(from_date)
     end_str = format_date_mmddyyyy(to_date)
-    "#{@base_url}/#{currency_code}/#{start_str}/#{end_str}"
+
+    query =
+      URI.encode_query(%{
+        "@moeda" => "'#{currency_code}'",
+        "@dataInicial" => "'#{start_str}'",
+        "@dataFinalCotacao" => "'#{end_str}'",
+        "$top" => "10000",
+        "$format" => "json",
+        "$select" => "cotacaoVenda,dataHoraCotacao,tipoBoletim"
+      })
+
+    "#{base_url()}/CotacaoMoedaPeriodo(moeda=@moeda,dataInicial=@dataInicial,dataFinalCotacao=@dataFinalCotacao)?#{query}"
   end
 
   defp format_date_mmddyyyy(%Date{year: y, month: m, day: d}) do
@@ -71,7 +87,7 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
       |> Enum.reject(&is_nil/1)
       |> Enum.sort_by(& &1.date, Date)
 
-    {:ok, rows}
+    build_rows_result(rows)
   end
 
   defp parse_response({:ok, %Req.Response{status: 200, body: %{"value" => []}}}) do
@@ -90,16 +106,25 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
     {:error, {:http_error, reason}}
   end
 
-  defp parse_rate_entry(%{"cotacaoVenda" => venda, "dataHoraCotacao" => timestamp})
+  defp parse_rate_entry(%{
+         "cotacaoVenda" => venda,
+         "dataHoraCotacao" => timestamp,
+         "tipoBoletim" => @closing_bulletin
+       })
        when not is_nil(venda) do
-    with {:ok, date} <- parse_bcb_timestamp(timestamp) do
-      %{date: date, value: Decimal.new(to_string(venda))}
-    else
-      _error -> nil
+    case parse_bcb_timestamp(timestamp) do
+      {:ok, date} ->
+        %{date: date, value: Decimal.new(to_string(venda))}
+
+      _error ->
+        nil
     end
   end
 
   defp parse_rate_entry(_entry), do: nil
+
+  defp build_rows_result([]), do: {:error, :empty_response}
+  defp build_rows_result(rows), do: {:ok, rows}
 
   defp parse_bcb_timestamp(timestamp) when is_binary(timestamp) do
     # BCB format: "YYYY-MM-DD HH:MM:SS.mmm"
@@ -110,4 +135,10 @@ defmodule AurumFinance.Fx.Providers.BcbPtax do
   end
 
   defp parse_bcb_timestamp(_), do: {:error, :invalid_timestamp}
+
+  defp base_url do
+    :aurum_finance
+    |> Application.get_env(:fx_provider_base_urls, %{})
+    |> Map.get("bcb_ptax", @default_base_url)
+  end
 end
