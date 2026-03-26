@@ -102,9 +102,7 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
         <div class="min-w-0 space-y-2">
           <div class="flex flex-wrap items-center gap-2">
             <p class="truncate text-sm font-semibold text-white/92">{@session.account.name}</p>
-            <.badge variant={session_badge_variant(@session)}>
-              {session_status_label(@session)}
-            </.badge>
+            <.status_badge status={session_badge_status(@session)} />
           </div>
 
           <dl class="grid gap-2 text-sm text-white/66 sm:grid-cols-2">
@@ -187,9 +185,7 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
         {format_money(@posting.amount, @currency_code)}
       </td>
       <td class="whitespace-nowrap">
-        <.badge variant={posting_status_variant(@posting.reconciliation_status)}>
-          {posting_status_label(@posting.reconciliation_status)}
-        </.badge>
+        <.status_badge status={@posting.reconciliation_status} />
       </td>
       <td class="whitespace-nowrap">
         <div class="flex flex-wrap items-center gap-2">
@@ -462,25 +458,16 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
     dgettext("reconciliation", "section_detail_for_account", account: session.account.name)
   end
 
-  def detail_panel_badge(nil), do: dgettext("reconciliation", "badge_detail_idle")
+  def detail_panel_badge_status(nil), do: :idle
 
-  def detail_panel_badge(%ReconciliationSession{} = session) do
-    session_status_label(session)
-  end
-
-  def detail_panel_badge_variant(nil), do: :default
-
-  def detail_panel_badge_variant(%ReconciliationSession{} = session),
-    do: session_badge_variant(session)
+  def detail_panel_badge_status(%ReconciliationSession{} = session),
+    do: session_badge_status(session)
 
   def difference_caption(true), do: dgettext("reconciliation", "difference_balanced")
   def difference_caption(false), do: dgettext("reconciliation", "difference_unbalanced")
 
-  def session_status_label(%ReconciliationSession{completed_at: nil}),
-    do: dgettext("reconciliation", "status_in_progress")
-
-  def session_status_label(%ReconciliationSession{}),
-    do: dgettext("reconciliation", "status_completed")
+  def session_badge_status(%ReconciliationSession{completed_at: nil}), do: :in_progress
+  def session_badge_status(%ReconciliationSession{}), do: :completed
 
   def select_all_button_label(selected_posting_ids, postings) do
     clearable_count =
@@ -513,23 +500,10 @@ defmodule AurumFinanceWeb.ReconciliationComponents do
 
   defp account_options(accounts), do: Enum.map(accounts, &{&1.name, &1.id})
 
-  defp session_badge_variant(%ReconciliationSession{completed_at: nil}), do: :warn
-  defp session_badge_variant(%ReconciliationSession{}), do: :good
-
-  defp posting_status_variant(:unreconciled), do: :bad
-  defp posting_status_variant(:cleared), do: :purple
-  defp posting_status_variant(:reconciled), do: :good
-  defp posting_status_variant(_status), do: :default
-
   defp match_band_variant(:exact_match), do: :good
   defp match_band_variant(:near_match), do: :purple
   defp match_band_variant(:weak_match), do: :warn
   defp match_band_variant(:below_threshold), do: :default
-
-  defp posting_status_label(:unreconciled), do: dgettext("reconciliation", "status_unreconciled")
-  defp posting_status_label(:cleared), do: dgettext("reconciliation", "status_cleared")
-  defp posting_status_label(:reconciled), do: dgettext("reconciliation", "status_reconciled")
-  defp posting_status_label(status), do: Helpers.humanize_token(status)
 
   defp match_band_label(:exact_match), do: dgettext("reconciliation", "match_band_exact")
   defp match_band_label(:near_match), do: dgettext("reconciliation", "match_band_near")

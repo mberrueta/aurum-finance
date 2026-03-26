@@ -1,0 +1,484 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+#: lib/aurum_finance_web/components/badge_component.ex:128
+#, elixir-autogen
+msgid "account_type_asset"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:130
+#, elixir-autogen
+msgid "account_type_equity"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:132
+#, elixir-autogen
+msgid "account_type_expense"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:131
+#, elixir-autogen
+msgid "account_type_income"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:129
+#, elixir-autogen
+msgid "account_type_liability"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:96
+#, elixir-autogen
+msgid "callout_how_use_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:97
+#, elixir-autogen
+msgid "callout_how_use_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:98
+#, elixir-autogen
+msgid "callout_how_use_item_3"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:94
+#, elixir-autogen
+msgid "callout_how_use_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:113
+#, elixir-autogen
+msgid "callout_tips_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:114
+#, elixir-autogen
+msgid "callout_tips_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:111
+#, elixir-autogen
+msgid "callout_tips_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:106
+#, elixir-autogen
+msgid "callout_warning_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:107
+#, elixir-autogen
+msgid "callout_warning_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:104
+#, elixir-autogen
+msgid "callout_warning_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:18
+#, elixir-autogen
+msgid "callout_what_is_body"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:20
+#, elixir-autogen
+msgid "callout_what_is_item_1"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:21
+#, elixir-autogen
+msgid "callout_what_is_item_2"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:22
+#, elixir-autogen
+msgid "callout_what_is_item_3"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:17
+#, elixir-autogen
+msgid "callout_what_is_title"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:158
+#, elixir-autogen
+msgid "btn_archive"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:422
+#, elixir-autogen
+msgid "btn_create_account"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:148
+#, elixir-autogen
+msgid "btn_edit"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:320
+#, elixir-autogen
+msgid "btn_hide_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:11
+#, elixir-autogen
+msgid "btn_new_account"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:421
+#, elixir-autogen
+msgid "btn_save_changes"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:322
+#, elixir-autogen
+msgid "btn_show_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:168
+#, elixir-autogen
+msgid "btn_unarchive"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:354
+#, elixir-autogen
+msgid "empty_category_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:357
+#, elixir-autogen
+msgid "empty_category_accounts_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:193
+#, elixir-autogen
+msgid "empty_form_requires_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:349
+#, elixir-autogen
+msgid "empty_institution_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:352
+#, elixir-autogen
+msgid "empty_institution_accounts_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:51
+#, elixir-autogen
+msgid "empty_no_entities"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:360
+#, elixir-autogen
+msgid "empty_system_managed_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:363
+#, elixir-autogen
+msgid "empty_system_managed_accounts_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:113
+#, elixir-autogen
+msgid "flash_account_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:160
+#, elixir-autogen
+msgid "flash_account_created"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:126
+#, elixir-autogen
+msgid "flash_account_unarchived"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:159
+#, elixir-autogen
+msgid "flash_account_updated"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:174
+#, elixir-autogen
+msgid "flash_audit_logging_failed"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:298
+#: lib/aurum_finance_web/components/accounts_components.ex:315
+#, elixir-autogen
+msgid "label_account_type"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:282
+#, elixir-autogen
+msgid "label_category_type"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:102
+#: lib/aurum_finance_web/components/accounts_components.ex:246
+#, elixir-autogen
+msgid "label_currency"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:261
+#, elixir-autogen
+msgid "label_timezone"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:57
+#, elixir-autogen
+msgid "label_current_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:29
+#, elixir-autogen
+msgid "label_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:356
+#, elixir-autogen
+msgid "label_entity_scope"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:118
+#: lib/aurum_finance_web/components/accounts_components.ex:330
+#, elixir-autogen
+msgid "label_institution"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:340
+#, elixir-autogen
+msgid "label_institution_account_ref"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:229
+#, elixir-autogen
+msgid "label_management_group"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:239
+#, elixir-autogen
+msgid "label_name"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:127
+#, elixir-autogen
+msgid "label_normal_balance"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:349
+#, elixir-autogen
+msgid "label_notes"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:109
+#: lib/aurum_finance_web/components/accounts_components.ex:268
+#, elixir-autogen
+msgid "label_operational_subtype"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:89
+#, elixir-autogen
+msgid "management_group_category"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:431
+#, elixir-autogen
+msgid "management_group_category_hint"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:87
+#, elixir-autogen
+msgid "management_group_institution"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:428
+#, elixir-autogen
+msgid "management_group_institution_hint"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:92
+#, elixir-autogen
+msgid "management_group_system_managed"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:434
+#, elixir-autogen
+msgid "management_group_system_managed_hint"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:94
+#, elixir-autogen
+msgid "management_group_unknown"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:444
+#, elixir-autogen
+msgid "normal_balance_credit"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:443
+#, elixir-autogen
+msgid "normal_balance_debit"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:152
+#, elixir-autogen
+msgid "operational_subtype_bank_checking"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:155
+#, elixir-autogen
+msgid "operational_subtype_bank_savings"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:160
+#, elixir-autogen
+msgid "operational_subtype_brokerage_cash"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:163
+#, elixir-autogen
+msgid "operational_subtype_brokerage_securities"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:157
+#, elixir-autogen
+msgid "operational_subtype_cash"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:169
+#, elixir-autogen
+msgid "operational_subtype_credit_card"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:166
+#, elixir-autogen
+msgid "operational_subtype_crypto_wallet"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:171
+#, elixir-autogen
+msgid "operational_subtype_loan"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:174
+#, elixir-autogen
+msgid "operational_subtype_other_asset"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:177
+#, elixir-autogen
+msgid "operational_subtype_other_liability"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:36
+#, elixir-autogen
+msgid "option_select_entity"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:3
+#: lib/aurum_finance_web/live/accounts_live.html.heex:125
+#, elixir-autogen
+msgid "page_subtitle"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:30
+#: lib/aurum_finance_web/live/accounts_live.html.heex:2
+#, elixir-autogen
+msgid "page_title"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:346
+#, elixir-autogen
+msgid "panel_edit_account"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.ex:343
+#, elixir-autogen
+msgid "panel_new_account"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:29
+#, elixir-autogen
+msgid "section_accounts"
+msgstr ""
+
+#: lib/aurum_finance_web/live/accounts_live.html.heex:89
+#, elixir-autogen
+msgid "section_guidance"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:95
+#, elixir-autogen
+msgid "status_archived"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:316
+#, elixir-autogen
+msgid "tooltip_field_account_type"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:283
+#, elixir-autogen
+msgid "tooltip_field_category_type"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:247
+#, elixir-autogen
+msgid "tooltip_field_currency"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:331
+#, elixir-autogen
+msgid "tooltip_field_institution"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:341
+#, elixir-autogen
+msgid "tooltip_field_institution_account_ref"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:230
+#, elixir-autogen
+msgid "tooltip_field_management_group"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:350
+#, elixir-autogen
+msgid "tooltip_field_notes"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:269
+#, elixir-autogen
+msgid "tooltip_field_operational_subtype"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:121
+#: lib/aurum_finance_web/components/badge_component.ex:146
+#, elixir-autogen
+msgid "value_not_applicable"
+msgstr ""
+
+#: lib/aurum_finance_web/components/badge_component.ex:126
+#, elixir-autogen
+msgid "value_pending"
+msgstr ""
+
+#: lib/aurum_finance_web/components/accounts_components.ex:362
+#, elixir-autogen, elixir-format
+msgid "btn_clear"
+msgstr ""

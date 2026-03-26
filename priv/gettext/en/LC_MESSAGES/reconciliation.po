@@ -7,7 +7,7 @@ msgstr ""
 msgid "badge_active_sessions"
 msgstr "%{count} active sessions"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:465
+#: lib/aurum_finance_web/components/ui_components.ex:207
 #, elixir-autogen
 msgid "badge_detail_idle"
 msgstr "Select a session"
@@ -17,17 +17,17 @@ msgstr "Select a session"
 msgid "btn_back_to_sessions"
 msgstr "Back to sessions"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:495
+#: lib/aurum_finance_web/components/reconciliation_components.ex:482
 #, elixir-autogen
 msgid "btn_clear_selection"
 msgstr "Clear selection"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:453
+#: lib/aurum_finance_web/components/reconciliation_components.ex:449
 #, elixir-autogen
 msgid "btn_create_session"
 msgstr "Create session"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:242
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:238
 #, elixir-autogen
 msgid "btn_mark_cleared"
 msgstr "Mark cleared"
@@ -37,82 +37,82 @@ msgstr "Mark cleared"
 msgid "btn_new_session"
 msgstr "New session"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:251
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:247
 #, elixir-autogen
 msgid "btn_reconcile"
 msgstr "Reconcile"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:498
+#: lib/aurum_finance_web/components/reconciliation_components.ex:485
 #, elixir-autogen
 msgid "btn_select_all"
 msgstr "Select all unreconciled"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:492
+#: lib/aurum_finance_web/components/reconciliation_components.ex:479
 #, elixir-autogen
 msgid "btn_select_all_disabled"
 msgstr "No unreconciled postings"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:417
+#: lib/aurum_finance_web/components/reconciliation_components.ex:413
 #, elixir-autogen
 msgid "btn_statement_date_last_month"
 msgstr "Last month"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:426
+#: lib/aurum_finance_web/components/reconciliation_components.ex:422
 #, elixir-autogen
 msgid "btn_statement_date_last_year"
 msgstr "Last year"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:216
+#: lib/aurum_finance_web/components/reconciliation_components.ex:212
 #, elixir-autogen
 msgid "btn_unclear"
 msgstr "Un-clear"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:328
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:324
 #, elixir-autogen
 msgid "callout_how_use_item_1"
 msgstr "Select the entity first so the session list and account scope stay inside one ownership boundary."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:329
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:325
 #, elixir-autogen
 msgid "callout_how_use_item_2"
 msgstr "Create one active session per institution account, then clear postings as you match them against the statement."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:330
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:326
 #, elixir-autogen
 msgid "callout_how_use_item_3"
 msgstr "Use the difference card as the final checkpoint before you complete the session."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:326
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:322
 #, elixir-autogen
 msgid "callout_how_use_title"
 msgstr "How to use reconciliation"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:345
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:341
 #, elixir-autogen
 msgid "callout_tips_item_1"
 msgstr "If a posting was cleared by mistake, un-clear it before the session is completed."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:346
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:342
 #, elixir-autogen
 msgid "callout_tips_item_2"
 msgstr "Completed sessions remain visible as history, so you can review the final balance and timestamps later."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:343
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:339
 #, elixir-autogen
 msgid "callout_tips_title"
 msgstr "Tips"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:338
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:334
 #, elixir-autogen
 msgid "callout_warning_item_1"
 msgstr "A completed reconciliation session is read-only; the UI will not let you clear or un-clear postings after completion."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:339
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:335
 #, elixir-autogen
 msgid "callout_warning_item_2"
 msgstr "Voiding a transaction with reconciled postings is blocked by the ledger guard."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:336
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:332
 #, elixir-autogen
 msgid "callout_warning_title"
 msgstr "Warnings"
@@ -142,62 +142,62 @@ msgstr "Completing the session promotes cleared postings into reconciled history
 msgid "callout_what_is_title"
 msgstr "What reconciliation is"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:282
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:278
 #, elixir-autogen
 msgid "col_actions"
 msgstr "Actions"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:280
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:276
 #, elixir-autogen
 msgid "col_amount"
 msgstr "Amount"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:278
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:274
 #, elixir-autogen
 msgid "col_date"
 msgstr "Date"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:279
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:275
 #, elixir-autogen
 msgid "col_description"
 msgstr "Description"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:277
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:273
 #, elixir-autogen
 msgid "col_select"
 msgstr "Select"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:281
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:277
 #, elixir-autogen
 msgid "col_state"
 msgstr "State"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:503
+#: lib/aurum_finance_web/components/reconciliation_components.ex:490
 #, elixir-autogen
 msgid "confirm_complete_balanced"
 msgstr "Finalize this reconciliation session?"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:506
+#: lib/aurum_finance_web/components/reconciliation_components.ex:493
 #, elixir-autogen
 msgid "confirm_complete_unbalanced"
 msgstr "The difference is not zero. Finalize this reconciliation session anyway?"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:476
+#: lib/aurum_finance_web/components/reconciliation_components.ex:466
 #, elixir-autogen
 msgid "difference_balanced"
 msgstr "Statement balance and cleared balance match."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:477
+#: lib/aurum_finance_web/components/reconciliation_components.ex:467
 #, elixir-autogen
 msgid "difference_unbalanced"
 msgstr "Difference remains. Review cleared postings before finalizing."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:373
+#: lib/aurum_finance_web/components/reconciliation_components.ex:369
 #, elixir-autogen
 msgid "empty_form_requires_account"
 msgstr "Create an institution account first before opening a reconciliation session."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:369
+#: lib/aurum_finance_web/components/reconciliation_components.ex:365
 #, elixir-autogen
 msgid "empty_form_requires_entity"
 msgstr "Select an entity before creating a reconciliation session."
@@ -212,7 +212,7 @@ msgstr "Create an entity first to scope reconciliation work."
 msgid "empty_no_institution_accounts"
 msgstr "Create an institution account first."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:270
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:266
 #, elixir-autogen
 msgid "empty_no_postings"
 msgstr "No postings available for this account."
@@ -294,12 +294,12 @@ msgstr "The reconciliation session could not be created."
 msgid "flash_session_not_found"
 msgstr "The requested reconciliation session was not found in the current entity."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:396
+#: lib/aurum_finance_web/components/reconciliation_components.ex:392
 #, elixir-autogen
 msgid "label_account"
 msgstr "Account"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:214
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:210
 #, elixir-autogen
 msgid "label_account_currency"
 msgstr "Account currency"
@@ -309,32 +309,32 @@ msgstr "Account currency"
 msgid "label_account_filter"
 msgstr "Filter by account"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:127
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:206
+#: lib/aurum_finance_web/components/reconciliation_components.ex:125
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:202
 #, elixir-autogen
 msgid "label_completed_at"
 msgstr "Completed at"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:198
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:194
 #, elixir-autogen
 msgid "label_created_at"
 msgstr "Created at"
 
 #: lib/aurum_finance_web/components/reconciliation_components.ex:30
-#: lib/aurum_finance_web/components/reconciliation_components.ex:386
+#: lib/aurum_finance_web/components/reconciliation_components.ex:382
 #, elixir-autogen
 msgid "label_entity"
 msgstr "Entity"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:119
-#: lib/aurum_finance_web/components/reconciliation_components.ex:433
+#: lib/aurum_finance_web/components/reconciliation_components.ex:117
+#: lib/aurum_finance_web/components/reconciliation_components.ex:429
 #, elixir-autogen
 msgid "label_statement_balance"
 msgstr "Statement balance"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:113
-#: lib/aurum_finance_web/components/reconciliation_components.ex:405
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:190
+#: lib/aurum_finance_web/components/reconciliation_components.ex:111
+#: lib/aurum_finance_web/components/reconciliation_components.ex:401
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:186
 #, elixir-autogen
 msgid "label_statement_date"
 msgstr "Statement closing date"
@@ -344,7 +344,7 @@ msgstr "Statement closing date"
 msgid "option_all_accounts"
 msgstr "All accounts"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:398
+#: lib/aurum_finance_web/components/reconciliation_components.ex:394
 #, elixir-autogen
 msgid "option_select_account"
 msgstr "Select account"
@@ -365,57 +365,57 @@ msgstr "Open a session, clear matching postings, and finalize when the differenc
 msgid "page_title"
 msgstr "Reconciliation"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:357
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:353
 #, elixir-autogen
 msgid "panel_new_session_subtitle"
 msgstr "Each session tracks one statement balance for one institution account."
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:356
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:352
 #, elixir-autogen
 msgid "panel_new_session_title"
 msgstr "New reconciliation session"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:442
+#: lib/aurum_finance_web/components/reconciliation_components.ex:438
 #, elixir-autogen
 msgid "panel_session_flow_item_1"
 msgstr "Pick one institution account and capture the statement date and ending balance."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:443
+#: lib/aurum_finance_web/components/reconciliation_components.ex:439
 #, elixir-autogen
 msgid "panel_session_flow_item_2"
 msgstr "Use the active session to mark ledger postings as cleared while you compare them to the statement."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:444
+#: lib/aurum_finance_web/components/reconciliation_components.ex:440
 #, elixir-autogen
 msgid "panel_session_flow_item_3"
 msgstr "Complete the session to promote cleared postings into reconciled history."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:439
+#: lib/aurum_finance_web/components/reconciliation_components.ex:435
 #, elixir-autogen
 msgid "panel_session_flow_title"
 msgstr "Session flow"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:264
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:260
 #, elixir-autogen
 msgid "postings_hint"
 msgstr "Unreconciled postings can be selected in bulk. Cleared postings can still be un-cleared until completion."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:459
+#: lib/aurum_finance_web/components/reconciliation_components.ex:455
 #, elixir-autogen
 msgid "section_detail"
 msgstr "Session detail"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:462
+#: lib/aurum_finance_web/components/reconciliation_components.ex:458
 #, elixir-autogen
 msgid "section_detail_for_account"
 msgstr "Session detail for %{account}"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:321
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:317
 #, elixir-autogen
 msgid "section_guidance"
 msgstr "Guidance"
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:261
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:257
 #, elixir-autogen
 msgid "section_postings"
 msgstr "Postings"
@@ -435,27 +435,27 @@ msgstr "Workflow"
 msgid "sessions_hint"
 msgstr "Active sessions stay at the top. Completed sessions remain available as read-only history."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:530
+#: lib/aurum_finance_web/components/ui_components.ex:196
 #, elixir-autogen
 msgid "status_cleared"
 msgstr "Cleared"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:483
-#, elixir-autogen
-msgid "status_completed"
-msgstr "Completed"
-
-#: lib/aurum_finance_web/components/reconciliation_components.ex:480
+#: lib/aurum_finance_web/components/ui_components.ex:202
 #, elixir-autogen
 msgid "status_in_progress"
 msgstr "In progress"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:531
+#: lib/aurum_finance_web/components/ui_components.ex:205
+#, elixir-autogen
+msgid "status_completed"
+msgstr "Completed"
+
+#: lib/aurum_finance_web/components/ui_components.ex:199
 #, elixir-autogen
 msgid "status_reconciled"
 msgstr "Reconciled"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:529
+#: lib/aurum_finance_web/components/ui_components.ex:193
 #, elixir-autogen
 msgid "status_unreconciled"
 msgstr "Unreconciled"
@@ -515,102 +515,102 @@ msgstr "1. Open"
 msgid "workflow_step_open_body"
 msgstr "Start one active session per account with the statement date and balance you want to reconcile."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:258
+#: lib/aurum_finance_web/components/reconciliation_components.ex:254
 #, elixir-autogen
 msgid "btn_close_match_candidates"
 msgstr "Close candidates"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:206
+#: lib/aurum_finance_web/components/reconciliation_components.ex:202
 #, elixir-autogen
 msgid "btn_inspect_matches"
 msgstr "Inspect matches"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:263
+#: lib/aurum_finance_web/components/reconciliation_components.ex:259
 #, elixir-autogen
 msgid "empty_match_candidates_idle"
 msgstr "Select a posting to inspect likely statement rows."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:286
+#: lib/aurum_finance_web/components/reconciliation_components.ex:282
 #, elixir-autogen
 msgid "empty_match_candidates_none"
 msgstr "No likely statement rows were found for this posting."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:316
+#: lib/aurum_finance_web/components/reconciliation_components.ex:312
 #, elixir-autogen
 msgid "label_match_file_id"
 msgstr "File: %{file_id}"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:557
+#: lib/aurum_finance_web/components/reconciliation_components.ex:531
 #, elixir-autogen
 msgid "label_match_score"
 msgstr "Heuristic score: %{score}%"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:272
+#: lib/aurum_finance_web/components/reconciliation_components.ex:268
 #, elixir-autogen
 msgid "label_selected_posting"
 msgstr "Selected posting"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:539
+#: lib/aurum_finance_web/components/reconciliation_components.ex:513
 #, elixir-autogen
 msgid "match_band_below_threshold"
 msgstr "Below threshold"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:534
+#: lib/aurum_finance_web/components/reconciliation_components.ex:508
 #, elixir-autogen
 msgid "match_band_exact"
 msgstr "Exact match"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:535
+#: lib/aurum_finance_web/components/reconciliation_components.ex:509
 #, elixir-autogen
 msgid "match_band_near"
 msgstr "Near match"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:536
+#: lib/aurum_finance_web/components/reconciliation_components.ex:510
 #, elixir-autogen
 msgid "match_band_weak"
 msgstr "Weak match"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:244
+#: lib/aurum_finance_web/components/reconciliation_components.ex:240
 #, elixir-autogen
 msgid "match_candidates_intro"
 msgstr "Possible matches are shown here to help comparison. Review before clearing."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:247
+#: lib/aurum_finance_web/components/reconciliation_components.ex:243
 #, elixir-autogen
 msgid "match_candidates_read_only"
 msgstr "Viewing candidates does not clear or reconcile anything."
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:545
+#: lib/aurum_finance_web/components/reconciliation_components.ex:519
 #, elixir-autogen
 msgid "match_reason_close_amount"
 msgstr "Close amount"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:551
+#: lib/aurum_finance_web/components/reconciliation_components.ex:525
 #, elixir-autogen
 msgid "match_reason_description_similarity"
 msgstr "Description match"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:542
+#: lib/aurum_finance_web/components/reconciliation_components.ex:516
 #, elixir-autogen
 msgid "match_reason_exact_amount"
 msgstr "Exact amount"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:548
+#: lib/aurum_finance_web/components/reconciliation_components.ex:522
 #, elixir-autogen
 msgid "match_reason_near_date"
 msgstr "Near date"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:547
+#: lib/aurum_finance_web/components/reconciliation_components.ex:521
 #, elixir-autogen
 msgid "match_reason_same_day"
 msgstr "Same day"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:241
+#: lib/aurum_finance_web/components/reconciliation_components.ex:237
 #, elixir-autogen
 msgid "section_match_candidates"
 msgstr "Candidate matches"
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:336
+#: lib/aurum_finance_web/components/reconciliation_components.ex:332
 #, elixir-autogen
 msgid "btn_accept_match_candidate"
 msgstr "Accept and clear"

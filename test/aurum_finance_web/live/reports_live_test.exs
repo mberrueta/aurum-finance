@@ -37,7 +37,7 @@ defmodule AurumFinanceWeb.ReportsLiveTest do
     def enqueue_hub_refresh(_entity_ids), do: {:ok, %{status: :queued}}
   end
 
-  test "renders the reporting hub with a coarse freshness badge and net worth card", %{conn: conn} do
+  test "renders the reporting dashboard with built-in and saved report areas", %{conn: conn} do
     entity = insert(:entity, name: "Alpha")
     checking = insert_account(entity, name: "Checking")
 
@@ -46,17 +46,29 @@ defmodule AurumFinanceWeb.ReportsLiveTest do
     {:ok, view, _html} = conn |> log_in_root() |> live("/reports")
 
     assert has_element?(view, "#reports-page")
-    assert has_element?(view, "#reports-hub-overview")
     assert has_element?(view, "#reports-freshness-badge")
+    assert has_element?(view, "#reports-guidance-info")
     assert has_element?(view, "#reports-net-worth-card")
-    assert has_element?(view, "#reports-net-worth-summary")
-    assert has_element?(view, "#reports-net-worth-open[href=\"/reports/net-worth\"]")
+    assert has_element?(view, "#reports-net-worth-title[href=\"/reports/net-worth\"]")
+    assert has_element?(view, "#reports-saved-account-reports-panel")
+    assert has_element?(view, "#saved-account-reports-empty")
+    assert has_element?(view, "#reports-new-saved-report[href=\"/reports/account-reports/new\"]")
     assert has_element?(view, "#reports-refresh-submit")
+    assert has_element?(view, "#reports-guidance-tip")
+    assert has_element?(view, "#reports-guidance-warning")
 
     html = render(view)
 
+    assert elem(:binary.match(html, "reports-guidance"), 0) <
+             elem(:binary.match(html, "reports-net-worth-card"), 0)
+
+    assert elem(:binary.match(html, "reports-net-worth-card"), 0) <
+             elem(:binary.match(html, "reports-guidance-bottom"), 0)
+
     assert html =~ "Net Worth"
-    assert html =~ "Open report"
+    assert html =~ "Saved account reports"
+    assert html =~ "No saved account reports yet."
+    assert html =~ "Why this page exists"
     assert html =~ "As of #{Date.to_iso8601(Date.utc_today())}"
     assert html =~ "1 accounts"
     assert html =~ "USD"
@@ -64,6 +76,35 @@ defmodule AurumFinanceWeb.ReportsLiveTest do
     refute has_element?(view, "#reports-rebuild-form")
     refute html =~ "Cashflow (month)"
     refute html =~ "Portfolio allocation"
+  end
+
+  test "renders saved account report cards in label order", %{conn: conn} do
+    alpha = insert(:entity, name: "Alpha")
+    beta = insert(:entity, name: "Beta")
+
+    beta_account = insert_account(beta, name: "Zulu")
+    alpha_account = insert_account(alpha, name: "Alpha")
+
+    {:ok, beta_report} = Reporting.create_saved_account_report(%{account_id: beta_account.id})
+    {:ok, alpha_report} = Reporting.create_saved_account_report(%{account_id: alpha_account.id})
+
+    {:ok, view, _html} = conn |> log_in_root() |> live("/reports")
+
+    assert has_element?(
+             view,
+             "#saved-account-report-title-#{alpha_report.id}[href=\"/reports/account-reports/#{alpha_report.id}\"]"
+           )
+
+    assert has_element?(
+             view,
+             "#saved-account-report-title-#{beta_report.id}[href=\"/reports/account-reports/#{beta_report.id}\"]"
+           )
+
+    html = render(view)
+    alpha_label = Reporting.saved_account_report_label(alpha_report)
+    beta_label = Reporting.saved_account_report_label(beta_report)
+
+    assert elem(:binary.match(html, alpha_label), 0) < elem(:binary.match(html, beta_label), 0)
   end
 
   test "refresh action enqueues reporting jobs for included accounts", %{conn: conn} do

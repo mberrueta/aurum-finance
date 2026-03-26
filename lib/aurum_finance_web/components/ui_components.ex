@@ -11,6 +11,7 @@ defmodule AurumFinanceWeb.UiComponents do
     - section_panel/1 — common titled section card with optional badge/actions
     - info_label/1    — field label with small info tooltip icon
     - info_callout/1  — informative callout with tone-based colors/icons
+    - pagination_controls/1 — reusable prev/next controls with page info badge
 
   Utility:
     - format_money/2  — formats a number as "sign + value + currency code"
@@ -18,6 +19,8 @@ defmodule AurumFinanceWeb.UiComponents do
 
   use Phoenix.Component
   use Gettext, backend: AurumFinance.Gettext
+
+  alias AurumFinance.Helpers
 
   @doc """
   Purpose: renders the standard page title row.
@@ -60,12 +63,13 @@ defmodule AurumFinanceWeb.UiComponents do
 
       <.badge variant={:warn}>Needs review</.badge>
   """
+  attr :id, :string, default: nil
   attr :variant, :atom, default: :default, values: [:default, :good, :warn, :bad, :purple]
   slot :inner_block, required: true
 
   def badge(assigns) do
     ~H"""
-    <span class={["au-badge", badge_class(@variant)]}>
+    <span id={@id} class={["au-badge", badge_class(@variant)]}>
       {render_slot(@inner_block)}
     </span>
     """
@@ -76,6 +80,132 @@ defmodule AurumFinanceWeb.UiComponents do
   defp badge_class(:bad), do: "au-badge-bad"
   defp badge_class(:purple), do: "au-badge-purple"
   defp badge_class(_), do: ""
+
+  @doc """
+  Purpose: renders a compact translated status pill with a semantic variant.
+
+  Use: pass the status atom.
+
+  Example:
+
+      <.status_badge status={:converted} />
+  """
+  attr :status, :atom, required: true
+
+  def status_badge(assigns) do
+    ~H"""
+    <span class={["rounded-full border px-3 py-1", status_badge_class(@status)]}>
+      {status_badge_label(@status)}
+    </span>
+    """
+  end
+
+  defp status_badge_class(status) when status in [:good, :active, :ok, :converted, :live],
+    do: "border-emerald-300/20 bg-emerald-400/10 text-emerald-50/90"
+
+  defp status_badge_class(status)
+       when status in [:warn, :unavailable, :stopped, :retrying, :cancelled, :processing],
+       do: "border-amber-300/25 bg-amber-400/10 text-amber-50/90"
+
+  defp status_badge_class(status)
+       when status in [:bad, :error, :failed, :invalid, :duplicate, :sync_failed],
+       do: "border-rose-300/25 bg-rose-400/10 text-rose-50/90"
+
+  defp status_badge_class(status)
+       when status in [:purple, :queued, :running, :pinned, :pending, :completed_with_errors],
+       do: "border-violet-300/20 bg-violet-400/10 text-violet-50/90"
+
+  defp status_badge_class(_), do: "border-white/10 bg-white/[0.03] text-white/60"
+
+  defp status_badge_label(:converted),
+    do: dgettext("reports", "account_report_status_converted")
+
+  defp status_badge_label(:unavailable),
+    do: dgettext("reports", "account_report_status_unavailable")
+
+  defp status_badge_label(:not_requested),
+    do: dgettext("reports", "account_report_status_native")
+
+  defp status_badge_label(:invalid),
+    do: dgettext("import", "status_invalid")
+
+  defp status_badge_label(:live),
+    do: dgettext("reports", "saved_account_report_mode_live")
+
+  defp status_badge_label(:pinned),
+    do: dgettext("reports", "saved_account_report_mode_pinned_short")
+
+  defp status_badge_label(:active),
+    do: dgettext("fx", "sync_status_active")
+
+  defp status_badge_label(:cancelled),
+    do: dgettext("fx", "sync_status_cancelled")
+
+  defp status_badge_label(:sync_failed),
+    do: dgettext("fx", "sync_status_failed")
+
+  defp status_badge_label(:never_run),
+    do: dgettext("fx", "sync_status_never_run")
+
+  defp status_badge_label(:not_applicable),
+    do: dgettext("fx", "sync_status_not_applicable")
+
+  defp status_badge_label(:ok),
+    do: dgettext("fx", "sync_status_ok")
+
+  defp status_badge_label(:queued),
+    do: dgettext("fx", "sync_status_queued")
+
+  defp status_badge_label(:retrying),
+    do: dgettext("fx", "sync_status_retrying")
+
+  defp status_badge_label(:running),
+    do: dgettext("fx", "sync_status_running")
+
+  defp status_badge_label(:stopped),
+    do: dgettext("fx", "sync_status_stopped")
+
+  defp status_badge_label(:pending),
+    do: dgettext("import", "status_pending")
+
+  defp status_badge_label(:processing),
+    do: dgettext("import", "status_processing")
+
+  defp status_badge_label(:complete),
+    do: dgettext("import", "status_complete")
+
+  defp status_badge_label(:ready),
+    do: dgettext("import", "status_ready")
+
+  defp status_badge_label(:duplicate),
+    do: dgettext("import", "status_duplicate")
+
+  defp status_badge_label(:completed_with_errors),
+    do: dgettext("import", "status_completed_with_errors")
+
+  defp status_badge_label(:committed),
+    do: dgettext("import", "status_committed")
+
+  defp status_badge_label(:skipped),
+    do: dgettext("import", "status_skipped")
+
+  defp status_badge_label(:unreconciled),
+    do: dgettext("reconciliation", "status_unreconciled")
+
+  defp status_badge_label(:cleared),
+    do: dgettext("reconciliation", "status_cleared")
+
+  defp status_badge_label(:reconciled),
+    do: dgettext("reconciliation", "status_reconciled")
+
+  defp status_badge_label(:in_progress),
+    do: dgettext("reconciliation", "status_in_progress")
+
+  defp status_badge_label(:completed),
+    do: dgettext("reconciliation", "status_completed")
+
+  defp status_badge_label(:idle), do: dgettext("reconciliation", "badge_detail_idle")
+  defp status_badge_label(status), do: Helpers.humanize_token(status)
 
   @doc """
   Purpose: renders a tiny trend chart for KPI cards and summaries.
@@ -200,9 +330,18 @@ defmodule AurumFinanceWeb.UiComponents do
       </.section_panel>
   """
   attr :title, :string, required: true
+  attr :title_href, :string, default: nil
+  attr :title_link_id, :string, default: nil
   attr :class, :string, default: nil
-  attr :badge, :string, default: nil
+  attr :badge, :any, default: nil
   attr :badge_variant, :atom, default: :default, values: [:default, :good, :warn, :bad, :purple]
+  attr :secondary_badge, :string, default: nil
+
+  attr :secondary_badge_variant, :atom,
+    default: :default,
+    values: [:default, :good, :warn, :bad, :purple]
+
+  attr :secondary_badge_id, :string, default: nil
   slot :actions
   slot :inner_block, required: true
 
@@ -210,9 +349,26 @@ defmodule AurumFinanceWeb.UiComponents do
     ~H"""
     <.au_card class={@class}>
       <:header>
-        <span>{@title}</span>
+        <%= if @title_href do %>
+          <.link
+            id={@title_link_id}
+            navigate={@title_href}
+            class="transition hover:text-white/90 focus:text-white/90"
+          >
+            {@title}
+          </.link>
+        <% else %>
+          <span>{@title}</span>
+        <% end %>
         <div class="flex items-center gap-[8px]">
           <.badge :if={@badge} variant={@badge_variant}>{@badge}</.badge>
+          <.badge
+            :if={@secondary_badge}
+            id={@secondary_badge_id}
+            variant={@secondary_badge_variant}
+          >
+            {@secondary_badge}
+          </.badge>
           {render_slot(@actions)}
         </div>
       </:header>
@@ -285,6 +441,48 @@ defmodule AurumFinanceWeb.UiComponents do
   defp callout_icon(:warn), do: "!"
   defp callout_icon(:tip), do: "t"
   defp callout_icon(_), do: "i"
+
+  @doc """
+  Purpose: renders compact reusable pagination controls.
+
+  Use: pass the current page, total pages, and target event.
+  The controls are hidden when `total_pages <= 1`.
+  """
+  attr :id_prefix, :string, required: true
+  attr :page, :integer, required: true
+  attr :total_pages, :integer, required: true
+  attr :event, :string, required: true
+  attr :info_text, :string, required: true
+  attr :prev_label, :string, default: "Prev"
+  attr :next_label, :string, default: "Next"
+
+  def pagination_controls(assigns) do
+    ~H"""
+    <div :if={@total_pages > 1} class="flex items-center gap-2 text-xs text-white/54">
+      <span class="rounded-full border border-white/10 px-3 py-1">{@info_text}</span>
+      <button
+        id={"#{@id_prefix}-prev"}
+        type="button"
+        phx-click={@event}
+        phx-value-page={@page - 1}
+        disabled={@page <= 1}
+        class="au-btn px-3"
+      >
+        {@prev_label}
+      </button>
+      <button
+        id={"#{@id_prefix}-next"}
+        type="button"
+        phx-click={@event}
+        phx-value-page={@page + 1}
+        disabled={@page >= @total_pages}
+        class="au-btn au-btn-primary px-3"
+      >
+        {@next_label}
+      </button>
+    </div>
+    """
+  end
 
   @doc """
   Purpose: formats numeric amounts for consistent UI display.

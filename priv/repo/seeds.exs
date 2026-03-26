@@ -1,5 +1,7 @@
 alias AurumFinance.Classification
 alias AurumFinance.Currency
+alias AurumFinance.Fx
+alias AurumFinance.Fx.FxSeries
 alias AurumFinance.Entities.Entity
 alias AurumFinance.Ledger
 alias AurumFinance.Ledger.Account
@@ -7,6 +9,8 @@ alias AurumFinance.Ledger.Transaction
 alias AurumFinance.Repo
 alias AurumFinance.Classification.Rule
 alias AurumFinance.Classification.RuleGroup
+alias AurumFinance.Reporting
+alias AurumFinance.Reporting.SavedAccountReport
 import Ecto.Query
 
 now = DateTime.utc_now() |> DateTime.truncate(:microsecond)
@@ -567,6 +571,108 @@ llc_account =
 operating_checking = llc_account.("Operating Checking")
 software = llc_account.("Software")
 consulting_revenue = llc_account.("Consulting Revenue")
+
+today = Date.utc_today()
+
+ensure_fx_series =
+  fn attrs ->
+    case Repo.get_by(
+           FxSeries,
+           name: attrs.name,
+           base_currency_code: attrs.base_currency_code,
+           quote_currency_code: attrs.quote_currency_code
+         ) do
+      nil ->
+        {:ok, series} = Fx.create_fx_series(attrs)
+        IO.puts("seeded fx series: #{attrs.name}")
+        series
+
+      series ->
+        IO.puts("fx series already exists, skipping: #{attrs.name}")
+        series
+    end
+  end
+
+ensure_fx_rates =
+  fn series, rows ->
+    {:ok, _count} = Fx.upsert_rate_records(series.id, rows)
+    IO.puts("seeded fx rate rows: #{series.name}")
+    series
+  end
+
+ensure_saved_account_report =
+  fn label, attrs ->
+    lookup_attrs =
+      Map.take(attrs, [:account_id, :target_currency_code, :fx_series_id, :pinned_as_of_date])
+
+    case Repo.get_by(SavedAccountReport, lookup_attrs) do
+      nil ->
+        {:ok, _saved_account_report} = Reporting.create_saved_account_report(attrs)
+        IO.puts("seeded saved account report: #{label}")
+
+      _saved_account_report ->
+        IO.puts("saved account report already exists, skipping: #{label}")
+    end
+  end
+
+usd_brl_daily =
+  ensure_fx_series.(%{
+    name: "USD/BRL Daily",
+    base_currency_code: "USD",
+    quote_currency_code: "BRL",
+    from_date: Date.add(today, -30),
+    source_kind: :csv_upload,
+    description: "Seeded demo series for USD to BRL conversions"
+  })
+
+ensure_fx_rates.(usd_brl_daily, [
+  %{date: Date.add(today, -3), value: Decimal.new("5.02")},
+  %{date: Date.add(today, -2), value: Decimal.new("5.06")},
+  %{date: Date.add(today, -1), value: Decimal.new("5.08")},
+  %{date: today, value: Decimal.new("5.11")}
+])
+
+usd_eur_daily =
+  ensure_fx_series.(%{
+    name: "USD/EUR Daily",
+    base_currency_code: "USD",
+    quote_currency_code: "EUR",
+    from_date: Date.add(today, -30),
+    source_kind: :csv_upload,
+    description: "Seeded demo series for USD to EUR conversions"
+  })
+
+ensure_fx_rates.(usd_eur_daily, [
+  %{date: Date.add(today, -3), value: Decimal.new("0.91")},
+  %{date: Date.add(today, -2), value: Decimal.new("0.905")},
+  %{date: Date.add(today, -1), value: Decimal.new("0.902")},
+  %{date: today, value: Decimal.new("0.899")}
+])
+
+ensure_saved_account_report.("Personal / Mercury Checking", %{
+  account_id: checking.id,
+  convert: false
+})
+
+ensure_saved_account_report.("Personal / High Yield Savings BRL", %{
+  account_id: savings.id,
+  convert: true,
+  target_currency_code: "BRL",
+  fx_series_id: usd_brl_daily.id,
+  pinned_as_of_date: Date.add(today, -1)
+})
+
+ensure_saved_account_report.("Personal / Chase Sapphire EUR", %{
+  account_id: credit_card.id,
+  convert: true,
+  target_currency_code: "EUR",
+  fx_series_id: usd_eur_daily.id
+})
+
+ensure_saved_account_report.("Main LLC / Operating Checking", %{
+  account_id: operating_checking.id,
+  convert: false
+})
 
 _client_payment =
   ensure_transaction.(%{

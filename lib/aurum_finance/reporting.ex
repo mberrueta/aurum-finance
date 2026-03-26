@@ -15,6 +15,9 @@ defmodule AurumFinance.Reporting do
   import Ecto.Query, warn: false
 
   alias AurumFinance.Entities
+  alias AurumFinance.Reporting.AccountReport
+  alias AurumFinance.Reporting.SavedAccountReport
+  alias AurumFinance.Reporting.SavedAccountReports
   alias AurumFinance.Ledger.Account
   alias AurumFinance.Repo
   alias AurumFinance.Reporting.DailyBalanceSnapshot
@@ -30,6 +33,8 @@ defmodule AurumFinance.Reporting do
           | {:date_from, Date.t()}
           | {:date_to, Date.t()}
 
+  @type account_report_opt :: AccountReport.option()
+  @type saved_account_report_opt :: SavedAccountReports.list_opt()
   @type net_worth_opt :: {:as_of_date, Date.t()}
   @type net_worth_drilldown_opt :: NetWorth.drilldown_option()
   @type refresh_result :: %{
@@ -169,6 +174,112 @@ defmodule AurumFinance.Reporting do
           {:ok, map()} | {:error, term()}
   def net_worth_report(entity_ids, opts \\ []) when is_list(entity_ids) do
     NetWorth.get_report(entity_ids, opts)
+  end
+
+  @doc """
+  Returns one account-scoped report with optional FX conversion.
+
+  `:as_of_date` is required. When conversion is requested, both
+  `:target_currency_code` and `:fx_series_id` must be provided and the series
+  must be compatible with the requested conversion.
+
+  Missing FX rates do not fail the report; the native amount still returns and
+  the conversion status becomes `:unavailable`.
+
+  ## Examples
+
+      iex> AurumFinance.Reporting.account_report(Ecto.UUID.generate(), as_of_date: ~D[2026-03-20])
+      {:error, :account_not_found}
+  """
+  @spec account_report(Ecto.UUID.t(), [account_report_opt()]) ::
+          {:ok, map()} | {:error, Ecto.Changeset.t()} | {:error, term()}
+  def account_report(account_id, opts \\ []) when is_list(opts) do
+    AccountReport.get_report(account_id, opts)
+  end
+
+  @doc """
+  Lists saved account report definitions.
+
+  Results are derived from persisted configuration and preloaded with account
+  and entity data for dashboard rendering.
+  """
+  @spec list_saved_account_reports([saved_account_report_opt()]) :: [SavedAccountReport.t()]
+  def list_saved_account_reports(opts \\ []) do
+    SavedAccountReports.list_saved_account_reports(opts)
+  end
+
+  @doc """
+  Returns one saved account report definition by id.
+
+  ## Examples
+
+      iex> AurumFinance.Reporting.get_saved_account_report(Ecto.UUID.generate())
+      nil
+  """
+  @spec get_saved_account_report(Ecto.UUID.t()) :: SavedAccountReport.t() | nil
+  def get_saved_account_report(id) do
+    SavedAccountReports.get_saved_account_report(id)
+  end
+
+  @doc """
+  Returns a changeset for saved account report definitions.
+  """
+  @spec change_saved_account_report(SavedAccountReport.t(), map()) :: Ecto.Changeset.t()
+  def change_saved_account_report(%SavedAccountReport{} = saved_account_report, attrs \\ %{}) do
+    SavedAccountReports.change_saved_account_report(saved_account_report, attrs)
+  end
+
+  @doc """
+  Creates a saved account report definition.
+  """
+  @spec create_saved_account_report(map()) ::
+          {:ok, SavedAccountReport.t()} | {:error, Ecto.Changeset.t()}
+  def create_saved_account_report(attrs) do
+    SavedAccountReports.create_saved_account_report(attrs)
+  end
+
+  @doc """
+  Updates a saved account report definition.
+  """
+  @spec update_saved_account_report(SavedAccountReport.t(), map()) ::
+          {:ok, SavedAccountReport.t()} | {:error, Ecto.Changeset.t()}
+  def update_saved_account_report(%SavedAccountReport{} = saved_account_report, attrs) do
+    SavedAccountReports.update_saved_account_report(saved_account_report, attrs)
+  end
+
+  @doc """
+  Deletes a saved account report definition.
+  """
+  @spec delete_saved_account_report(SavedAccountReport.t()) ::
+          {:ok, SavedAccountReport.t()} | {:error, Ecto.Changeset.t()}
+  def delete_saved_account_report(%SavedAccountReport{} = saved_account_report) do
+    SavedAccountReports.delete_saved_account_report(saved_account_report)
+  end
+
+  @doc """
+  Returns the derived display label for one saved account report definition.
+
+  ## Examples
+
+      iex> account = %AurumFinance.Ledger.Account{
+      ...>   name: "Checking",
+      ...>   entity: %AurumFinance.Entities.Entity{name: "Alpha"}
+      ...> }
+      iex> report = %AurumFinance.Reporting.SavedAccountReport{account: account}
+      iex> AurumFinance.Reporting.saved_account_report_label(report)
+      "Alpha · Checking"
+  """
+  @spec saved_account_report_label(SavedAccountReport.t()) :: String.t()
+  def saved_account_report_label(%SavedAccountReport{} = saved_account_report) do
+    SavedAccountReports.display_label(saved_account_report)
+  end
+
+  @doc """
+  Returns one saved account report preview, derived at read time.
+  """
+  @spec preview_saved_account_report(SavedAccountReport.t()) :: {:ok, map()} | {:error, term()}
+  def preview_saved_account_report(%SavedAccountReport{} = saved_account_report) do
+    SavedAccountReports.preview_saved_account_report(saved_account_report)
   end
 
   @doc """

@@ -15,6 +15,19 @@
     </:actions>
   </.page_header>
 
+  <div id="net-worth-guidance" class="grid gap-4 lg:grid-cols-3">
+    <div id="net-worth-guidance-info">
+      <.info_callout title={dgettext("reports", "net_worth_what_is_title")} tone={:info}>
+        <p>{dgettext("reports", "net_worth_what_is_body")}</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "net_worth_what_is_item_1")}</li>
+          <li>{dgettext("reports", "net_worth_what_is_item_2")}</li>
+          <li>{dgettext("reports", "net_worth_what_is_item_3")}</li>
+        </ul>
+      </.info_callout>
+    </div>
+  </div>
+
   <.section_panel
     title={dgettext("reports", "net_worth_filters_title")}
     class="overflow-hidden"
@@ -232,5 +245,25 @@
 
   <div :if={@report.empty?} id="net-worth-empty">
     <.empty_state text={dgettext("reports", "hub_net_worth_empty")} />
+  </div>
+
+  <div id="net-worth-guidance-bottom" class="grid gap-4 lg:grid-cols-2">
+    <div id="net-worth-guidance-tip">
+      <.info_callout title={dgettext("reports", "net_worth_tips_title")} tone={:tip}>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "net_worth_tips_item_1")}</li>
+          <li>{dgettext("reports", "net_worth_tips_item_2")}</li>
+        </ul>
+      </.info_callout>
+    </div>
+
+    <div id="net-worth-guidance-warning">
+      <.info_callout title={dgettext("reports", "net_worth_warning_title")} tone={:warn}>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "net_worth_warning_item_1")}</li>
+          <li>{dgettext("reports", "net_worth_warning_item_2")}</li>
+        </ul>
+      </.info_callout>
+    </div>
   </div>
 </div>

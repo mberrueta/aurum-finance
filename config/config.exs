@@ -22,7 +22,8 @@ config :aurum_finance, Oban,
   queues: [
     imports: 5,
     materializations: 5,
-    reporting: 5
+    reporting: 5,
+    fx: 3
   ]
 
 # Configure the endpoint
@@ -60,7 +61,25 @@ config :tailwind,
 # Configure Elixir's Logger
 config :logger, :default_formatter,
   format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
+  metadata: [
+    :request_id,
+    :event,
+    :account_id,
+    :as_of_date,
+    :conversion_status,
+    :inserted,
+    :fx_series_id,
+    :from_date,
+    :provider,
+    :reason,
+    :series_id,
+    :series_count,
+    :updated,
+    :to_date,
+    :upserted_count,
+    :url,
+    :error
+  ]
 
 # Use Jason for JSON parsing in Phoenix
 config :phoenix, :json_library, Jason

@@ -174,57 +174,6 @@ defmodule AurumFinanceWeb.ImportDetailsLive do
 
   defp warning_entries(%ImportedFile{}), do: []
 
-  defp import_status_variant(:pending), do: :purple
-  defp import_status_variant(:processing), do: :warn
-  defp import_status_variant(:complete), do: :good
-  defp import_status_variant(:failed), do: :bad
-  defp import_status_variant(_), do: :default
-
-  defp import_status_label(:pending), do: dgettext("import", "status_pending")
-  defp import_status_label(:processing), do: dgettext("import", "status_processing")
-  defp import_status_label(:complete), do: dgettext("import", "status_complete")
-  defp import_status_label(:failed), do: dgettext("import", "status_failed")
-  defp import_status_label(status), do: to_string(status)
-
-  defp imported_row_status_variant(:ready), do: :good
-  defp imported_row_status_variant(:duplicate), do: :warn
-  defp imported_row_status_variant(:invalid), do: :bad
-  defp imported_row_status_variant(_), do: :default
-
-  defp imported_row_status_label(:ready), do: dgettext("import", "status_ready")
-  defp imported_row_status_label(:duplicate), do: dgettext("import", "status_duplicate")
-  defp imported_row_status_label(:invalid), do: dgettext("import", "status_invalid")
-  defp imported_row_status_label(status), do: to_string(status)
-
-  defp materialization_status_variant(:pending), do: :purple
-  defp materialization_status_variant(:processing), do: :warn
-  defp materialization_status_variant(:completed), do: :good
-  defp materialization_status_variant(:completed_with_errors), do: :warn
-  defp materialization_status_variant(:failed), do: :bad
-  defp materialization_status_variant(_), do: :default
-
-  defp materialization_status_label(:pending), do: dgettext("import", "status_pending")
-  defp materialization_status_label(:processing), do: dgettext("import", "status_processing")
-  defp materialization_status_label(:completed), do: dgettext("import", "status_completed")
-
-  defp materialization_status_label(:completed_with_errors),
-    do: dgettext("import", "status_completed_with_errors")
-
-  defp materialization_status_label(:failed), do: dgettext("import", "status_failed")
-  defp materialization_status_label(status), do: to_string(status)
-
-  defp row_materialization_status_variant(:committed), do: :good
-  defp row_materialization_status_variant(:skipped), do: :warn
-  defp row_materialization_status_variant(:failed), do: :bad
-  defp row_materialization_status_variant(_), do: :default
-
-  defp row_materialization_status_label(:committed),
-    do: dgettext("import", "status_committed")
-
-  defp row_materialization_status_label(:skipped), do: dgettext("import", "status_skipped")
-  defp row_materialization_status_label(:failed), do: dgettext("import", "status_failed")
-  defp row_materialization_status_label(status), do: to_string(status)
-
   defp format_timestamp(nil), do: "—"
 
   defp format_timestamp(%DateTime{} = timestamp),

@@ -21,6 +21,7 @@ defmodule AurumFinance.Factory do
   alias AurumFinance.Reconciliation.ReconciliationAuditLog
   alias AurumFinance.Reconciliation.ReconciliationSession
   alias AurumFinance.Repo
+  alias AurumFinance.Reporting.SavedAccountReport
 
   def entity_factory do
     %Entity{
@@ -48,6 +49,19 @@ defmodule AurumFinance.Factory do
       institution_name: Faker.Company.name(),
       institution_account_ref: sequence(:account_ref, fn n -> Integer.to_string(1000 + n) end),
       notes: Faker.Lorem.sentence()
+    }
+  end
+
+  def saved_account_report_factory do
+    account = insert(:account)
+
+    %SavedAccountReport{
+      account: account,
+      account_id: account.id,
+      target_currency_code: nil,
+      fx_series: nil,
+      fx_series_id: nil,
+      pinned_as_of_date: nil
     }
   end
 

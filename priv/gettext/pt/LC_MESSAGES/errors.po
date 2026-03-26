@@ -1,0 +1,241 @@
+## "msgid"s in this file come from POT (.pot) files.
+###
+### Do not add, change, or remove "msgid"s manually here as
+### they're tied to the ones in the corresponding POT file
+### (with the same domain).
+###
+### Use "mix gettext.extract --merge" or "mix gettext.merge"
+### to merge POT files into PO files.
+msgid ""
+msgstr ""
+"Language: pt\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+
+msgid "can't be blank"
+msgstr ""
+
+msgid "has already been taken"
+msgstr ""
+
+msgid "is invalid"
+msgstr ""
+
+msgid "must be accepted"
+msgstr ""
+
+msgid "has invalid format"
+msgstr ""
+
+msgid "has an invalid entry"
+msgstr ""
+
+msgid "is reserved"
+msgstr ""
+
+msgid "does not match confirmation"
+msgstr ""
+
+msgid "is still associated with this entry"
+msgstr ""
+
+msgid "are still associated with this entry"
+msgstr ""
+
+msgid "should have %{count} item(s)"
+msgid_plural "should have %{count} item(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be %{count} character(s)"
+msgid_plural "should be %{count} character(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be %{count} byte(s)"
+msgid_plural "should be %{count} byte(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should have at least %{count} item(s)"
+msgid_plural "should have at least %{count} item(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be at least %{count} character(s)"
+msgid_plural "should be at least %{count} character(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be at least %{count} byte(s)"
+msgid_plural "should be at least %{count} byte(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should have at most %{count} item(s)"
+msgid_plural "should have at most %{count} item(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be at most %{count} character(s)"
+msgid_plural "should be at most %{count} character(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "should be at most %{count} byte(s)"
+msgid_plural "should be at most %{count} byte(s)"
+msgstr[0] ""
+msgstr[1] ""
+
+msgid "must be less than %{number}"
+msgstr ""
+
+msgid "must be greater than %{number}"
+msgstr ""
+
+msgid "must be less than or equal to %{number}"
+msgstr ""
+
+msgid "must be greater than or equal to %{number}"
+msgstr ""
+
+msgid "must be equal to %{number}"
+msgstr ""
+
+msgid "error_missing_root_password_hash"
+msgstr ""
+
+msgid "error_missing_root_password_hash_hint"
+msgstr ""
+
+msgid "error_account_currency_code_format_invalid"
+msgstr ""
+
+msgid "error_account_currency_code_length_invalid"
+msgstr ""
+
+msgid "error_account_immutable_field"
+msgstr ""
+
+msgid "error_active_session_exists"
+msgstr ""
+
+msgid "error_account_management_group_invalid"
+msgstr ""
+
+msgid "error_account_name_length_invalid"
+msgstr ""
+
+msgid "error_account_operational_subtype_invalid_for_type"
+msgstr ""
+
+msgid "error_account_operational_subtype_not_allowed"
+msgstr ""
+
+msgid "error_account_operational_subtype_required"
+msgstr ""
+
+msgid "error_posting_amount_invalid"
+msgstr ""
+
+msgid "error_transaction_account_not_found"
+msgstr ""
+
+msgid "error_transaction_already_voided"
+msgstr ""
+
+msgid "error_transaction_cross_entity_account"
+msgstr ""
+
+msgid "error_transaction_correlation_id_reserved"
+msgstr ""
+
+msgid "error_transaction_description_length_invalid"
+msgstr ""
+
+msgid "error_transaction_immutable_field"
+msgstr ""
+
+msgid "error_transaction_minimum_postings"
+msgstr ""
+
+msgid "error_transaction_unbalanced"
+msgstr ""
+
+msgid "error_import_materialization_count_must_be_non_negative"
+msgstr ""
+
+msgid "error_import_materialization_error_message_length_invalid"
+msgstr ""
+
+msgid "error_import_materialization_already_in_progress"
+msgstr ""
+
+msgid "error_import_materialization_no_rows_to_materialize"
+msgstr ""
+
+msgid "error_import_materialization_requested_by_length_invalid"
+msgstr ""
+
+msgid "error_import_row_materialization_outcome_reason_length_invalid"
+msgstr ""
+
+msgid "error_import_row_materialization_transaction_forbidden"
+msgstr ""
+
+msgid "error_import_row_materialization_transaction_required"
+msgstr ""
+
+msgid "error_field_required"
+msgstr ""
+
+msgid "error_reconciliation_statement_balance_invalid"
+msgstr ""
+
+msgid "error_rule_action_operation_invalid"
+msgstr ""
+
+msgid "error_rule_actions_required"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:1613
+#: lib/aurum_finance_web/live/rules_live.ex:1616
+#, elixir-autogen
+msgid "error_rule_expression_required"
+msgstr ""
+
+msgid "error_rule_group_name_length_invalid"
+msgstr ""
+
+msgid "error_rule_group_name_taken_for_scope"
+msgstr ""
+
+msgid "error_rule_group_priority_invalid"
+msgstr ""
+
+msgid "error_rule_group_scope_invalid"
+msgstr ""
+
+msgid "error_rule_name_length_invalid"
+msgstr ""
+
+msgid "error_rule_position_invalid"
+msgstr ""
+
+msgid "error_rule_action_field_not_allowed"
+msgstr ""
+
+msgid "error_rule_action_category_account_not_found"
+msgstr ""
+
+msgid "error_rule_action_category_global_not_allowed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:1622
+#, elixir-autogen
+msgid "error_rule_expression_invalid"
+msgstr ""
+
+#: lib/aurum_finance_web/live/rules_live.ex:1619
+#, elixir-autogen
+msgid "error_rule_expression_invalid_regex"
+msgstr ""

@@ -6,7 +6,7 @@ msgstr ""
 msgid "badge_active_sessions"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:465
+#: lib/aurum_finance_web/components/ui_components.ex:207
 #, elixir-autogen
 msgid "badge_detail_idle"
 msgstr ""
@@ -16,17 +16,17 @@ msgstr ""
 msgid "btn_back_to_sessions"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:495
+#: lib/aurum_finance_web/components/reconciliation_components.ex:482
 #, elixir-autogen
 msgid "btn_clear_selection"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:453
+#: lib/aurum_finance_web/components/reconciliation_components.ex:449
 #, elixir-autogen
 msgid "btn_create_session"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:242
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:238
 #, elixir-autogen
 msgid "btn_mark_cleared"
 msgstr ""
@@ -36,82 +36,82 @@ msgstr ""
 msgid "btn_new_session"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:251
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:247
 #, elixir-autogen
 msgid "btn_reconcile"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:498
+#: lib/aurum_finance_web/components/reconciliation_components.ex:485
 #, elixir-autogen
 msgid "btn_select_all"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:492
+#: lib/aurum_finance_web/components/reconciliation_components.ex:479
 #, elixir-autogen
 msgid "btn_select_all_disabled"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:417
+#: lib/aurum_finance_web/components/reconciliation_components.ex:413
 #, elixir-autogen
 msgid "btn_statement_date_last_month"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:426
+#: lib/aurum_finance_web/components/reconciliation_components.ex:422
 #, elixir-autogen
 msgid "btn_statement_date_last_year"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:216
+#: lib/aurum_finance_web/components/reconciliation_components.ex:212
 #, elixir-autogen
 msgid "btn_unclear"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:328
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:324
 #, elixir-autogen
 msgid "callout_how_use_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:329
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:325
 #, elixir-autogen
 msgid "callout_how_use_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:330
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:326
 #, elixir-autogen
 msgid "callout_how_use_item_3"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:326
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:322
 #, elixir-autogen
 msgid "callout_how_use_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:345
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:341
 #, elixir-autogen
 msgid "callout_tips_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:346
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:342
 #, elixir-autogen
 msgid "callout_tips_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:343
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:339
 #, elixir-autogen
 msgid "callout_tips_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:338
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:334
 #, elixir-autogen
 msgid "callout_warning_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:339
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:335
 #, elixir-autogen
 msgid "callout_warning_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:336
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:332
 #, elixir-autogen
 msgid "callout_warning_title"
 msgstr ""
@@ -141,62 +141,62 @@ msgstr ""
 msgid "callout_what_is_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:282
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:278
 #, elixir-autogen
 msgid "col_actions"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:280
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:276
 #, elixir-autogen
 msgid "col_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:278
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:274
 #, elixir-autogen
 msgid "col_date"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:279
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:275
 #, elixir-autogen
 msgid "col_description"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:277
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:273
 #, elixir-autogen
 msgid "col_select"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:281
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:277
 #, elixir-autogen
 msgid "col_state"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:503
+#: lib/aurum_finance_web/components/reconciliation_components.ex:490
 #, elixir-autogen
 msgid "confirm_complete_balanced"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:506
+#: lib/aurum_finance_web/components/reconciliation_components.ex:493
 #, elixir-autogen
 msgid "confirm_complete_unbalanced"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:476
+#: lib/aurum_finance_web/components/reconciliation_components.ex:466
 #, elixir-autogen
 msgid "difference_balanced"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:477
+#: lib/aurum_finance_web/components/reconciliation_components.ex:467
 #, elixir-autogen
 msgid "difference_unbalanced"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:373
+#: lib/aurum_finance_web/components/reconciliation_components.ex:369
 #, elixir-autogen
 msgid "empty_form_requires_account"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:369
+#: lib/aurum_finance_web/components/reconciliation_components.ex:365
 #, elixir-autogen
 msgid "empty_form_requires_entity"
 msgstr ""
@@ -211,7 +211,7 @@ msgstr ""
 msgid "empty_no_institution_accounts"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:270
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:266
 #, elixir-autogen
 msgid "empty_no_postings"
 msgstr ""
@@ -293,12 +293,12 @@ msgstr ""
 msgid "flash_session_not_found"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:396
+#: lib/aurum_finance_web/components/reconciliation_components.ex:392
 #, elixir-autogen
 msgid "label_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:214
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:210
 #, elixir-autogen
 msgid "label_account_currency"
 msgstr ""
@@ -308,32 +308,32 @@ msgstr ""
 msgid "label_account_filter"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:127
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:206
+#: lib/aurum_finance_web/components/reconciliation_components.ex:125
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:202
 #, elixir-autogen
 msgid "label_completed_at"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:198
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:194
 #, elixir-autogen
 msgid "label_created_at"
 msgstr ""
 
 #: lib/aurum_finance_web/components/reconciliation_components.ex:30
-#: lib/aurum_finance_web/components/reconciliation_components.ex:386
+#: lib/aurum_finance_web/components/reconciliation_components.ex:382
 #, elixir-autogen
 msgid "label_entity"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:119
-#: lib/aurum_finance_web/components/reconciliation_components.ex:433
+#: lib/aurum_finance_web/components/reconciliation_components.ex:117
+#: lib/aurum_finance_web/components/reconciliation_components.ex:429
 #, elixir-autogen
 msgid "label_statement_balance"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:113
-#: lib/aurum_finance_web/components/reconciliation_components.ex:405
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:190
+#: lib/aurum_finance_web/components/reconciliation_components.ex:111
+#: lib/aurum_finance_web/components/reconciliation_components.ex:401
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:186
 #, elixir-autogen
 msgid "label_statement_date"
 msgstr ""
@@ -343,7 +343,7 @@ msgstr ""
 msgid "option_all_accounts"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:398
+#: lib/aurum_finance_web/components/reconciliation_components.ex:394
 #, elixir-autogen
 msgid "option_select_account"
 msgstr ""
@@ -364,57 +364,57 @@ msgstr ""
 msgid "page_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:357
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:353
 #, elixir-autogen
 msgid "panel_new_session_subtitle"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:356
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:352
 #, elixir-autogen
 msgid "panel_new_session_title"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:442
+#: lib/aurum_finance_web/components/reconciliation_components.ex:438
 #, elixir-autogen
 msgid "panel_session_flow_item_1"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:443
+#: lib/aurum_finance_web/components/reconciliation_components.ex:439
 #, elixir-autogen
 msgid "panel_session_flow_item_2"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:444
+#: lib/aurum_finance_web/components/reconciliation_components.ex:440
 #, elixir-autogen
 msgid "panel_session_flow_item_3"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:439
+#: lib/aurum_finance_web/components/reconciliation_components.ex:435
 #, elixir-autogen
 msgid "panel_session_flow_title"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:264
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:260
 #, elixir-autogen
 msgid "postings_hint"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:459
+#: lib/aurum_finance_web/components/reconciliation_components.ex:455
 #, elixir-autogen
 msgid "section_detail"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:462
+#: lib/aurum_finance_web/components/reconciliation_components.ex:458
 #, elixir-autogen
 msgid "section_detail_for_account"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:321
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:317
 #, elixir-autogen
 msgid "section_guidance"
 msgstr ""
 
-#: lib/aurum_finance_web/live/reconciliation_live.html.heex:261
+#: lib/aurum_finance_web/live/reconciliation_live.html.heex:257
 #, elixir-autogen
 msgid "section_postings"
 msgstr ""
@@ -434,27 +434,27 @@ msgstr ""
 msgid "sessions_hint"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:530
+#: lib/aurum_finance_web/components/ui_components.ex:196
 #, elixir-autogen
 msgid "status_cleared"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:483
-#, elixir-autogen
-msgid "status_completed"
-msgstr ""
-
-#: lib/aurum_finance_web/components/reconciliation_components.ex:480
+#: lib/aurum_finance_web/components/ui_components.ex:202
 #, elixir-autogen
 msgid "status_in_progress"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:531
+#: lib/aurum_finance_web/components/ui_components.ex:205
+#, elixir-autogen
+msgid "status_completed"
+msgstr ""
+
+#: lib/aurum_finance_web/components/ui_components.ex:199
 #, elixir-autogen
 msgid "status_reconciled"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:529
+#: lib/aurum_finance_web/components/ui_components.ex:193
 #, elixir-autogen
 msgid "status_unreconciled"
 msgstr ""
@@ -514,102 +514,102 @@ msgstr ""
 msgid "workflow_step_open_body"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:258
+#: lib/aurum_finance_web/components/reconciliation_components.ex:254
 #, elixir-autogen
 msgid "btn_close_match_candidates"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:206
+#: lib/aurum_finance_web/components/reconciliation_components.ex:202
 #, elixir-autogen
 msgid "btn_inspect_matches"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:263
+#: lib/aurum_finance_web/components/reconciliation_components.ex:259
 #, elixir-autogen
 msgid "empty_match_candidates_idle"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:286
+#: lib/aurum_finance_web/components/reconciliation_components.ex:282
 #, elixir-autogen
 msgid "empty_match_candidates_none"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:316
+#: lib/aurum_finance_web/components/reconciliation_components.ex:312
 #, elixir-autogen
 msgid "label_match_file_id"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:557
+#: lib/aurum_finance_web/components/reconciliation_components.ex:531
 #, elixir-autogen
 msgid "label_match_score"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:272
+#: lib/aurum_finance_web/components/reconciliation_components.ex:268
 #, elixir-autogen
 msgid "label_selected_posting"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:539
+#: lib/aurum_finance_web/components/reconciliation_components.ex:513
 #, elixir-autogen
 msgid "match_band_below_threshold"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:534
+#: lib/aurum_finance_web/components/reconciliation_components.ex:508
 #, elixir-autogen
 msgid "match_band_exact"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:535
+#: lib/aurum_finance_web/components/reconciliation_components.ex:509
 #, elixir-autogen
 msgid "match_band_near"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:536
+#: lib/aurum_finance_web/components/reconciliation_components.ex:510
 #, elixir-autogen
 msgid "match_band_weak"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:244
+#: lib/aurum_finance_web/components/reconciliation_components.ex:240
 #, elixir-autogen
 msgid "match_candidates_intro"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:247
+#: lib/aurum_finance_web/components/reconciliation_components.ex:243
 #, elixir-autogen
 msgid "match_candidates_read_only"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:545
+#: lib/aurum_finance_web/components/reconciliation_components.ex:519
 #, elixir-autogen
 msgid "match_reason_close_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:551
+#: lib/aurum_finance_web/components/reconciliation_components.ex:525
 #, elixir-autogen
 msgid "match_reason_description_similarity"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:542
+#: lib/aurum_finance_web/components/reconciliation_components.ex:516
 #, elixir-autogen
 msgid "match_reason_exact_amount"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:548
+#: lib/aurum_finance_web/components/reconciliation_components.ex:522
 #, elixir-autogen
 msgid "match_reason_near_date"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:547
+#: lib/aurum_finance_web/components/reconciliation_components.ex:521
 #, elixir-autogen
 msgid "match_reason_same_day"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:241
+#: lib/aurum_finance_web/components/reconciliation_components.ex:237
 #, elixir-autogen
 msgid "section_match_candidates"
 msgstr ""
 
-#: lib/aurum_finance_web/components/reconciliation_components.ex:336
+#: lib/aurum_finance_web/components/reconciliation_components.ex:332
 #, elixir-autogen
 msgid "btn_accept_match_candidate"
 msgstr ""

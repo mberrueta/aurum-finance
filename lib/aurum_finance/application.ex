@@ -17,6 +17,7 @@ defmodule AurumFinance.Application do
         AurumFinanceWeb.Endpoint
       ]
       |> maybe_add_reporting_ledger_event_bridge()
+      |> maybe_add_fx_global_sync_scheduler()
 
     opts = [strategy: :one_for_one, name: AurumFinance.Supervisor]
     Supervisor.start_link(children, opts)
@@ -40,5 +41,17 @@ defmodule AurumFinance.Application do
 
   defp bridge_enabled? do
     Application.get_env(:aurum_finance, :start_reporting_ledger_event_bridge, true)
+  end
+
+  defp maybe_add_fx_global_sync_scheduler(children),
+    do: maybe_add_fx_global_sync_scheduler(children, fx_scheduler_enabled?())
+
+  defp maybe_add_fx_global_sync_scheduler(children, true),
+    do: children ++ [AurumFinance.Fx.GlobalSyncScheduler]
+
+  defp maybe_add_fx_global_sync_scheduler(children, false), do: children
+
+  defp fx_scheduler_enabled? do
+    Application.get_env(:aurum_finance, :start_fx_global_sync_scheduler, true)
   end
 end
