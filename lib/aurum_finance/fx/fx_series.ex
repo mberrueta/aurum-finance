@@ -15,6 +15,7 @@ defmodule AurumFinance.Fx.FxSeries do
 
   import Ecto.Changeset
 
+  alias AurumFinance.Fx.FxRateRecord
   alias AurumFinance.Fx.Provider
   alias AurumFinance.Helpers
 
@@ -45,6 +46,8 @@ defmodule AurumFinance.Fx.FxSeries do
     field :sync_status, Ecto.Enum, values: @sync_statuses, default: :active
     field :sync_message, :string
     field :last_sync_attempted_at, :utc_datetime_usec
+
+    has_many :fx_rate_records, FxRateRecord, foreign_key: :fx_series_id
 
     # Virtual fields populated by list/filter queries
     field :row_count, :integer, virtual: true, default: 0

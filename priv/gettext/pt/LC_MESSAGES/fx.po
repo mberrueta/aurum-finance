@@ -12,8 +12,8 @@ msgstr ""
 "Plural-Forms: nplurals=2; plural=(n != 1);\n"
 
 #: lib/aurum_finance_web/live/fx_live.ex:43
-#: lib/aurum_finance_web/live/fx_live.ex:684
-#: lib/aurum_finance_web/live/fx_live.ex:689
+#: lib/aurum_finance_web/live/fx_live.ex:687
+#: lib/aurum_finance_web/live/fx_live.ex:692
 #: lib/aurum_finance_web/live/fx_live.html.heex:3
 #, elixir-autogen, elixir-format
 msgid "page_title"
@@ -268,12 +268,25 @@ msgstr ""
 #: lib/aurum_finance_web/live/fx_live.ex:189
 #: lib/aurum_finance_web/live/fx_live.ex:233
 #: lib/aurum_finance_web/live/fx_live.ex:327
-#: lib/aurum_finance_web/live/fx_live.ex:348
 #: lib/aurum_finance_web/live/fx_live.ex:592
-#: lib/aurum_finance_web/live/fx_live.ex:610
-#: lib/aurum_finance_web/live/fx_live.ex:620
+#: lib/aurum_finance_web/live/fx_live.ex:613
 #, elixir-autogen, elixir-format
 msgid "flash_save_failed"
+msgstr ""
+
+#: lib/aurum_finance_web/live/fx_live.ex:348
+#, elixir-autogen, elixir-format
+msgid "flash_series_not_found"
+msgstr ""
+
+#: lib/aurum_finance_web/live/fx_live.ex:604
+#, elixir-autogen, elixir-format
+msgid "flash_csv_imported"
+msgstr ""
+
+#: lib/aurum_finance_web/live/fx_live.ex:623
+#, elixir-autogen, elixir-format
+msgid "flash_csv_import_failed"
 msgstr ""
 
 #: lib/aurum_finance_web/live/fx_live.ex:309

@@ -166,6 +166,11 @@ msgstr "Unavailable"
 msgid "hub_report_status_ready"
 msgstr ""
 
+#: lib/aurum_finance/reporting/saved_account_reports.ex:302
+#, elixir-autogen, elixir-format
+msgid "account_report_same_currency_error"
+msgstr "Target currency must be different from the account currency"
+
 #: lib/aurum_finance_web/live/reports_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "hub_subtitle"
@@ -689,11 +694,6 @@ msgstr "Unavailable"
 #, elixir-autogen, elixir-format
 msgid "saved_account_report_invalid_body"
 msgstr "This saved report definition cannot run right now. Edit it to restore validity."
-
-#: lib/aurum_finance/reporting/saved_account_reports.ex:302
-#, elixir-autogen, elixir-format
-msgid "account_report_same_currency_error"
-msgstr "Target currency must be different from the account currency"
 
 #: lib/aurum_finance_web/components/ui_components.ex:133
 #, elixir-autogen, elixir-format

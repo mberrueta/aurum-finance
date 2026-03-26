@@ -22,6 +22,8 @@ defmodule AurumFinance.Reporting.AccountReport do
   alias AurumFinance.Reporting.DailyBalanceSnapshot
   alias AurumFinance.Repo
 
+  require Logger
+
   @no_fx_rate_message "No FX rate found within 4 days"
   @no_native_amount_message "Native balance is unavailable for conversion"
 
@@ -54,6 +56,7 @@ defmodule AurumFinance.Reporting.AccountReport do
          {:ok, account} <- fetch_account(account_id),
          {:ok, report} <- build_native_report(account, params) do
       maybe_apply_conversion(report, params)
+      |> log_generated_report(account.id)
     end
   end
 
@@ -262,4 +265,18 @@ defmodule AurumFinance.Reporting.AccountReport do
       projection_version: snapshot.snapshot_projection_version
     }
   end
+
+  defp log_generated_report({:ok, report}, account_id) do
+    Logger.info(
+      "reporting.account_report.generated account_id=#{account_id} as_of_date=#{Date.to_iso8601(report.as_of_date)} conversion_status=#{report.conversion_status}",
+      event: "reporting.account_report.generated",
+      account_id: account_id,
+      as_of_date: report.as_of_date,
+      conversion_status: report.conversion_status
+    )
+
+    {:ok, report}
+  end
+
+  defp log_generated_report(other, _account_id), do: other
 end

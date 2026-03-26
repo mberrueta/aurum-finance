@@ -28,7 +28,7 @@ defmodule AurumFinance.Repo.Migrations.CreateFxSeriesAndRateRecords do
     create table(:fx_rate_records, primary_key: false) do
       add :id, :binary_id, primary_key: true
 
-      add :fx_series_id, references(:fx_series, type: :binary_id, on_delete: :nothing),
+      add :fx_series_id, references(:fx_series, type: :binary_id, on_delete: :restrict),
         null: false
 
       add :effective_date, :date, null: false

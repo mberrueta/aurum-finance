@@ -435,27 +435,27 @@ msgstr "Workflow"
 msgid "sessions_hint"
 msgstr "Active sessions stay at the top. Completed sessions remain available as read-only history."
 
-#: lib/aurum_finance_web/components/ui_components.ex:199
+#: lib/aurum_finance_web/components/ui_components.ex:196
 #, elixir-autogen
 msgid "status_cleared"
 msgstr "Cleared"
 
-#: lib/aurum_finance_web/components/ui_components.ex:205
+#: lib/aurum_finance_web/components/ui_components.ex:202
 #, elixir-autogen
 msgid "status_in_progress"
 msgstr "In progress"
 
-#: lib/aurum_finance_web/components/ui_components.ex:208
+#: lib/aurum_finance_web/components/ui_components.ex:205
 #, elixir-autogen
 msgid "status_completed"
 msgstr "Completed"
 
-#: lib/aurum_finance_web/components/ui_components.ex:202
+#: lib/aurum_finance_web/components/ui_components.ex:199
 #, elixir-autogen
 msgid "status_reconciled"
 msgstr "Reconciled"
 
-#: lib/aurum_finance_web/components/ui_components.ex:196
+#: lib/aurum_finance_web/components/ui_components.ex:193
 #, elixir-autogen
 msgid "status_unreconciled"
 msgstr "Unreconciled"

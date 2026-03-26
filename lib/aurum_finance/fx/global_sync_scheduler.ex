@@ -4,8 +4,8 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
   enqueues sync jobs for any series that are stale (i.e., their most recent
   rate record is before yesterday or they have no records at all).
 
-  On startup, an immediate `:run` message is scheduled to catch up after
-  deploys or restarts. Subsequent runs are scheduled every 24 hours.
+  On startup, a short `:run` delay is scheduled to avoid racing Oban init.
+  Subsequent runs are scheduled every 24 hours.
 
   ## Design note
 
@@ -35,7 +35,7 @@ defmodule AurumFinance.Fx.GlobalSyncScheduler do
 
   @impl GenServer
   def init(_opts) do
-    schedule_run(0)
+    schedule_run(:timer.seconds(10))
     {:ok, %{}}
   end
 

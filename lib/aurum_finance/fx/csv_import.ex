@@ -21,6 +21,8 @@ defmodule AurumFinance.Fx.CsvImport do
   alias AurumFinance.Fx.FxSeries
   alias AurumFinance.Repo
 
+  require Logger
+
   @doc """
   Parses a raw CSV binary into validated `%{date: Date.t(), value: Decimal.t()}`
   rows.
@@ -111,6 +113,13 @@ defmodule AurumFinance.Fx.CsvImport do
           {:ok, %{inserted: non_neg_integer(), updated: non_neg_integer()}}
           | {:error, :not_a_csv_series}
   def import(%FxSeries{source_kind: :provider_module}, _rows) do
+    Logger.warning(
+      "fx.csv_import.failure series_id=#{series_id_string(nil)} reason=not_a_csv_series",
+      event: "fx.csv_import.failure",
+      series_id: nil,
+      reason: "not_a_csv_series"
+    )
+
     {:error, :not_a_csv_series}
   end
 
@@ -119,12 +128,28 @@ defmodule AurumFinance.Fx.CsvImport do
     overlap_count = count_overlapping(overlap_result)
     oldest_imported_date = oldest_imported_date(rows)
 
-    Repo.transaction(fn ->
-      {:ok, _count} = Fx.upsert_rate_records(series.id, rows)
-      maybe_update_series_from_date(series, oldest_imported_date)
-    end)
+    case run_import_transaction(series, rows, oldest_imported_date) do
+      {:ok, _} ->
+        Logger.info(
+          "fx.csv_import.success series_id=#{series_id_string(series.id)} inserted=#{length(rows) - overlap_count} updated=#{overlap_count}",
+          event: "fx.csv_import.success",
+          series_id: series.id,
+          inserted: length(rows) - overlap_count,
+          updated: overlap_count
+        )
 
-    {:ok, %{inserted: length(rows) - overlap_count, updated: overlap_count}}
+        {:ok, %{inserted: length(rows) - overlap_count, updated: overlap_count}}
+
+      {:error, reason} ->
+        Logger.warning(
+          "fx.csv_import.failure series_id=#{series_id_string(series.id)} reason=#{format_import_log_reason(reason)}",
+          event: "fx.csv_import.failure",
+          series_id: series.id,
+          reason: format_import_log_reason(reason)
+        )
+
+        {:error, reason}
+    end
   end
 
   defp count_overlapping(:no_overlap), do: 0
@@ -148,6 +173,28 @@ defmodule AurumFinance.Fx.CsvImport do
 
     :ok
   end
+
+  defp run_import_transaction(series, rows, oldest_imported_date) do
+    try do
+      Repo.transaction(fn ->
+        {:ok, _count} = Fx.upsert_rate_records(series.id, rows)
+        maybe_update_series_from_date(series, oldest_imported_date)
+      end)
+    rescue
+      exception ->
+        {:error, exception}
+    catch
+      :exit, reason ->
+        {:error, reason}
+    end
+  end
+
+  defp format_import_log_reason(reason) do
+    inspect(reason)
+  end
+
+  defp series_id_string(nil), do: "nil"
+  defp series_id_string(series_id), do: series_id
 
   defp split_lines(content) do
     content

@@ -36,7 +36,7 @@ defmodule AurumFinance.Fx.Providers.FrankfurterEcb do
   defp build_url(base, quote_code, from_date, to_date) do
     start_str = Date.to_iso8601(from_date)
     end_str = Date.to_iso8601(to_date)
-    "#{@base_url}/#{start_str}..#{end_str}?from=#{base}&to=#{quote_code}"
+    "#{base_url()}/#{start_str}..#{end_str}?from=#{base}&to=#{quote_code}"
   end
 
   defp do_request(url) do
@@ -91,4 +91,10 @@ defmodule AurumFinance.Fx.Providers.FrankfurterEcb do
   end
 
   defp parse_rate_entry(_date_str, _currency_map, _quote_code), do: nil
+
+  defp base_url do
+    :aurum_finance
+    |> Application.get_env(:fx_provider_base_urls, %{})
+    |> Map.get("frankfurter_ecb", @base_url)
+  end
 end

@@ -213,20 +213,24 @@ defmodule AurumFinance.Fx do
   @spec delete_fx_series(FxSeries.t()) ::
           {:ok, FxSeries.t()} | {:error, :has_records} | {:error, Ecto.Changeset.t()}
   def delete_fx_series(%FxSeries{} = series) do
-    series.id
-    |> count_rate_records()
-    |> do_delete(series)
+    series
+    |> Ecto.Changeset.change()
+    |> Ecto.Changeset.no_assoc_constraint(:fx_rate_records,
+      name: :fx_rate_records_fx_series_id_fkey
+    )
+    |> Repo.delete()
+    |> normalize_delete_result()
   end
 
-  defp count_rate_records(fx_series_id) do
-    FxRateRecord
-    |> where([r], r.fx_series_id == ^fx_series_id)
-    |> select([r], count(r.id))
-    |> Repo.one()
-  end
+  defp normalize_delete_result({:ok, series}), do: {:ok, series}
 
-  defp do_delete(0, series), do: Repo.delete(series)
-  defp do_delete(_count, _series), do: {:error, :has_records}
+  defp normalize_delete_result({:error, %Ecto.Changeset{} = changeset}) do
+    if Keyword.has_key?(changeset.errors, :fx_rate_records) do
+      {:error, :has_records}
+    else
+      {:error, changeset}
+    end
+  end
 
   @doc """
   Returns an `FxSeries` changeset for form rendering.
@@ -267,33 +271,19 @@ defmodule AurumFinance.Fx do
   """
   @spec list_compatible_fx_series(String.t(), String.t(), Date.t()) :: [map()]
   def list_compatible_fx_series(account_currency_code, target_currency_code, as_of_date) do
-    direct_query =
-      FxSeries
-      |> where(
-        [s],
-        s.base_currency_code == ^account_currency_code and
-          s.quote_currency_code == ^target_currency_code
-      )
-      |> where([s], s.from_date <= ^as_of_date)
-      |> where([s], is_nil(s.to_date) or s.to_date >= ^as_of_date)
-      |> select_merge([s], %{inverted?: false})
-
-    inverted_query =
-      FxSeries
-      |> where(
-        [s],
-        s.base_currency_code == ^target_currency_code and
-          s.quote_currency_code == ^account_currency_code
-      )
-      |> where([s], s.from_date <= ^as_of_date)
-      |> where([s], is_nil(s.to_date) or s.to_date >= ^as_of_date)
-      |> select_merge([s], %{inverted?: true})
-
-    direct_results = Repo.all(direct_query)
-    inverted_results = Repo.all(inverted_query)
-
-    (direct_results ++ inverted_results)
-    |> Enum.sort_by(& &1.name)
+    FxSeries
+    |> where(
+      [s],
+      (s.base_currency_code == ^account_currency_code and
+         s.quote_currency_code == ^target_currency_code) or
+        (s.base_currency_code == ^target_currency_code and
+           s.quote_currency_code == ^account_currency_code)
+    )
+    |> where([s], s.from_date <= ^as_of_date)
+    |> where([s], is_nil(s.to_date) or s.to_date >= ^as_of_date)
+    |> select_merge([s], %{inverted?: s.base_currency_code == ^target_currency_code})
+    |> order_by([s], asc: s.name)
+    |> Repo.all()
   end
 
   @doc """

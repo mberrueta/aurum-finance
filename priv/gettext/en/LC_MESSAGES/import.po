@@ -313,11 +313,6 @@ msgstr "Review workflow"
 
 #: lib/aurum_finance_web/components/ui_components.ex:184
 #, elixir-autogen
-msgid "status_completed"
-msgstr "Completed"
-
-#: lib/aurum_finance_web/components/ui_components.ex:187
-#, elixir-autogen
 msgid "status_completed_with_errors"
 msgstr "Completed with errors"
 
@@ -692,12 +687,12 @@ msgstr "%{rows} total · %{ready} ready · %{duplicates} duplicates · %{invalid
 msgid "label_transaction_reference"
 msgstr "Transaction"
 
-#: lib/aurum_finance_web/components/ui_components.ex:190
+#: lib/aurum_finance_web/components/ui_components.ex:187
 #, elixir-autogen, elixir-format
 msgid "status_committed"
 msgstr "Committed"
 
-#: lib/aurum_finance_web/components/ui_components.ex:193
+#: lib/aurum_finance_web/components/ui_components.ex:190
 #, elixir-autogen, elixir-format
 msgid "status_skipped"
 msgstr "Skipped"

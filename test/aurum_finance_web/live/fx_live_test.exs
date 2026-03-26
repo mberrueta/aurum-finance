@@ -57,6 +57,11 @@ defmodule AurumFinanceWeb.FxLiveTest do
       assert has_element?(view, "#app-breadcrumb-1", "Direct URL series")
     end
 
+    test "redirects missing slug with a not-found flash", %{conn: conn} do
+      assert {:error, {:live_redirect, %{to: "/fx", flash: %{"error" => "FX series not found."}}}} =
+               conn |> log_in_root() |> live("/fx/missing-series")
+    end
+
     test "rate records support filtering, pagination and weekday formatting", %{conn: conn} do
       series = insert_fx_series(%{name: "Paged series"})
 
@@ -142,6 +147,13 @@ defmodule AurumFinanceWeb.FxLiveTest do
 
       render_upload(upload, "rates.csv")
       view |> element("#fx-csv-upload-form") |> render_submit()
+
+      assert Fx.count_fx_rate_records(series) == 2
+
+      assert Enum.map(Fx.list_fx_rate_records(series), & &1.effective_date) == [
+               ~D[2026-03-11],
+               ~D[2026-03-10]
+             ]
 
       assert render(view) =~ "CSV imported. Inserted: 2. Updated: 0."
       assert render(view) =~ "2026-03-11 (Wed)"

@@ -322,11 +322,6 @@ msgstr ""
 
 #: lib/aurum_finance_web/components/ui_components.ex:184
 #, elixir-autogen
-msgid "status_completed"
-msgstr ""
-
-#: lib/aurum_finance_web/components/ui_components.ex:187
-#, elixir-autogen
 msgid "status_completed_with_errors"
 msgstr ""
 
@@ -701,12 +696,12 @@ msgstr ""
 msgid "label_transaction_reference"
 msgstr ""
 
-#: lib/aurum_finance_web/components/ui_components.ex:190
+#: lib/aurum_finance_web/components/ui_components.ex:187
 #, elixir-autogen, elixir-format
 msgid "status_committed"
 msgstr ""
 
-#: lib/aurum_finance_web/components/ui_components.ex:193
+#: lib/aurum_finance_web/components/ui_components.ex:190
 #, elixir-autogen, elixir-format
 msgid "status_skipped"
 msgstr ""

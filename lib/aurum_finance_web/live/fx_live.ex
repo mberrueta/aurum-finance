@@ -345,7 +345,7 @@ defmodule AurumFinanceWeb.FxLive do
 
       nil ->
         socket
-        |> put_flash(:error, dgettext("fx", "flash_save_failed"))
+        |> put_flash(:error, dgettext("fx", "flash_series_not_found"))
         |> push_patch(to: ~p"/fx")
     end
   end
@@ -599,7 +599,10 @@ defmodule AurumFinanceWeb.FxLive do
       %FxSeries{} = refreshed_series ->
         {:ok,
          socket
-         |> put_flash(:info, "CSV imported. Inserted: #{inserted}. Updated: #{updated}.")
+         |> put_flash(
+           :info,
+           dgettext("fx", "flash_csv_imported", inserted: inserted, updated: updated)
+         )
          |> assign(:rate_page, 1)
          |> load_series()
          |> load_series_detail(refreshed_series)}
@@ -617,7 +620,7 @@ defmodule AurumFinanceWeb.FxLive do
      put_flash(
        socket,
        :error,
-       "#{dgettext("fx", "flash_save_failed")} (#{format_csv_import_error(reason)})"
+       dgettext("fx", "flash_csv_import_failed", reason: format_csv_import_error(reason))
      )}
   end
 
