@@ -87,9 +87,12 @@
   <.section_panel
     :if={@imported_file}
     title={dgettext("import", "section_import_summary")}
-    badge={import_status_label(@imported_file.status)}
-    badge_variant={import_status_variant(@imported_file.status)}
+    badge={nil}
+    badge_variant={:default}
   >
+    <:actions>
+      <.status_badge status={@imported_file.status} />
+    </:actions>
     <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-4">
       <div class="rounded-2xl border border-cyan-300/18 bg-cyan-300/[0.07] p-4">
         <p class="text-[11px] uppercase tracking-[0.16em] text-cyan-100/65">
@@ -219,9 +222,7 @@
               <span class="font-mono text-xs uppercase tracking-[0.16em] text-white/42">
                 {dgettext("import", "label_row_index")} {row.row_index}
               </span>
-              <.badge variant={imported_row_status_variant(row.status)}>
-                {imported_row_status_label(row.status)}
-              </.badge>
+              <.status_badge status={row.status} />
             </div>
 
             <h3 class="text-base font-semibold text-white/92">
@@ -326,9 +327,7 @@
                     @import_materialization_sequence_by_id
                   )}
                 </span>
-                <.badge variant={row_materialization_status_variant(row_materialization.status)}>
-                  {row_materialization_status_label(row_materialization.status)}
-                </.badge>
+                <.status_badge status={row_materialization.status} />
                 <span class="text-xs text-white/48">
                   {materialization_outcome_meta(
                     row_materialization,
@@ -386,9 +385,7 @@
               <span class="text-xs uppercase tracking-[0.16em] text-white/38">
                 {materialization_label(materialization, @import_materialization_sequence_by_id)}
               </span>
-              <.badge variant={materialization_status_variant(materialization.status)}>
-                {materialization_status_label(materialization.status)}
-              </.badge>
+              <.status_badge status={materialization.status} />
               <span class="text-xs uppercase tracking-[0.16em] text-white/38">
                 {dgettext("import", "label_requested_by")} {materialization.requested_by}
               </span>

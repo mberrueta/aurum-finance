@@ -122,29 +122,29 @@ defmodule AurumFinance.Fx do
   end
 
   @doc """
-  Fetches an FX series by id. Raises `Ecto.NoResultsError` if not found.
+  Fetches an FX series by id or returns `nil` when missing.
 
   ## Examples
 
-      iex> AurumFinance.Fx.get_fx_series!(Ecto.UUID.generate())
-      ** (Ecto.NoResultsError)
+      iex> AurumFinance.Fx.get_fx_series(Ecto.UUID.generate())
+      nil
   """
-  @spec get_fx_series!(Ecto.UUID.t()) :: FxSeries.t()
-  def get_fx_series!(id) do
-    Repo.get!(FxSeries, id)
+  @spec get_fx_series(Ecto.UUID.t()) :: FxSeries.t() | nil
+  def get_fx_series(id) do
+    Repo.get(FxSeries, id)
   end
 
   @doc """
-  Fetches an FX series by slug. Raises `Ecto.NoResultsError` if not found.
+  Fetches an FX series by slug or returns `nil` when missing.
 
   ## Examples
 
-      iex> AurumFinance.Fx.get_fx_series_by_slug!("nonexistent")
-      ** (Ecto.NoResultsError)
+      iex> AurumFinance.Fx.get_fx_series_by_slug("nonexistent")
+      nil
   """
-  @spec get_fx_series_by_slug!(String.t()) :: FxSeries.t()
-  def get_fx_series_by_slug!(slug) do
-    Repo.get_by!(FxSeries, slug: slug)
+  @spec get_fx_series_by_slug(String.t()) :: FxSeries.t() | nil
+  def get_fx_series_by_slug(slug) do
+    Repo.get_by(FxSeries, slug: slug)
   end
 
   @doc """

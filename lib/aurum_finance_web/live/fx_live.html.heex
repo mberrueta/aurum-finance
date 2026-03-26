@@ -84,9 +84,7 @@
               </td>
               <td>
                 <div class="flex flex-col gap-1">
-                  <.badge variant={series_status_variant(series)}>
-                    {series_status_label(series)}
-                  </.badge>
+                  <.status_badge status={series_status_status(series)} />
                   <p
                     :if={series.sync_message}
                     class="max-w-xs text-xs leading-4 text-rose-200/80"
@@ -289,9 +287,7 @@
         <.au_card :if={@selected_series.source_kind == :provider_module}>
           <:header>
             <span>{dgettext("fx", "detail_section_sync_status")}</span>
-            <.badge variant={sync_status_variant(@sync_status)}>
-              {sync_status_label(@sync_status)}
-            </.badge>
+            <.status_badge status={sync_badge_status(@sync_status.state)} />
           </:header>
 
           <div id="fx-sync-status" class="space-y-3">

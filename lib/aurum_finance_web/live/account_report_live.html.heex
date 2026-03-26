@@ -1,0 +1,252 @@
+<div id="account-report-page" class="space-y-4">
+  <.page_header title={dgettext("reports", "saved_account_report_page_title")}>
+    <:subtitle>
+      {dgettext("reports", "saved_account_report_page_subtitle")}
+    </:subtitle>
+    <:actions>
+      <.link id="account-report-back-link" navigate={~p"/reports"} class="au-btn">
+        {dgettext("reports", "account_report_back_to_reports")}
+      </.link>
+
+      <.button
+        :if={!is_nil(@saved_account_report.id)}
+        id="account-report-delete-submit"
+        type="button"
+        variant="danger"
+        phx-click="delete"
+        data-confirm={dgettext("reports", "saved_account_report_delete_confirm")}
+      >
+        {dgettext("reports", "saved_account_report_delete")}
+      </.button>
+    </:actions>
+  </.page_header>
+
+  <div id="account-report-guidance" class="grid gap-4 lg:grid-cols-3">
+    <div id="account-report-guidance-info">
+      <.info_callout title={dgettext("reports", "saved_account_report_info_title")} tone={:info}>
+        <p>{dgettext("reports", "saved_account_report_info_body")}</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "saved_account_report_info_item_1")}</li>
+          <li>{dgettext("reports", "saved_account_report_info_item_2")}</li>
+          <li>{dgettext("reports", "saved_account_report_info_item_3")}</li>
+        </ul>
+
+        <.link navigate={~p"/fx"} class="au-btn mt-4 w-full justify-center sm:w-auto">
+          {dgettext("reports", "account_report_open_fx")}
+        </.link>
+      </.info_callout>
+    </div>
+
+    <div id="account-report-guidance-tip">
+      <.info_callout title={dgettext("reports", "saved_account_report_tip_title")} tone={:tip}>
+        {dgettext("reports", "saved_account_report_tip_body")}
+      </.info_callout>
+    </div>
+
+    <div id="account-report-guidance-warning">
+      <.info_callout
+        title={dgettext("reports", "saved_account_report_warning_title")}
+        tone={:warn}
+      >
+        {dgettext("reports", "saved_account_report_warning_body")}
+      </.info_callout>
+    </div>
+  </div>
+
+  <.section_panel
+    title={dgettext("reports", "saved_account_report_form_title")}
+    class="overflow-hidden"
+  >
+    <.form
+      for={@form}
+      id="account-report-form"
+      phx-change="validate"
+      phx-submit="save"
+      class="space-y-5"
+    >
+      <div class="grid gap-4 md:grid-cols-2">
+        <.input
+          field={@form[:account_id]}
+          id="account-report-account-id"
+          type="select"
+          label={dgettext("reports", "account_report_account_label")}
+          options={@account_options}
+          prompt={dgettext("reports", "account_report_account_prompt")}
+          disabled={@account_options == []}
+        />
+
+        <.input
+          field={@form[:pinned_as_of_date]}
+          id="account-report-as-of-date"
+          type="date"
+          label={dgettext("reports", "saved_account_report_date_label")}
+        />
+      </div>
+
+      <p class="text-sm text-white/52">
+        {dgettext("reports", "saved_account_report_date_hint")}
+      </p>
+
+      <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+        <.input
+          field={@form[:convert]}
+          id="account-report-convert-toggle"
+          type="checkbox"
+          label={dgettext("reports", "account_report_convert_label")}
+        />
+
+        <p class="mt-2 text-[13px] leading-relaxed text-white/58">
+          {dgettext("reports", "account_report_convert_hint")}
+        </p>
+      </div>
+
+      <%= if @convert_enabled? do %>
+        <div id="account-report-conversion-fields" class="space-y-4">
+          <div class="grid gap-4 md:grid-cols-2">
+            <.input
+              field={@form[:target_currency_code]}
+              id="account-report-target-currency"
+              type="select"
+              label={dgettext("reports", "account_report_target_currency_label")}
+              options={@currency_options}
+              prompt={dgettext("reports", "account_report_target_currency_prompt")}
+            />
+
+            <.input
+              field={@form[:fx_series_id]}
+              id="account-report-fx-series"
+              type="select"
+              label={dgettext("reports", "account_report_fx_series_label")}
+              options={compatible_series_options(@compatible_series)}
+              prompt={dgettext("reports", "account_report_fx_series_prompt")}
+              disabled={@compatible_series == []}
+            />
+          </div>
+
+          <div :if={@compatible_series == []} id="account-report-compatible-empty">
+            <.empty_state text={dgettext("reports", "account_report_no_compatible_series")} />
+          </div>
+        </div>
+      <% end %>
+
+      <div class="flex flex-wrap items-center justify-between gap-4">
+        <p
+          :if={@current_account}
+          id="account-report-selected-account"
+          class="text-sm text-white/62"
+        >
+          {dgettext("reports", "account_report_selected_account",
+            account: @current_account.name,
+            currency: @current_account.currency_code
+          )}
+        </p>
+        <p :if={!@current_account} class="text-sm text-white/45">
+          {dgettext("reports", "account_report_select_account_hint")}
+        </p>
+
+        <.button
+          id="account-report-submit"
+          type="submit"
+          variant="primary"
+          disabled={@account_options == [] or @saving?}
+        >
+          {dgettext("reports", "saved_account_report_save")}
+        </.button>
+      </div>
+    </.form>
+  </.section_panel>
+
+  <div id="account-report-preview">
+    <.section_panel
+      title={dgettext("reports", "saved_account_report_preview_title")}
+      badge={preview_status_label(@preview)}
+      badge_variant={preview_status_variant(@preview)}
+      secondary_badge={series_reference_badge(@preview && @preview.report)}
+      secondary_badge_id="account-report-series-reference"
+      secondary_badge_variant={:purple}
+    >
+      <div id="account-report-result">
+        <%= cond do %>
+          <% is_nil(@preview) -> %>
+            <.empty_state text={dgettext("reports", "saved_account_report_preview_empty")} />
+          <% @preview.status == :invalid -> %>
+            <.empty_state text={@preview.message} />
+          <% true -> %>
+            <div class="grid gap-4 lg:grid-cols-[minmax(0,1.4fr)_minmax(0,0.9fr)]">
+              <div class="space-y-4">
+                <div
+                  :if={@preview.report.conversion_status != :converted}
+                  class="rounded-2xl border border-white/10 bg-white/[0.03] p-4"
+                >
+                  <div class="flex flex-wrap items-center justify-between gap-3">
+                    <div>
+                      <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+                        {dgettext("reports", "account_report_native_amount_label")}
+                      </p>
+                      <p
+                        class="mt-2 text-3xl font-semibold text-white/95"
+                        id="account-report-native-amount"
+                      >
+                        {native_amount_display(@preview.report)}
+                      </p>
+                    </div>
+                    <div class="text-right text-sm text-white/60">
+                      <p>{@preview.report.account_name}</p>
+                      <p>{@preview.report.native_currency_code}</p>
+                    </div>
+                  </div>
+                </div>
+
+                <div
+                  :if={@preview.report.conversion_status != :not_requested}
+                  class="grid gap-3 md:grid-cols-2"
+                >
+                  <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+                      {dgettext("reports", "account_report_converted_amount_label")}
+                    </p>
+                    <p
+                      class="mt-2 text-xl font-semibold text-white/92"
+                      id="account-report-converted-amount"
+                    >
+                      {converted_amount_display(@preview.report)}
+                    </p>
+                  </div>
+
+                  <div class="rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+                      {dgettext("reports", "account_report_rate_date_label")}
+                    </p>
+                    <p
+                      class="mt-2 text-xl font-semibold text-white/92"
+                      id="account-report-rate-date"
+                    >
+                      {rate_date_display(@preview.report)}
+                    </p>
+                  </div>
+                </div>
+
+                <div class="space-y-3">
+                  <div
+                    :if={@preview.report.conversion_status == :unavailable}
+                    id="account-report-unavailable-banner"
+                    class="rounded-2xl border border-amber-300/25 bg-amber-400/10 p-4 text-amber-50"
+                  >
+                    <p class="text-sm font-semibold">
+                      {dgettext("reports", "account_report_unavailable_title")}
+                    </p>
+                    <p
+                      id="account-report-unavailable-message"
+                      class="mt-2 text-sm leading-relaxed text-amber-50/80"
+                    >
+                      {@preview.report.conversion_message}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+        <% end %>
+      </div>
+    </.section_panel>
+  </div>
+</div>

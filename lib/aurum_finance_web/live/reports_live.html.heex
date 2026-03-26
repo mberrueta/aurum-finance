@@ -25,53 +25,52 @@
     </:actions>
   </.page_header>
 
-  <div id="reports-hub-overview">
-    <div id="reports-net-worth-card">
-      <.section_panel
-        title={dgettext("reports", "hub_net_worth_title")}
-        badge={@net_worth_status}
-        badge_variant={@net_worth_badge_variant}
-        class="overflow-hidden"
-      >
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-          <div class="max-w-2xl space-y-3">
-            <p class="text-sm leading-relaxed text-white/68">
-              {dgettext("reports", "hub_net_worth_description")}
-            </p>
+  <div id="reports-guidance" class="">
+    <div id="reports-guidance-info">
+      <.info_callout title={dgettext("reports", "reports_what_is_title")} tone={:info}>
+        <p>{dgettext("reports", "reports_what_is_body")}</p>
+        <ul class="mt-2 list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "reports_what_is_item_1")}</li>
+          <li>{dgettext("reports", "reports_what_is_item_2")}</li>
+          <li>{dgettext("reports", "reports_what_is_item_3")}</li>
+        </ul>
+      </.info_callout>
+    </div>
+  </div>
 
-            <div class="flex flex-wrap items-center gap-2 text-xs text-white/50">
-              <span class="rounded-full border border-white/10 px-3 py-1">
-                {dgettext("reports", "hub_net_worth_as_of",
-                  date: Date.to_iso8601(@hub_report.as_of_date)
-                )}
-              </span>
-              <span class="rounded-full border border-white/10 px-3 py-1">
-                {dgettext("reports", "hub_net_worth_accounts",
-                  count: @hub_report.included_account_count
-                )}
-              </span>
-              <span
-                :if={@hub_report.refresh_suggested?}
-                class="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-amber-50/90"
-              >
-                {dgettext("reports", "hub_net_worth_refresh_hint")}
-              </span>
-            </div>
-          </div>
-
-          <.link
-            id="reports-net-worth-open"
-            navigate={~p"/reports/net-worth"}
-            class="au-btn au-btn-primary w-full justify-center lg:w-auto"
+  <div id="reports-net-worth-card">
+    <.section_panel
+      title={dgettext("reports", "hub_net_worth_title")}
+      title_href={~p"/reports/net-worth"}
+      title_link_id="reports-net-worth-title"
+      badge={@net_worth_status}
+      badge_variant={@net_worth_badge_variant}
+      class="overflow-hidden"
+    >
+      <div class="space-y-4">
+        <div class="flex flex-wrap items-center gap-2 text-xs text-white/50">
+          <span class="rounded-full border border-white/10 px-3 py-1">
+            {dgettext("reports", "hub_net_worth_as_of",
+              date: Date.to_iso8601(@hub_report.as_of_date)
+            )}
+          </span>
+          <span class="rounded-full border border-white/10 px-3 py-1">
+            {dgettext("reports", "hub_net_worth_accounts",
+              count: @hub_report.included_account_count
+            )}
+          </span>
+          <span
+            :if={@hub_report.refresh_suggested?}
+            class="rounded-full border border-amber-300/30 bg-amber-400/10 px-3 py-1 text-amber-50/90"
           >
-            {dgettext("reports", "hub_net_worth_open")}
-          </.link>
+            {dgettext("reports", "hub_net_worth_refresh_hint")}
+          </span>
         </div>
 
         <div
           :if={@hub_report.currency_summaries != []}
           id="reports-net-worth-summary"
-          class="mt-4 grid gap-3 sm:grid-cols-2 xl:grid-cols-3"
+          class="grid gap-3 sm:grid-cols-2"
         >
           <div
             :for={summary <- @compact_currency_summaries}
@@ -106,10 +105,143 @@
           </div>
         </div>
 
-        <div :if={@hub_report.currency_summaries == []} id="reports-net-worth-empty" class="mt-4">
+        <div :if={@hub_report.currency_summaries == []} id="reports-net-worth-empty">
           <.empty_state text={dgettext("reports", "hub_net_worth_empty")} />
         </div>
-      </.section_panel>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div id="reports-saved-account-reports-panel">
+    <.section_panel
+      title={dgettext("reports", "saved_account_reports_title")}
+      badge={Integer.to_string(@saved_account_report_count)}
+      badge_variant={:purple}
+      class="overflow-hidden"
+    >
+      <div class="flex pb-4 justify-end">
+        <.link
+          id="reports-new-saved-report"
+          navigate={~p"/reports/account-reports/new"}
+          class="au-btn"
+        >
+          {dgettext("reports", "saved_account_report_new")}
+        </.link>
+      </div>
+
+      <div
+        id="saved-account-reports"
+        phx-update="stream"
+        class="items-start grid gap-4 md:grid-cols-2 xl:grid-cols-3"
+      >
+        <div id="saved-account-reports-empty" class="hidden only:block col-span-full">
+          <.empty_state text={dgettext("reports", "saved_account_reports_empty")} />
+        </div>
+
+        <div :for={{id, card} <- @streams.saved_account_reports} id={id}>
+          <.au_card class="overflow-hidden">
+            <:header>
+              <div class="min-w-0 flex-1">
+                <.link
+                  id={"saved-account-report-title-#{card.id}"}
+                  navigate={card.path}
+                  class="block truncate text-white/88 transition hover:text-white/95 focus:text-white/95"
+                >
+                  {card.label}
+                </.link>
+              </div>
+            </:header>
+
+            <div class="space-y-4">
+              <div class="flex flex-wrap items-center gap-2 text-xs text-white/50">
+                <.status_badge status={card.status} />
+
+                <.status_badge status={card.mode} />
+
+                <span class="rounded-full border border-white/10 bg-white/[0.03] px-3 py-1 text-white/60">
+                  {dgettext("reports", "saved_account_report_as_of",
+                    date: Date.to_iso8601(card.effective_as_of_date)
+                  )}
+                </span>
+
+                <span
+                  :if={saved_account_report_series_badge(card.report)}
+                  id={"saved-account-report-series-reference-#{card.id}"}
+                  class="rounded-full border border-violet-300/20 bg-violet-400/10 px-3 py-1 text-violet-50/90"
+                >
+                  {saved_account_report_series_badge(card.report)}
+                </span>
+
+                <span
+                  :if={card.invalid?}
+                  class="rounded-full border border-amber-300/25 bg-amber-400/10 px-3 py-1 text-amber-50/90"
+                >
+                  {dgettext("reports", "saved_account_report_invalid")}
+                </span>
+              </div>
+
+              <p class="text-sm leading-relaxed text-white/68">
+                {saved_account_report_summary(card)}
+              </p>
+
+              <%= if card.report do %>
+                <div class="space-y-3">
+                  <div
+                    :if={card.report.conversion_status != :converted}
+                    class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4"
+                  >
+                    <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+                      {dgettext("reports", "account_report_native_amount_label")}
+                    </p>
+                    <p class="mt-2 text-2xl font-semibold text-white/95">
+                      {saved_account_report_native_amount_display(card.report)}
+                    </p>
+                    <p class="mt-2 text-sm text-white/60">
+                      {card.report.account_name}
+                    </p>
+                  </div>
+
+                  <%= if card.report.conversion_status != :not_requested do %>
+                    <div class="rounded-2xl border border-white/10 bg-white/[0.03] px-4 py-4">
+                      <p class="text-[11px] uppercase tracking-[0.24em] text-white/42">
+                        {dgettext("reports", "account_report_converted_amount_label")}
+                      </p>
+                      <p class="mt-2 text-2xl font-semibold text-white/95">
+                        {saved_account_report_converted_amount_display(card.report)}
+                      </p>
+                      <p class="mt-2 text-sm text-white/60">
+                        {saved_account_report_rate_date_display(card.report)}
+                      </p>
+                    </div>
+                  <% end %>
+                </div>
+              <% else %>
+                <.empty_state text={card.invalid_message} />
+              <% end %>
+            </div>
+          </.au_card>
+        </div>
+      </div>
+    </.section_panel>
+  </div>
+
+  <div id="reports-guidance-bottom" class="grid gap-4 lg:grid-cols-2">
+    <div id="reports-guidance-tip">
+      <.info_callout title={dgettext("reports", "reports_tips_title")} tone={:tip}>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "reports_tips_item_1")}</li>
+          <li>{dgettext("reports", "reports_tips_item_2")}</li>
+        </ul>
+      </.info_callout>
+    </div>
+
+    <div id="reports-guidance-warning">
+      <.info_callout title={dgettext("reports", "reports_warning_title")} tone={:warn}>
+        <ul class="list-disc space-y-1 pl-5">
+          <li>{dgettext("reports", "reports_warning_item_1")}</li>
+          <li>{dgettext("reports", "reports_warning_item_2")}</li>
+        </ul>
+      </.info_callout>
     </div>
   </div>
 </div>

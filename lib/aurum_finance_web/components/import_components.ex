@@ -316,9 +316,7 @@ defmodule AurumFinanceWeb.ImportComponents do
         <div class="min-w-0 space-y-3">
           <div class="flex flex-wrap items-center gap-2">
             <p class="truncate text-sm font-semibold text-white/92">{@imported_file.filename}</p>
-            <.badge variant={import_status_variant(@imported_file.status)}>
-              {import_status_label(@imported_file.status)}
-            </.badge>
+            <.status_badge status={@imported_file.status} />
           </div>
 
           <dl class="grid gap-3 text-sm text-white/68 sm:grid-cols-2 xl:grid-cols-4">
@@ -432,36 +430,12 @@ defmodule AurumFinanceWeb.ImportComponents do
       <td class="au-mono whitespace-nowrap">{format_money(@row.amount, @row.currency)}</td>
       <td class="au-mono">{@row.currency}</td>
       <td>
-        <.badge variant={status_variant(@row.status)}>
-          {status_label(@row.status)}
-        </.badge>
+        <.status_badge status={@row.status} />
       </td>
       <td class="text-white/68">{@row.hint}</td>
     </tr>
     """
   end
-
-  defp status_variant(:ready), do: :good
-  defp status_variant(:duplicate), do: :warn
-  defp status_variant(:error), do: :bad
-  defp status_variant(_), do: :default
-
-  defp import_status_variant(:pending), do: :purple
-  defp import_status_variant(:processing), do: :warn
-  defp import_status_variant(:complete), do: :good
-  defp import_status_variant(:failed), do: :bad
-  defp import_status_variant(_), do: :default
-
-  defp import_status_label(:pending), do: dgettext("import", "status_pending")
-  defp import_status_label(:processing), do: dgettext("import", "status_processing")
-  defp import_status_label(:complete), do: dgettext("import", "status_complete")
-  defp import_status_label(:failed), do: dgettext("import", "status_failed")
-  defp import_status_label(status), do: to_string(status)
-
-  defp status_label(:ready), do: dgettext("import", "status_ready")
-  defp status_label(:duplicate), do: dgettext("import", "status_duplicate")
-  defp status_label(:error), do: dgettext("import", "status_error")
-  defp status_label(s), do: to_string(s)
 
   defp entity_options(entities), do: Enum.map(entities, &{&1.name, &1.id})
 

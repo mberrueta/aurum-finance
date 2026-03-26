@@ -57,8 +57,8 @@ defmodule AurumFinance.Fx.SyncWorker do
         }
       }) do
     with {:ok, from_date} <- Date.from_iso8601(from_date_str),
-         {:ok, to_date} <- Date.from_iso8601(to_date_str) do
-      series = Fx.get_fx_series!(fx_series_id)
+         {:ok, to_date} <- Date.from_iso8601(to_date_str),
+         %{} = series <- Fx.get_fx_series(fx_series_id) do
       :ok = Fx.record_sync_tracking(series, :active, attempted_at: now())
 
       Logger.info("FX sync started",
@@ -72,6 +72,8 @@ defmodule AurumFinance.Fx.SyncWorker do
       series.provider_module
       |> Provider.fetch_rates(series, from_date, to_date)
       |> handle_fetch_result(series, attempt, max_attempts)
+    else
+      nil -> {:discard, "fx_series_not_found"}
     end
   end
 

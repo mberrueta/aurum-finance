@@ -52,6 +52,9 @@ defmodule AurumFinanceWeb.Router do
       live "/fx", FxLive, :index
       live "/fx/:slug", FxLive, :show
       live "/reports", ReportsLive, :index
+      live "/reports/account-report", AccountReportLive, :new
+      live "/reports/account-reports/new", AccountReportLive, :new
+      live "/reports/account-reports/:id", AccountReportLive, :edit
       live "/reports/net-worth", NetWorthLive, :index
       live "/settings", SettingsLive, :index
       live "/audit-log", AuditLogLive, :index

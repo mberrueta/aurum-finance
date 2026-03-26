@@ -2,6 +2,8 @@ defmodule AurumFinance.FxTest do
   use AurumFinance.DataCase, async: true
   use Oban.Testing, repo: AurumFinance.Repo
 
+  doctest AurumFinance.Fx
+
   import ExUnit.CaptureLog
 
   alias AurumFinance.Fx

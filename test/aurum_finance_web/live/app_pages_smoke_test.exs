@@ -59,6 +59,13 @@ defmodule AurumFinanceWeb.AppPagesSmokeTest do
     assert has_element?(view, "#app-shell-search")
   end
 
+  test "account report page smoke", %{conn: conn} do
+    conn = log_in_root(conn)
+    {:ok, view, _html} = live(conn, "/reports/account-reports/new")
+    assert has_element?(view, "#account-report-page")
+    assert has_element?(view, "#app-shell-search")
+  end
+
   test "settings page smoke", %{conn: conn} do
     conn = log_in_root(conn)
     {:ok, view, _html} = live(conn, "/settings")

@@ -1,12 +1,13 @@
 defmodule AurumFinanceWeb.ReportsLive do
   @moduledoc """
-  Reporting hub for the first real report surface.
+  Reporting hub for built-in and saved account reports.
   """
 
   use AurumFinanceWeb, :live_view
 
   alias AurumFinance.Entities
   alias AurumFinance.Reporting
+  alias AurumFinance.Reporting.SavedAccountReport
 
   @hub_refresh_debounce_ms 75
 
@@ -65,13 +66,15 @@ defmodule AurumFinanceWeb.ReportsLive do
       entity_ids: entity_ids,
       refresh_requested?: false,
       hub_report_load_failed?: false,
-      hub_refresh_scheduled?: false
+      hub_refresh_scheduled?: false,
+      saved_account_report_count: 0
     )
     |> then(&load_hub_report(&1, entity_ids))
     |> then(fn {loaded_socket, report} ->
       loaded_socket
       |> assign(:hub_report, report)
       |> assign_hub_report_derivatives(report)
+      |> load_saved_account_reports()
     end)
   end
 
@@ -81,6 +84,7 @@ defmodule AurumFinanceWeb.ReportsLive do
     socket
     |> assign(:hub_report, report)
     |> assign_hub_report_derivatives(report)
+    |> load_saved_account_reports()
   end
 
   defp schedule_hub_refresh(%{assigns: %{hub_refresh_scheduled?: true}} = socket), do: socket
@@ -111,6 +115,157 @@ defmodule AurumFinanceWeb.ReportsLive do
         }
     end
   end
+
+  defp load_saved_account_reports(socket) do
+    cards =
+      if function_exported?(reporting_module(), :list_saved_account_reports, 0) do
+        reporting_module()
+        |> list_saved_account_report_cards()
+      else
+        []
+      end
+
+    socket
+    |> assign(:saved_account_report_count, length(cards))
+    |> stream(:saved_account_reports, cards, reset: true)
+  end
+
+  defp list_saved_account_report_cards(reporting_module) do
+    reporting_module.list_saved_account_reports()
+    |> Task.async_stream(&saved_account_report_card(reporting_module, &1), timeout: :infinity)
+    |> Enum.map(fn
+      {:ok, card} -> card
+      {:exit, reason} -> saved_account_report_card_error(reason)
+    end)
+  end
+
+  defp saved_account_report_card(reporting_module, %SavedAccountReport{} = definition) do
+    label = reporting_module.saved_account_report_label(definition)
+    mode = saved_account_report_mode(definition)
+
+    case reporting_module.preview_saved_account_report(definition) do
+      {:ok, %{report: report, live?: live?, effective_as_of_date: effective_as_of_date}} ->
+        %{
+          id: definition.id,
+          definition: definition,
+          label: label,
+          mode: mode,
+          status: saved_account_report_status(report),
+          live?: live?,
+          effective_as_of_date: effective_as_of_date,
+          report: report,
+          invalid?: false,
+          path: ~p"/reports/account-reports/#{definition.id}"
+        }
+
+      {:error, reason} ->
+        %{
+          id: definition.id,
+          definition: definition,
+          label: label,
+          mode: mode,
+          status: :invalid,
+          live?: SavedAccountReport.live?(definition),
+          effective_as_of_date: definition.pinned_as_of_date || Date.utc_today(),
+          report: nil,
+          invalid?: true,
+          invalid_message: saved_account_report_invalid_message(reason),
+          path: ~p"/reports/account-reports/#{definition.id}"
+        }
+    end
+  end
+
+  defp saved_account_report_card_error(_reason) do
+    %{
+      id: Ecto.UUID.generate(),
+      label: dgettext("reports", "saved_account_report_invalid"),
+      mode: :live,
+      status: :invalid,
+      live?: true,
+      effective_as_of_date: Date.utc_today(),
+      report: nil,
+      invalid?: true,
+      invalid_message: dgettext("reports", "saved_account_report_invalid"),
+      path: ~p"/reports/account-reports/new"
+    }
+  end
+
+  defp saved_account_report_mode(%SavedAccountReport{} = definition) do
+    if SavedAccountReport.live?(definition), do: :live, else: :pinned
+  end
+
+  defp saved_account_report_status(%{conversion_status: status})
+       when status in [:converted, :unavailable, :not_requested],
+       do: status
+
+  defp saved_account_report_status(_report), do: :invalid
+
+  defp saved_account_report_invalid_message(_reason) do
+    dgettext("reports", "saved_account_report_invalid_body")
+  end
+
+  defp saved_account_report_summary(%{report: %{} = report}) do
+    [
+      report.account_name,
+      report.native_currency_code
+    ]
+    |> Enum.reject(&is_nil/1)
+    |> Enum.join(" · ")
+  end
+
+  defp saved_account_report_summary(%{invalid_message: message}), do: message
+
+  defp saved_account_report_native_amount_display(%{
+         native_amount: %Decimal{} = amount,
+         native_currency_code: currency_code
+       }),
+       do: format_money(amount, currency_code)
+
+  defp saved_account_report_native_amount_display(_report),
+    do: dgettext("reports", "account_report_not_available")
+
+  defp saved_account_report_converted_amount_display(%{
+         conversion_status: :converted,
+         converted_amount: %Decimal{} = amount,
+         converted_currency_code: currency_code
+       }),
+       do: format_money(amount, currency_code)
+
+  defp saved_account_report_converted_amount_display(%{conversion_status: :unavailable}),
+    do: dgettext("reports", "account_report_unavailable_value")
+
+  defp saved_account_report_converted_amount_display(%{conversion_status: :not_requested}),
+    do: dgettext("reports", "account_report_not_requested_value")
+
+  defp saved_account_report_converted_amount_display(_report),
+    do: dgettext("reports", "account_report_not_available")
+
+  defp saved_account_report_rate_date_display(%{
+         conversion_status: :converted,
+         fx_rate_effective_date: %Date{} = date
+       }),
+       do: Date.to_iso8601(date)
+
+  defp saved_account_report_rate_date_display(%{conversion_status: :unavailable}),
+    do: dgettext("reports", "account_report_not_available")
+
+  defp saved_account_report_rate_date_display(_report),
+    do: dgettext("reports", "account_report_not_requested_value")
+
+  defp saved_account_report_series_reference(%{fx_series_name: nil, fx_series_slug: nil}),
+    do: dgettext("reports", "account_report_not_available")
+
+  defp saved_account_report_series_reference(%{fx_series_slug: slug}) when is_binary(slug),
+    do: slug
+
+  defp saved_account_report_series_reference(_report),
+    do: dgettext("reports", "account_report_not_available")
+
+  defp saved_account_report_series_badge(%{conversion_status: status} = report)
+       when status in [:converted, :unavailable],
+       do: saved_account_report_series_reference(report)
+
+  defp saved_account_report_series_badge(_report), do: nil
 
   defp visible_entity_ids do
     Entities.list_entities()

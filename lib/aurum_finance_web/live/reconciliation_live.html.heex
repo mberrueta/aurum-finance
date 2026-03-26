@@ -120,12 +120,12 @@
     </.section_panel>
 
     <div class="space-y-5">
-      <.section_panel
-        title={detail_panel_title(@selected_session)}
-        badge={detail_panel_badge(@selected_session)}
-        badge_variant={detail_panel_badge_variant(@selected_session)}
-      >
+      <.section_panel title={detail_panel_title(@selected_session)} badge={nil}>
         <:actions>
+          <.status_badge
+            :if={!is_nil(@selected_session)}
+            status={detail_panel_badge_status(@selected_session)}
+          />
           <.link
             :if={!is_nil(@selected_session)}
             id="reconciliation-back-link"
@@ -178,11 +178,7 @@
                   <p class="text-base font-semibold text-white/92">
                     {@selected_session.account.name}
                   </p>
-                  <.badge variant={
-                    if(is_nil(@selected_session.completed_at), do: :warn, else: :good)
-                  }>
-                    {session_status_label(@selected_session)}
-                  </.badge>
+                  <.status_badge status={detail_panel_badge_status(@selected_session)} />
                 </div>
                 <dl class="grid gap-3 text-sm text-white/68 sm:grid-cols-2">
                   <div>

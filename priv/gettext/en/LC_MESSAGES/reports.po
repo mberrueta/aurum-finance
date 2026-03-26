@@ -2,58 +2,55 @@ msgid ""
 msgstr ""
 "Language: en\n"
 
-#: lib/aurum_finance_web/live/reports_live.ex:64
+#: lib/aurum_finance_web/live/account_report_live.ex:208
+#: lib/aurum_finance_web/live/account_report_live.ex:215
+#: lib/aurum_finance_web/live/reports_live.ex:65
 #: lib/aurum_finance_web/live/reports_live.html.heex:2
 #, elixir-autogen, elixir-format
 msgid "page_title"
 msgstr "Reports"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:113
-#: lib/aurum_finance_web/live/reports_live.html.heex:96
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:126
+#: lib/aurum_finance_web/live/reports_live.html.heex:95
 #, elixir-autogen, elixir-format
 msgid "currency_summary_assets"
 msgstr "Assets"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:117
-#: lib/aurum_finance_web/live/reports_live.html.heex:101
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:130
+#: lib/aurum_finance_web/live/reports_live.html.heex:100
 #, elixir-autogen, elixir-format
 msgid "currency_summary_liabilities"
 msgstr "Liabilities"
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:226
-#: lib/aurum_finance_web/live/reports_live.ex:162
+#: lib/aurum_finance_web/live/reports_live.ex:317
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_outdated"
 msgstr "Outdated"
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:224
-#: lib/aurum_finance_web/live/reports_live.ex:160
+#: lib/aurum_finance_web/live/reports_live.ex:315
 #, elixir-autogen, elixir-format
 msgid "hub_freshness_up_to_date"
 msgstr "Up to date"
 
-#: lib/aurum_finance_web/live/reports_live.html.heex:49
+#: lib/aurum_finance_web/live/reports_live.html.heex:58
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_accounts"
 msgstr "%{count} accounts"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:31
-#: lib/aurum_finance_web/live/reports_live.html.heex:44
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:44
+#: lib/aurum_finance_web/live/reports_live.html.heex:53
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_as_of"
 msgstr "As of %{date}"
-
-#: lib/aurum_finance_web/live/reports_live.html.heex:39
-#, elixir-autogen, elixir-format
-msgid "hub_net_worth_description"
-msgstr "The first real report is backed by daily balance snapshots and stays honest about freshness, coverage, and currency scope."
 
 #: lib/aurum_finance_web/components/net_worth_components.ex:20
 #, elixir-autogen, elixir-format
 msgid "drilldown_header"
 msgstr "Balance Explanation"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:194
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:207
 #, elixir-autogen, elixir-format
 msgid "drilldown_no_snapshot_badge"
 msgstr "No snapshot"
@@ -64,7 +61,7 @@ msgid "drilldown_no_transactions"
 msgstr "No transactions found"
 
 #: lib/aurum_finance_web/components/net_worth_components.ex:23
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:197
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:210
 #, elixir-autogen, elixir-format
 msgid "drilldown_outdated_badge"
 msgstr "Outdated"
@@ -104,25 +101,20 @@ msgstr "Date"
 msgid "drilldown_table_description"
 msgstr "Description"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:234
-#: lib/aurum_finance_web/live/reports_live.html.heex:110
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:247
+#: lib/aurum_finance_web/live/reports_live.html.heex:109
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_empty"
 msgstr "No eligible institution-managed asset or liability accounts are in scope yet."
 
-#: lib/aurum_finance_web/live/reports_live.html.heex:67
-#, elixir-autogen, elixir-format
-msgid "hub_net_worth_open"
-msgstr "Open report"
-
-#: lib/aurum_finance_web/live/reports_live.html.heex:57
+#: lib/aurum_finance_web/live/reports_live.html.heex:66
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_refresh_hint"
 msgstr "Refresh suggested"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:106
-#: lib/aurum_finance_web/live/reports_live.html.heex:31
-#: lib/aurum_finance_web/live/reports_live.html.heex:86
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:119
+#: lib/aurum_finance_web/live/reports_live.html.heex:43
+#: lib/aurum_finance_web/live/reports_live.html.heex:85
 #, elixir-autogen, elixir-format
 msgid "hub_net_worth_title"
 msgstr "Net Worth"
@@ -132,24 +124,24 @@ msgstr "Net Worth"
 msgid "hub_refresh_action"
 msgstr "Refresh reports"
 
-#: lib/aurum_finance_web/live/reports_live.ex:32
+#: lib/aurum_finance_web/live/reports_live.ex:33
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_enqueued"
 msgstr "Reporting refresh queued."
 
-#: lib/aurum_finance_web/live/reports_live.ex:35
+#: lib/aurum_finance_web/live/reports_live.ex:36
 #, elixir-autogen, elixir-format
 msgid "hub_refresh_failed"
 msgstr "Could not queue the reporting refresh."
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:221
-#: lib/aurum_finance_web/live/reports_live.ex:157
+#: lib/aurum_finance_web/live/reports_live.ex:312
 #, elixir-autogen, elixir-format
 msgid "report_freshness_unavailable"
 msgstr "Unavailable"
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:120
-#: lib/aurum_finance_web/live/reports_live.ex:108
+#: lib/aurum_finance_web/live/reports_live.ex:112
 #, elixir-autogen, elixir-format
 msgid "report_load_failed"
 msgstr "Could not load the report right now."
@@ -159,17 +151,17 @@ msgstr "Could not load the report right now."
 msgid "hub_refresh_pending"
 msgstr "Refresh pending"
 
-#: lib/aurum_finance_web/live/reports_live.ex:171
+#: lib/aurum_finance_web/live/reports_live.ex:326
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_empty"
 msgstr "No data"
 
-#: lib/aurum_finance_web/live/reports_live.ex:168
+#: lib/aurum_finance_web/live/reports_live.ex:323
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_unavailable"
 msgstr "Unavailable"
 
-#: lib/aurum_finance_web/live/reports_live.ex:173
+#: lib/aurum_finance_web/live/reports_live.ex:328
 #, elixir-autogen, elixir-format
 msgid "hub_report_status_ready"
 msgstr ""
@@ -177,7 +169,7 @@ msgstr ""
 #: lib/aurum_finance_web/live/reports_live.html.heex:4
 #, elixir-autogen, elixir-format
 msgid "hub_subtitle"
-msgstr "A real reporting hub centered on Net Worth, with one coarse freshness signal and one async refresh action."
+msgstr "A reporting dashboard with one built-in report and saved account reports you can create, open, and reuse."
 
 #: lib/aurum_finance_web/live/net_worth_live.ex:264
 #, elixir-autogen, elixir-format
@@ -189,12 +181,12 @@ msgstr "Asset"
 msgid "net_worth_account_type_liability"
 msgstr "Liability"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:129
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:142
 #, elixir-autogen, elixir-format
 msgid "net_worth_accounts_title"
 msgstr "Accounts"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:67
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:80
 #, elixir-autogen, elixir-format
 msgid "net_worth_as_of_label"
 msgstr "As of date"
@@ -249,12 +241,12 @@ msgstr "No history"
 msgid "net_worth_coverage_refreshable_gap"
 msgstr "Refreshable gap"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:19
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:32
 #, elixir-autogen, elixir-format
 msgid "net_worth_filters_title"
 msgstr "Report filters"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:40
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:53
 #, elixir-autogen, elixir-format
 msgid "net_worth_important_dates_title"
 msgstr "Important dates"
@@ -285,22 +277,22 @@ msgstr "Last year end"
 msgid "net_worth_preset_today"
 msgstr "Today"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:77
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:90
 #, elixir-autogen, elixir-format
 msgid "net_worth_refresh_hint_body"
 msgstr "Some balances are older than the available ledger facts for this date. Refreshing reporting snapshots will bring the page current."
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:74
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:87
 #, elixir-autogen, elixir-format
 msgid "net_worth_refresh_hint_title"
 msgstr "Refresh suggested"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:25
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:38
 #, elixir-autogen, elixir-format
 msgid "net_worth_scope_accounts"
 msgstr "%{count} included accounts"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:28
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:41
 #, elixir-autogen, elixir-format
 msgid "net_worth_scope_entities"
 msgstr "%{count} entities"
@@ -330,37 +322,458 @@ msgstr "Stale since %{date}"
 msgid "net_worth_summary_coverage"
 msgstr "%{covered} covered of %{total} accounts · %{no_history} no history"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:140
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:153
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_account"
 msgstr "Account"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:149
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:162
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_balance"
 msgstr "Balance"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:155
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:168
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_coverage"
 msgstr "Coverage"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:146
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:159
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_currency"
 msgstr "Currency"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:137
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:150
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_entity"
 msgstr "Entity"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:152
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:165
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_snapshot"
 msgstr "Snapshot Used"
 
-#: lib/aurum_finance_web/live/net_worth_live.html.heex:143
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:156
 #, elixir-autogen, elixir-format
 msgid "net_worth_table_type"
 msgstr "Type"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:72
+#, elixir-autogen, elixir-format
+msgid "account_report_account_label"
+msgstr "Account"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:74
+#, elixir-autogen, elixir-format
+msgid "account_report_account_prompt"
+msgstr "Select an account"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:8
+#, elixir-autogen, elixir-format
+msgid "account_report_back_to_reports"
+msgstr "Back to reports"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:99
+#, elixir-autogen, elixir-format
+msgid "account_report_convert_hint"
+msgstr "Conversion is temporary and only applies to this report run."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:95
+#, elixir-autogen, elixir-format
+msgid "account_report_convert_label"
+msgstr "Convert balance to another currency"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:206
+#: lib/aurum_finance_web/live/reports_live.html.heex:207
+#, elixir-autogen, elixir-format
+msgid "account_report_converted_amount_label"
+msgstr "Converted amount"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:119
+#, elixir-autogen, elixir-format
+msgid "account_report_fx_series_label"
+msgstr "FX series"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:121
+#, elixir-autogen, elixir-format
+msgid "account_report_fx_series_prompt"
+msgstr "Select a compatible series"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:298
+#, elixir-autogen, elixir-format
+msgid "account_report_inverted_series_tag"
+msgstr "inverted"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:184
+#: lib/aurum_finance_web/live/reports_live.html.heex:194
+#, elixir-autogen, elixir-format
+msgid "account_report_native_amount_label"
+msgstr "Native amount"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:127
+#, elixir-autogen, elixir-format
+msgid "account_report_no_compatible_series"
+msgstr "No compatible FX series are available for the selected account, date, and target currency."
+
+#: lib/aurum_finance_web/live/account_report_live.ex:333
+#: lib/aurum_finance_web/live/account_report_live.ex:348
+#: lib/aurum_finance_web/live/account_report_live.ex:357
+#: lib/aurum_finance_web/live/account_report_live.ex:362
+#: lib/aurum_finance_web/live/account_report_live.ex:366
+#: lib/aurum_finance_web/live/reports_live.ex:225
+#: lib/aurum_finance_web/live/reports_live.ex:241
+#: lib/aurum_finance_web/live/reports_live.ex:250
+#: lib/aurum_finance_web/live/reports_live.ex:256
+#: lib/aurum_finance_web/live/reports_live.ex:262
+#, elixir-autogen, elixir-format
+msgid "account_report_not_available"
+msgstr "Not available"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:346
+#: lib/aurum_finance_web/live/account_report_live.ex:359
+#: lib/aurum_finance_web/live/reports_live.ex:238
+#: lib/aurum_finance_web/live/reports_live.ex:253
+#, elixir-autogen, elixir-format
+msgid "account_report_not_requested_value"
+msgstr "Not requested"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "account_report_open_fx"
+msgstr "Open FX series"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:218
+#, elixir-autogen, elixir-format
+msgid "account_report_rate_date_label"
+msgstr "Rate date used"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:144
+#, elixir-autogen, elixir-format
+msgid "account_report_select_account_hint"
+msgstr "Pick an account to start the report."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:138
+#, elixir-autogen, elixir-format
+msgid "account_report_selected_account"
+msgstr "%{account} · %{currency}"
+
+#: lib/aurum_finance_web/components/ui_components.ex:121
+#: lib/aurum_finance_web/live/account_report_live.ex:312
+#, elixir-autogen, elixir-format
+msgid "account_report_status_converted"
+msgstr "Converted"
+
+#: lib/aurum_finance_web/components/ui_components.ex:127
+#: lib/aurum_finance_web/live/account_report_live.ex:318
+#, elixir-autogen, elixir-format
+msgid "account_report_status_native"
+msgstr "Native"
+
+#: lib/aurum_finance_web/components/ui_components.ex:124
+#: lib/aurum_finance_web/live/account_report_live.ex:315
+#, elixir-autogen, elixir-format
+msgid "account_report_status_unavailable"
+msgstr "Unavailable"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:110
+#, elixir-autogen, elixir-format
+msgid "account_report_target_currency_label"
+msgstr "Target currency"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:112
+#, elixir-autogen, elixir-format
+msgid "account_report_target_currency_prompt"
+msgstr "Select a target currency"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:236
+#, elixir-autogen, elixir-format
+msgid "account_report_unavailable_title"
+msgstr "Conversion unavailable"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:343
+#: lib/aurum_finance_web/live/reports_live.ex:235
+#, elixir-autogen, elixir-format
+msgid "account_report_unavailable_value"
+msgstr "Not available"
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:254
+#, elixir-autogen, elixir-format
+msgid "net_worth_tips_item_1"
+msgstr "Use the date presets to jump to today, last month end, or last year end."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:255
+#, elixir-autogen, elixir-format
+msgid "net_worth_tips_item_2"
+msgstr "Refresh after imports or transaction changes to keep snapshot coverage current."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:252
+#, elixir-autogen, elixir-format
+msgid "net_worth_tips_title"
+msgstr "Tips"
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:263
+#, elixir-autogen, elixir-format
+msgid "net_worth_warning_item_1"
+msgstr "Freshness can lag until the reporting refresh runs."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:264
+#, elixir-autogen, elixir-format
+msgid "net_worth_warning_item_2"
+msgstr "Rows without snapshots stay visible, but their balance can be unavailable."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:261
+#, elixir-autogen, elixir-format
+msgid "net_worth_warning_title"
+msgstr "Warnings"
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:21
+#, elixir-autogen, elixir-format
+msgid "net_worth_what_is_body"
+msgstr "This page shows the consolidated net worth view across included accounts for the selected date."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:23
+#, elixir-autogen, elixir-format
+msgid "net_worth_what_is_item_1"
+msgstr "Track balances by currency and account in one place."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:24
+#, elixir-autogen, elixir-format
+msgid "net_worth_what_is_item_2"
+msgstr "See whether each row is exact, carried forward, or gap-filled."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:25
+#, elixir-autogen, elixir-format
+msgid "net_worth_what_is_item_3"
+msgstr "Open a row to inspect the transactions behind a snapshot."
+
+#: lib/aurum_finance_web/live/net_worth_live.html.heex:20
+#, elixir-autogen, elixir-format
+msgid "net_worth_what_is_title"
+msgstr "Why this page exists"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:232
+#, elixir-autogen, elixir-format
+msgid "reports_tips_item_1"
+msgstr "Use the dashboard to keep your common reports one click away."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:233
+#, elixir-autogen, elixir-format
+msgid "reports_tips_item_2"
+msgstr "Pin a date only when you need a historical view."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:230
+#, elixir-autogen, elixir-format
+msgid "reports_tips_title"
+msgstr "Tips"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:241
+#, elixir-autogen, elixir-format
+msgid "reports_warning_item_1"
+msgstr "The dashboard always reflects read-time data, not stored report outputs."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:242
+#, elixir-autogen, elixir-format
+msgid "reports_warning_item_2"
+msgstr "Pinned FX reports can become temporarily unavailable if rate coverage disappears."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:239
+#, elixir-autogen, elixir-format
+msgid "reports_warning_title"
+msgstr "Warnings"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "reports_what_is_body"
+msgstr "This dashboard gives you a fast entry point to built-in reports and reusable saved account report definitions."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:33
+#, elixir-autogen, elixir-format
+msgid "reports_what_is_item_1"
+msgstr "Net Worth stays built in and always visible."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:34
+#, elixir-autogen, elixir-format
+msgid "reports_what_is_item_2"
+msgstr "Saved account reports can be created many times and edited later."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:35
+#, elixir-autogen, elixir-format
+msgid "reports_what_is_item_3"
+msgstr "Open a report card to inspect or update that saved definition."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "reports_what_is_title"
+msgstr "Why this page exists"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:162
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_as_of"
+msgstr "As of %{date}"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:197
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_created"
+msgstr "Saved account report created."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:87
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_date_hint"
+msgstr "Leave this blank to keep the report live."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:82
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_date_label"
+msgstr "Pinned date"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:19
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_delete"
+msgstr "Delete saved report"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:17
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_delete_confirm"
+msgstr "Delete this saved account report?"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:116
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_delete_failed"
+msgstr "Could not delete the saved account report."
+
+#: lib/aurum_finance_web/live/account_report_live.ex:111
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_deleted"
+msgstr "Saved account report deleted."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:57
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_form_title"
+msgstr "Saved account report definition"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:27
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_info_body"
+msgstr "Use this page to create and edit reusable saved account reports."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:29
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_info_item_1"
+msgstr "Choose one account and keep its report definition saved globally."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:30
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_info_item_2"
+msgstr "Leave the date blank for a live report that follows the current day."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:31
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_info_item_3"
+msgstr "Open FX series when you need to create or adjust conversion series."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:26
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_info_title"
+msgstr "Why this page exists"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:320
+#: lib/aurum_finance_web/live/account_report_live.ex:377
+#: lib/aurum_finance_web/live/reports_live.ex:181
+#: lib/aurum_finance_web/live/reports_live.ex:188
+#: lib/aurum_finance_web/live/reports_live.html.heex:179
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_invalid"
+msgstr "Unavailable"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:185
+#: lib/aurum_finance_web/live/reports_live.ex:204
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_invalid_body"
+msgstr "This saved report definition cannot run right now. Edit it to restore validity."
+
+#: lib/aurum_finance/reporting/saved_account_reports.ex:302
+#, elixir-autogen, elixir-format
+msgid "account_report_same_currency_error"
+msgstr "Target currency must be different from the account currency"
+
+#: lib/aurum_finance_web/components/ui_components.ex:133
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_mode_live"
+msgstr "Live"
+
+#: lib/aurum_finance_web/components/ui_components.ex:136
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_mode_pinned_short"
+msgstr "Pinned"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:128
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_new"
+msgstr "New saved report"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:55
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_not_found"
+msgstr "Saved account report not found."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:4
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_page_subtitle"
+msgstr "Create or edit a saved account report definition."
+
+#: lib/aurum_finance_web/live/account_report_live.ex:27
+#: lib/aurum_finance_web/live/account_report_live.ex:131
+#: lib/aurum_finance_web/live/account_report_live.ex:209
+#: lib/aurum_finance_web/live/account_report_live.html.heex:2
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_page_title"
+msgstr "Account report"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:171
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_preview_empty"
+msgstr "Fill in the form to preview this saved report."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:161
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_preview_title"
+msgstr "Preview"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:153
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_save"
+msgstr "Save saved report"
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:42
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_tip_body"
+msgstr "Create one saved report per workflow you want to revisit often."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:41
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_tip_title"
+msgstr "Tips"
+
+#: lib/aurum_finance_web/live/account_report_live.ex:200
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_updated"
+msgstr "Saved account report updated."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:51
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_warning_body"
+msgstr "Pinned dates can become unavailable if FX coverage is missing for that day."
+
+#: lib/aurum_finance_web/live/account_report_live.html.heex:48
+#, elixir-autogen, elixir-format
+msgid "saved_account_report_warning_title"
+msgstr "Warnings"
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:138
+#, elixir-autogen, elixir-format
+msgid "saved_account_reports_empty"
+msgstr "No saved account reports yet."
+
+#: lib/aurum_finance_web/live/reports_live.html.heex:117
+#, elixir-autogen, elixir-format
+msgid "saved_account_reports_title"
+msgstr "Saved account reports"

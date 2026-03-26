@@ -120,7 +120,7 @@ defmodule AurumFinanceWeb.FxLiveTest do
       {:ok, view, _html} = conn |> log_in_root() |> live("/fx")
 
       assert has_element?(view, "#fx-series-row-#{series.id}")
-      assert render(view) =~ "Error"
+      assert render(view) =~ "Sync Failed"
       assert render(view) =~ ":unknown_provider"
     end
 

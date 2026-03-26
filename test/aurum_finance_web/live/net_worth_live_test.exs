@@ -52,12 +52,22 @@ defmodule AurumFinanceWeb.NetWorthLiveTest do
     assert has_element?(view, "#net-worth-summary")
     assert has_element?(view, "#net-worth-accounts-table")
     assert has_element?(view, "#net-worth-freshness-badge")
+    assert has_element?(view, "#net-worth-guidance-info")
+    assert has_element?(view, "#net-worth-guidance-tip")
+    assert has_element?(view, "#net-worth-guidance-warning")
     assert has_element?(view, "#net-worth-date-presets")
     assert has_element?(view, "#net-worth-date-preset-today")
     assert has_element?(view, "#net-worth-date-preset-last_month_end")
     assert has_element?(view, "#net-worth-date-preset-last_year_end")
 
     row_html = view |> element("#net-worth-account-row-#{checking.id}") |> render()
+    html = render(view)
+
+    assert elem(:binary.match(html, "net-worth-guidance"), 0) <
+             elem(:binary.match(html, "net-worth-filters-form"), 0)
+
+    assert elem(:binary.match(html, "net-worth-accounts-card"), 0) <
+             elem(:binary.match(html, "net-worth-guidance-bottom"), 0)
 
     assert row_html =~ "Checking"
     assert row_html =~ "1,250.00 USD"

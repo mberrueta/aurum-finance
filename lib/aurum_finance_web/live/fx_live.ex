@@ -128,38 +128,44 @@ defmodule AurumFinanceWeb.FxLive do
   end
 
   def handle_event("sync_now", %{"id" => id}, socket) do
-    series = find_series_or_fetch(socket, id)
+    case find_series_or_fetch(socket, id) do
+      %FxSeries{} = series ->
+        socket =
+          case Fx.enqueue_fx_sync(series) do
+            {:ok, _job} ->
+              socket
+              |> put_flash(:info, dgettext("fx", "flash_sync_enqueued"))
+              |> load_series()
+              |> load_series_detail(series)
 
-    socket =
-      case Fx.enqueue_fx_sync(series) do
-        {:ok, _job} ->
-          socket
-          |> put_flash(:info, dgettext("fx", "flash_sync_enqueued"))
-          |> load_series()
-          |> load_series_detail(series)
+            {:error, :already_up_to_date} ->
+              socket
+              |> put_flash(:info, dgettext("fx", "flash_sync_already_up_to_date"))
+              |> load_series()
+              |> load_series_detail(series)
 
-        {:error, :already_up_to_date} ->
-          socket
-          |> put_flash(:info, dgettext("fx", "flash_sync_already_up_to_date"))
-          |> load_series()
-          |> load_series_detail(series)
+            {:error, :not_a_provider_series} ->
+              put_flash(socket, :error, dgettext("fx", "flash_sync_not_supported"))
 
-        {:error, :not_a_provider_series} ->
-          put_flash(socket, :error, dgettext("fx", "flash_sync_not_supported"))
+            {:error, _reason} ->
+              socket
+              |> put_flash(:error, dgettext("fx", "flash_sync_enqueue_failed"))
+              |> load_series()
+              |> load_series_detail(series)
+          end
 
-        {:error, _reason} ->
-          socket
-          |> put_flash(:error, dgettext("fx", "flash_sync_enqueue_failed"))
-          |> load_series()
-          |> load_series_detail(series)
-      end
+        {:noreply, socket}
 
-    {:noreply, socket}
+      nil ->
+        {:noreply, put_flash(socket, :error, dgettext("fx", "flash_save_failed"))}
+    end
   end
 
   def handle_event("refresh_sync_status", %{"id" => id}, socket) do
-    series = find_series_or_fetch(socket, id)
-    {:noreply, load_series_detail(socket, series)}
+    case find_series_or_fetch(socket, id) do
+      %FxSeries{} = series -> {:noreply, load_series_detail(socket, series)}
+      nil -> {:noreply, put_flash(socket, :error, dgettext("fx", "flash_save_failed"))}
+    end
   end
 
   def handle_event("new_series", _params, socket) do
@@ -171,13 +177,17 @@ defmodule AurumFinanceWeb.FxLive do
   end
 
   def handle_event("edit_series", %{"id" => id}, socket) do
-    series = find_series_or_fetch(socket, id)
+    case find_series_or_fetch(socket, id) do
+      %FxSeries{} = series ->
+        {:noreply,
+         socket
+         |> assign(:form_mode, :edit)
+         |> assign(:editing_series, series)
+         |> assign_edit_form(series)}
 
-    {:noreply,
-     socket
-     |> assign(:form_mode, :edit)
-     |> assign(:editing_series, series)
-     |> assign_edit_form(series)}
+      nil ->
+        {:noreply, put_flash(socket, :error, dgettext("fx", "flash_save_failed"))}
+    end
   end
 
   def handle_event("close_form", _params, socket) do
@@ -218,8 +228,10 @@ defmodule AurumFinanceWeb.FxLive do
   end
 
   def handle_event("confirm_delete", %{"id" => id}, socket) do
-    series = find_series_or_fetch(socket, id)
-    {:noreply, assign(socket, :pending_delete, series)}
+    case find_series_or_fetch(socket, id) do
+      %FxSeries{} = series -> {:noreply, assign(socket, :pending_delete, series)}
+      nil -> {:noreply, put_flash(socket, :error, dgettext("fx", "flash_save_failed"))}
+    end
   end
 
   def handle_event("cancel_delete", _params, socket) do
@@ -316,75 +328,40 @@ defmodule AurumFinanceWeb.FxLive do
   end
 
   defp find_series_or_fetch(socket, id) do
-    Enum.find(socket.assigns.series, &(&1.id == id)) || Fx.get_fx_series!(id)
+    Enum.find(socket.assigns.series, &(&1.id == id)) || Fx.get_fx_series(id)
   end
 
   defp load_detail_from_slug(socket, slug) do
-    series = Fx.get_fx_series_by_slug!(slug)
+    case Fx.get_fx_series_by_slug(slug) do
+      %FxSeries{} = series ->
+        socket
+        |> close_form()
+        |> assign(:rate_page, 1)
+        |> assign(:breadcrumbs, fx_detail_breadcrumbs(series))
+        |> assign_rate_filter_form(default_rate_filter_params())
+        |> assign(:view, :detail)
+        |> load_series()
+        |> load_series_detail(series)
 
-    socket
-    |> close_form()
-    |> assign(:rate_page, 1)
-    |> assign(:breadcrumbs, fx_detail_breadcrumbs(series))
-    |> assign_rate_filter_form(default_rate_filter_params())
-    |> assign(:view, :detail)
-    |> load_series()
-    |> load_series_detail(series)
-  rescue
-    Ecto.NoResultsError ->
-      socket
-      |> put_flash(:error, dgettext("fx", "flash_save_failed"))
-      |> push_patch(to: ~p"/fx")
+      nil ->
+        socket
+        |> put_flash(:error, dgettext("fx", "flash_save_failed"))
+        |> push_patch(to: ~p"/fx")
+    end
   end
 
   defp source_kind_label(:csv_upload), do: dgettext("fx", "source_kind_csv_upload")
   defp source_kind_label(:provider_module), do: dgettext("fx", "source_kind_provider_module")
   defp source_kind_label(_), do: "-"
 
-  defp series_status_label(%FxSeries{source_kind: :csv_upload}), do: "-"
+  defp series_status_status(%FxSeries{source_kind: :csv_upload}), do: :not_applicable
+  defp series_status_status(%FxSeries{sync_status: :error}), do: :sync_failed
+  defp series_status_status(%FxSeries{sync_status: status}), do: status
+  defp series_status_status(_), do: :not_applicable
 
-  defp series_status_label(%FxSeries{sync_status: :active}),
-    do: dgettext("fx", "series_status_active")
-
-  defp series_status_label(%FxSeries{sync_status: :error}),
-    do: dgettext("fx", "series_status_error")
-
-  defp series_status_label(%FxSeries{sync_status: :stopped}),
-    do: dgettext("fx", "series_status_stopped")
-
-  defp series_status_label(_), do: "-"
-
-  defp series_status_variant(%FxSeries{source_kind: :csv_upload}), do: :default
-  defp series_status_variant(%FxSeries{sync_status: :active}), do: :good
-  defp series_status_variant(%FxSeries{sync_status: :error}), do: :bad
-  defp series_status_variant(%FxSeries{sync_status: :stopped}), do: :warn
-  defp series_status_variant(_), do: :default
-
-  defp sync_status_label(%{state: :not_applicable}),
-    do: dgettext("fx", "sync_status_not_applicable")
-
-  defp sync_status_label(%{state: :never_run}), do: dgettext("fx", "sync_status_never_run")
-  defp sync_status_label(%{state: :active}), do: dgettext("fx", "sync_status_active")
-  defp sync_status_label(%{state: :error}), do: dgettext("fx", "sync_status_failed")
-  defp sync_status_label(%{state: :stopped}), do: dgettext("fx", "sync_status_stopped")
-  defp sync_status_label(%{state: :queued}), do: dgettext("fx", "sync_status_queued")
-  defp sync_status_label(%{state: :running}), do: dgettext("fx", "sync_status_running")
-  defp sync_status_label(%{state: :ok}), do: dgettext("fx", "sync_status_ok")
-  defp sync_status_label(%{state: :retrying}), do: dgettext("fx", "sync_status_retrying")
-  defp sync_status_label(%{state: :failed}), do: dgettext("fx", "sync_status_failed")
-  defp sync_status_label(%{state: :cancelled}), do: dgettext("fx", "sync_status_cancelled")
-  defp sync_status_label(_), do: dgettext("fx", "sync_status_unknown")
-
-  defp sync_status_variant(%{state: :ok}), do: :good
-  defp sync_status_variant(%{state: :active}), do: :good
-  defp sync_status_variant(%{state: :stopped}), do: :warn
-  defp sync_status_variant(%{state: :queued}), do: :purple
-  defp sync_status_variant(%{state: :running}), do: :purple
-  defp sync_status_variant(%{state: :retrying}), do: :warn
-  defp sync_status_variant(%{state: :failed}), do: :bad
-  defp sync_status_variant(%{state: :error}), do: :bad
-  defp sync_status_variant(%{state: :cancelled}), do: :warn
-  defp sync_status_variant(_), do: :default
+  defp sync_badge_status(:error), do: :sync_failed
+  defp sync_badge_status(:failed), do: :sync_failed
+  defp sync_badge_status(status), do: status
 
   defp sync_status_comment(%{state: :never_run}), do: dgettext("fx", "sync_comment_never_run")
 
@@ -618,14 +595,21 @@ defmodule AurumFinanceWeb.FxLive do
   defp handle_csv_upload_result(socket, series, [
          {:ok, %{inserted: inserted, updated: updated}} | _
        ]) do
-    refreshed_series = Fx.get_fx_series!(series.id)
+    case Fx.get_fx_series(series.id) do
+      %FxSeries{} = refreshed_series ->
+        {:ok,
+         socket
+         |> put_flash(:info, "CSV imported. Inserted: #{inserted}. Updated: #{updated}.")
+         |> assign(:rate_page, 1)
+         |> load_series()
+         |> load_series_detail(refreshed_series)}
 
-    {:ok,
-     socket
-     |> put_flash(:info, "CSV imported. Inserted: #{inserted}. Updated: #{updated}.")
-     |> assign(:rate_page, 1)
-     |> load_series()
-     |> load_series_detail(refreshed_series)}
+      nil ->
+        {:error,
+         socket
+         |> put_flash(:error, dgettext("fx", "flash_save_failed"))
+         |> push_patch(to: ~p"/fx")}
+    end
   end
 
   defp handle_csv_upload_result(socket, _series, [{:error, reason} | _]) do

@@ -39,9 +39,32 @@ defmodule AurumFinance.Repo.Migrations.CreateFxSeriesAndRateRecords do
 
     create unique_index(:fx_rate_records, [:fx_series_id, :effective_date])
     create index(:fx_rate_records, [:effective_date])
+
+    create table(:saved_account_reports, primary_key: false) do
+      add :id, :binary_id, primary_key: true
+
+      add :account_id, references(:accounts, type: :binary_id, on_delete: :nothing), null: false
+
+      add :target_currency_code, :string, size: 3
+
+      add :fx_series_id, references(:fx_series, type: :binary_id, on_delete: :nilify_all)
+
+      add :pinned_as_of_date, :date
+
+      timestamps(type: :utc_datetime_usec)
+    end
+
+    create index(:saved_account_reports, [:account_id])
+    create index(:saved_account_reports, [:fx_series_id])
+    create index(:saved_account_reports, [:pinned_as_of_date])
   end
 
   def down do
+    drop index(:saved_account_reports, [:pinned_as_of_date])
+    drop index(:saved_account_reports, [:fx_series_id])
+    drop index(:saved_account_reports, [:account_id])
+    drop table(:saved_account_reports)
+
     drop index(:fx_rate_records, [:effective_date])
     drop unique_index(:fx_rate_records, [:fx_series_id, :effective_date])
     drop table(:fx_rate_records)

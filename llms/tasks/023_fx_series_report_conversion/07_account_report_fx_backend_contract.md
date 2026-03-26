@@ -1,8 +1,8 @@
 # Task 07: Account Report FX Backend Contract
 
 ## Status
-- **Status**: BLOCKED
-- **Approved**: [ ] Human sign-off
+- **Status**: COMPLETE
+- **Approved**: [X] Human sign-off
 - **Blocked by**: Task 02, Task 03
 - **Blocks**: Task 08
 
