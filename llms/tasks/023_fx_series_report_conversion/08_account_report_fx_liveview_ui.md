@@ -1,8 +1,8 @@
 # Task 08: Account Report FX LiveView UI
 
 ## Status
-- **Status**: BLOCKED
-- **Approved**: [ ] Human sign-off
+- **Status**: COMPLETE
+- **Approved**: [x] Human sign-off
 - **Blocked by**: Task 07, Task 05
 - **Blocks**: Task 09
 

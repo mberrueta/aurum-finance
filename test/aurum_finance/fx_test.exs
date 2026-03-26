@@ -36,6 +36,112 @@ defmodule AurumFinance.FxTest do
     end
   end
 
+  describe "delete_fx_series/1" do
+    test "blocks deletion when the series has persisted rate records" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:ok, 1} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-10], value: Decimal.new("5.2500")}
+               ])
+
+      assert {:error, :has_records} = Fx.delete_fx_series(series)
+      assert %FxSeries{} = Fx.get_fx_series(series.id)
+    end
+
+    test "deletes an empty series" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:ok, %FxSeries{id: deleted_id}} = Fx.delete_fx_series(series)
+      assert deleted_id == series.id
+      assert is_nil(Fx.get_fx_series(series.id))
+    end
+  end
+
+  describe "lookup_fx_rate/3" do
+    test "returns the latest direct rate within the staleness window" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:ok, 2} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-08], value: Decimal.new("5.1000")},
+                 %{date: ~D[2026-03-10], value: Decimal.new("5.2500")}
+               ])
+
+      assert {:ok, %{rate_value: rate, effective_date: ~D[2026-03-10], inverted: false}} =
+               Fx.lookup_fx_rate(series.id, ~D[2026-03-12])
+
+      assert Decimal.equal?(rate, Decimal.new("5.2500"))
+    end
+
+    test "returns an inverted rate when requested" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:ok, 1} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-10], value: Decimal.new("0.25")}
+               ])
+
+      assert {:ok, %{rate_value: rate, effective_date: ~D[2026-03-10], inverted: true}} =
+               Fx.lookup_fx_rate(series.id, ~D[2026-03-10], invert: true)
+
+      assert Decimal.equal?(rate, Decimal.new("4"))
+    end
+
+    test "returns rate_not_found when only stale rows exist" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:ok, 1} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-01], value: Decimal.new("5.2500")}
+               ])
+
+      assert {:error, :rate_not_found} = Fx.lookup_fx_rate(series.id, ~D[2026-03-10])
+    end
+  end
+
+  describe "enqueue_fx_sync/1" do
+    test "enqueues from the day after the latest stored rate" do
+      series = insert_fx_series(%{from_date: ~D[2026-03-01], to_date: ~D[2026-03-10]})
+
+      assert {:ok, 1} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-07], value: Decimal.new("5.2500")}
+               ])
+
+      assert {:ok, _job} = Fx.enqueue_fx_sync(series)
+
+      assert_enqueued(
+        worker: SyncWorker,
+        queue: :fx,
+        args: %{
+          "fx_series_id" => series.id,
+          "from_date" => "2026-03-08",
+          "to_date" => "2026-03-10"
+        }
+      )
+    end
+
+    test "returns already_up_to_date when the stored coverage already reaches to_date" do
+      series = insert_fx_series(%{from_date: ~D[2026-03-01], to_date: ~D[2026-03-10]})
+
+      assert {:ok, 1} =
+               Fx.upsert_rate_records(series.id, [
+                 %{date: ~D[2026-03-10], value: Decimal.new("5.2500")}
+               ])
+
+      assert {:error, :already_up_to_date} = Fx.enqueue_fx_sync(series)
+
+      refute_enqueued(worker: SyncWorker, queue: :fx, args: %{"fx_series_id" => series.id})
+    end
+
+    test "rejects csv-backed series" do
+      series = insert_fx_series(%{provider_module: nil, source_kind: :csv_upload})
+
+      assert {:error, :not_a_provider_series} = Fx.enqueue_fx_sync(series)
+    end
+  end
+
   describe "latest_sync_status/1" do
     test "returns the latest failed sync details for a provider-backed series" do
       series = insert_fx_series(%{provider_module: "bcb_ptax"})

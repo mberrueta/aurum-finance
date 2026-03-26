@@ -158,6 +158,32 @@ defmodule AurumFinanceWeb.FxLiveTest do
 
       assert render(view) =~ "no_file_selected"
     end
+
+    test "sync now enqueues a provider sync job from detail page", %{conn: conn} do
+      series =
+        insert_fx_series(%{
+          name: "Sync now series",
+          slug: "sync-now-series",
+          from_date: ~D[2026-03-01]
+        })
+
+      {:ok, view, _html} = conn |> log_in_root() |> live(~p"/fx/#{series.slug}")
+
+      view
+      |> element("#fx-sync-now-btn")
+      |> render_click()
+
+      assert_enqueued(
+        worker: AurumFinance.Fx.SyncWorker,
+        queue: :fx,
+        args: %{
+          "fx_series_id" => series.id,
+          "from_date" => "2026-03-01"
+        }
+      )
+
+      assert has_element?(view, "[role=alert]")
+    end
   end
 
   describe "create form currency selects" do
@@ -194,6 +220,65 @@ defmodule AurumFinanceWeb.FxLiveTest do
       assert has_element?(view, "#fx_series_base_currency_code option[value='USD']")
       assert has_element?(view, "#fx_series_quote_currency_code option[value='BRL']")
       refute has_element?(view, "#fx_series_quote_currency_code option[value='USD']")
+    end
+  end
+
+  describe "series management flows" do
+    test "creates a csv series from the sidebar form", %{conn: conn} do
+      {:ok, view, _html} = conn |> log_in_root() |> live("/fx")
+
+      view
+      |> element("#fx-new-series-btn")
+      |> render_click()
+
+      params = %{
+        "name" => "Manual BRL/EUR",
+        "base_currency_code" => "BRL",
+        "quote_currency_code" => "EUR",
+        "source_kind" => "csv_upload",
+        "from_date" => "2026-03-01"
+      }
+
+      view
+      |> form("#fx-series-form-inner", fx_series: params)
+      |> render_submit()
+
+      created_id =
+        Repo.one(from s in FxSeries, where: s.name == "Manual BRL/EUR", select: s.id)
+
+      assert created_id
+      assert has_element?(view, "#fx-series-row-#{created_id}")
+      assert render(view) =~ "Manual BRL/EUR"
+    end
+
+    test "hides delete for series with stored rates and allows delete for empty series", %{
+      conn: conn
+    } do
+      locked_series = insert_csv_fx_series(%{name: "Locked CSV", slug: "locked-csv-series"})
+      empty_series = insert_csv_fx_series(%{name: "Empty CSV", slug: "empty-csv-series"})
+
+      {:ok, 1} =
+        Fx.upsert_rate_records(locked_series.id, [
+          %{date: ~D[2026-03-10], value: Decimal.new("5.6000")}
+        ])
+
+      {:ok, view, _html} = conn |> log_in_root() |> live("/fx")
+
+      refute has_element?(view, "#fx-delete-btn-#{locked_series.id}")
+      assert has_element?(view, "#fx-delete-btn-#{empty_series.id}")
+
+      view
+      |> element("#fx-delete-btn-#{empty_series.id}")
+      |> render_click()
+
+      assert has_element?(view, "#fx-delete-confirm")
+
+      view
+      |> element("#fx-delete-confirm-btn")
+      |> render_click()
+
+      refute has_element?(view, "#fx-series-row-#{empty_series.id}")
+      assert has_element?(view, "[role=alert]")
     end
   end
 
