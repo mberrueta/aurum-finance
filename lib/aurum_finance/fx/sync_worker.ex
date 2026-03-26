@@ -58,7 +58,8 @@ defmodule AurumFinance.Fx.SyncWorker do
       }) do
     with {:ok, from_date} <- Date.from_iso8601(from_date_str),
          {:ok, to_date} <- Date.from_iso8601(to_date_str),
-         %{} = series <- Fx.get_fx_series(fx_series_id) do
+         %{} = series <- Fx.get_fx_series(fx_series_id),
+         :ok <- validate_provider_series(series) do
       :ok = Fx.record_sync_tracking(series, :active, attempted_at: now())
 
       Logger.info("FX sync started",
@@ -74,6 +75,7 @@ defmodule AurumFinance.Fx.SyncWorker do
       |> handle_fetch_result(series, attempt, max_attempts)
     else
       nil -> {:discard, "fx_series_not_found"}
+      {:error, :not_a_provider_series} -> {:discard, "series is not a provider_module series"}
     end
   end
 
@@ -114,12 +116,18 @@ defmodule AurumFinance.Fx.SyncWorker do
   defp maybe_record_terminal_failure(series, reason, attempt, max_attempts)
        when attempt >= max_attempts do
     Fx.record_sync_tracking(series, :error,
-      sync_message: inspect(reason),
+      sync_message: reason |> inspect() |> String.slice(0, 500),
       attempted_at: now()
     )
   end
 
   defp maybe_record_terminal_failure(_series, _reason, _attempt, _max_attempts), do: :ok
+
+  defp validate_provider_series(%{source_kind: :provider_module, provider_module: pm})
+       when not is_nil(pm),
+       do: :ok
+
+  defp validate_provider_series(_series), do: {:error, :not_a_provider_series}
 
   defp completed_status(%{to_date: %Date{} = to_date}) do
     case Date.compare(to_date, Date.utc_today()) do

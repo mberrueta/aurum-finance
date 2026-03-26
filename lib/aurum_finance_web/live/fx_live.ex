@@ -55,7 +55,7 @@ defmodule AurumFinanceWeb.FxLive do
         saving: false,
         pending_delete: nil
       )
-      |> allow_upload(:csv, accept: ~w(.csv), max_entries: 1)
+      |> allow_upload(:csv, accept: ~w(.csv), max_entries: 1, max_file_size: 1_048_576)
       |> assign_rate_filter_form(default_rate_filter_params())
       |> assign_blank_form()
       |> load_series()
